@@ -108,9 +108,15 @@ export function MuseLensApp() {
   }, []);
 
   useEffect(() => {
-    if (!libraryWritable && !temporaryEnabled) return;
-    fileRef.current?.setAttribute("webkitdirectory", "");
-    fileRef.current?.setAttribute("directory", "");
+    const input = fileRef.current;
+    if (!input) return;
+    if (libraryWritable) {
+      input.setAttribute("webkitdirectory", "");
+      input.setAttribute("directory", "");
+    } else {
+      input.removeAttribute("webkitdirectory");
+      input.removeAttribute("directory");
+    }
   }, [libraryWritable, temporaryEnabled]);
 
   useEffect(() => {
@@ -683,7 +689,7 @@ export function MuseLensApp() {
                 <button onClick={clearSearch}><X size={17} /> 清除搜索</button>
               ) : libraryWritable || (temporaryEnabled && temporaryActive) ? (
                 <button onClick={() => fileRef.current?.click()} disabled={importActive}>
-                  <FolderOpen size={17} /> {libraryWritable ? "选择图片文件夹" : "选择图片或文件夹"}
+                  <FolderOpen size={17} /> {libraryWritable ? "选择图片文件夹" : "选择图片"}
                 </button>
               ) : (
                 <span className="mode-badge"><LockKeyhole size={14} /> 只读演示模式</span>
