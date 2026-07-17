@@ -676,8 +676,8 @@ export function MuseLensApp() {
               </h2>
               <p>
                 {activeQuery
-                  ? temporaryActive
-                    ? "临时图库始终保留最接近的结果，并按与最高分的差距截断较弱匹配。可以尝试更具体的中英文描述。"
+                  ? temporaryActive || !demoMode
+                    ? "用户图库始终保留最接近的结果，并按与最高分的差距截断较弱匹配。可以尝试更具体的中英文描述。"
                     : "系统不会为了凑数返回低相关结果。可以尝试更具体的中英文描述。"
                   : temporaryActive
                     ? temporaryGallery

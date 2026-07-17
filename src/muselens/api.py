@@ -438,7 +438,9 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
     hits = request.app.state.index.search(query_vector, payload.top_k)
     hits = filter_relevant_hits(
         hits,
-        absolute_floor=settings.search_min_score,
+        absolute_floor=(
+            settings.search_min_score if request.app.state.mode == "demo" else None
+        ),
         relative_margin=settings.search_relative_margin,
         max_results=payload.top_k,
     )

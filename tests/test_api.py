@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 from muselens.api import app, seed_demo_library
-from muselens.index import VectorIndex
+from muselens.index import IndexedImage, VectorIndex
 from muselens.sessions import TemporaryGalleryService
 
 
@@ -41,6 +41,22 @@ def test_empty_library_can_be_searched_without_loading_clip() -> None:
         response = client.post("/v1/search/text", json={"query": "sunset", "top_k": 5})
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_local_library_keeps_best_ranked_match_below_demo_floor() -> None:
+    index = VectorIndex()
+    index.add(
+        image=IndexedImage("one", "one.jpg", "image/jpeg"),
+        vector=np.asarray([1.0, 0.0], dtype=np.float32),
+    )
+    with TestClient(app) as client:
+        app.state.mode = "local"
+        app.state.index = index
+        app.state.encoder = TemporaryEncoder()
+        response = client.post("/v1/search/text", json={"query": "short label", "top_k": 5})
+
+    assert response.status_code == 200
+    assert [item["filename"] for item in response.json()] == ["one.jpg"]
 
 
 def test_demo_mode_rejects_library_mutation() -> None:
