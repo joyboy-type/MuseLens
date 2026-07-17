@@ -11,10 +11,11 @@ npm install
 npm run dev
 ```
 
-默认访问 <http://localhost:3000>，并连接 <http://localhost:8000>。如需修改后端地址，在本地 `.env` 中设置：
+默认访问 <http://localhost:3000>，Vite 会把 API 请求转发到
+<http://localhost:8000>。如需连接其他后端，在本地 `.env` 中设置：
 
 ```bash
-NEXT_PUBLIC_MUSELENS_API=http://localhost:8000
+VITE_MUSELENS_API=http://localhost:8000
 ```
 
 ## 验证
@@ -25,4 +26,5 @@ npm test
 npm audit --omit=dev
 ```
 
-当前前端依赖本机图片库和 Python 模型服务，因此定位为本地应用，不单独部署为公共网站。
+生产构建是静态 SPA，由 FastAPI 在同一个 Docker 容器中托管。界面根据 `/health`
+返回的能力自动切换：本地模式显示导入流程，公开演示模式显示固定图库标识。

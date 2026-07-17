@@ -1,5 +1,3 @@
-"use client";
-
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { SearchBar } from "@/components/SearchBar";
 import {
@@ -47,6 +45,8 @@ export function MuseLensApp() {
   const searchRequestRef = useRef(0);
   const importActive =
     uploading || importJob?.status === "queued" || importJob?.status === "running";
+  const libraryWritable = health?.library_writable === true;
+  const demoMode = health?.mode === "demo";
   const activeJobId = importJob?.job_id;
   const activeJobStatus = importJob?.status;
 
@@ -57,31 +57,41 @@ export function MuseLensApp() {
   }, []);
 
   useEffect(() => {
-    Promise.allSettled([listImages(), getHealth(), getLatestImportJob()]).then(
-      ([library, status, latestJob]) => {
+    Promise.allSettled([listImages(), getHealth()]).then(
+      async ([library, status]) => {
         if (library.status === "fulfilled") setItems(library.value);
-        if (status.status === "fulfilled") setHealth(status.value);
-        if (latestJob.status === "fulfilled") setImportJob(latestJob.value);
+        if (status.status === "fulfilled") {
+          setHealth(status.value);
+          if (status.value.library_writable) {
+            const latestJob = await getLatestImportJob().catch(() => null);
+            setImportJob(latestJob);
+          }
+        }
         const failed = [library, status].find((result) => result.status === "rejected");
         if (failed?.status === "rejected") {
           setError(failed.reason instanceof Error ? failed.reason.message : "本地服务连接失败");
         }
       },
     );
+  }, []);
+
+  useEffect(() => {
+    if (!libraryWritable) return;
     fileRef.current?.setAttribute("webkitdirectory", "");
     fileRef.current?.setAttribute("directory", "");
-  }, []);
+  }, [libraryWritable]);
 
   useEffect(() => {
     if (!activeJobId || !activeJobStatus || !["queued", "running"].includes(activeJobStatus)) {
       return;
     }
+    const jobId = activeJobId;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
 
     async function poll() {
       try {
-        const next = await getImportJob(activeJobId);
+        const next = await getImportJob(jobId);
         if (cancelled) return;
         setImportJob(next);
         if (["queued", "running"].includes(next.status)) {
@@ -162,6 +172,7 @@ export function MuseLensApp() {
   }
 
   async function handleFolder(event: ChangeEvent<HTMLInputElement>) {
+    if (!libraryWritable) return;
     const files = Array.from(event.target.files ?? []).filter((file) =>
       ["image/jpeg", "image/png", "image/webp"].includes(file.type),
     );
@@ -209,7 +220,10 @@ export function MuseLensApp() {
           </button>
         </nav>
         <div className="sidebar-spacer" />
-        <div className="privacy-dot" title="所有数据均保存在本机">
+        <div
+          className="privacy-dot"
+          title={demoMode ? "固定演示图库不可修改" : "所有数据均保存在本机"}
+        >
           <LockKeyhole size={16} />
         </div>
       </aside>
@@ -218,7 +232,7 @@ export function MuseLensApp() {
         <header className="topbar">
           <div className="wordmark">
             <span>MuseLens</span>
-            <small>LOCAL AI GALLERY</small>
+            <small>{demoMode ? "PUBLIC AI DEMO" : "LOCAL AI GALLERY"}</small>
           </div>
           <SearchBar
             value={query}
@@ -228,37 +242,49 @@ export function MuseLensApp() {
             inputRef={searchRef}
             busy={busy}
           />
-          <input
-            ref={fileRef}
-            className="visually-hidden"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            onChange={handleFolder}
-          />
-          <button className="import-button" onClick={() => fileRef.current?.click()} disabled={importActive}>
-            {importActive ? <LoaderCircle className="spin" size={17} /> : <FolderOpen size={17} />}
-            <span>{importActive ? "后台索引中" : "导入文件夹"}</span>
-          </button>
+          {libraryWritable ? (
+            <>
+              <input
+                ref={fileRef}
+                className="visually-hidden"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleFolder}
+              />
+              <button className="import-button" onClick={() => fileRef.current?.click()} disabled={importActive}>
+                {importActive ? <LoaderCircle className="spin" size={17} /> : <FolderOpen size={17} />}
+                <span>{importActive ? "后台索引中" : "导入文件夹"}</span>
+              </button>
+            </>
+          ) : (
+            <span className="mode-badge"><LockKeyhole size={14} /> 固定演示图库</span>
+          )}
         </header>
 
         <div className="content-wrap">
           <section className="hero-row">
             <div>
               <div className="eyebrow">
-                {activeQuery ? "SEMANTIC RESULTS" : "YOUR PRIVATE LIBRARY"}
+                {activeQuery
+                  ? "SEMANTIC RESULTS"
+                  : demoMode
+                    ? "CURATED DEMO LIBRARY"
+                    : "YOUR PRIVATE LIBRARY"}
               </div>
               <h1>{activeQuery ? `“${activeQuery}”` : "用语言，重新发现照片"}</h1>
               <p>
                 {activeQuery
                   ? `按语义相关度展示 ${items.length} 个结果`
-                  : "无需标签或整理文件名，描述你记得的画面即可。"}
+                  : demoMode
+                    ? "在固定公开图库中体验中英文自然语言搜索。"
+                    : "无需标签或整理文件名，描述你记得的画面即可。"}
               </p>
             </div>
             <div className="status-cluster">
               <span className="status-chip">
                 <span className={health ? "live-dot" : "live-dot offline"} />
-                {health ? "本地服务在线" : "正在连接"}
+                {health ? (demoMode ? "公开演示在线" : "本地服务在线") : "正在连接"}
               </span>
               <span className="count-chip">{health?.indexed_images ?? items.length} 张已索引</span>
             </div>
@@ -291,7 +317,7 @@ export function MuseLensApp() {
             </div>
           )}
 
-          {importJob && (
+          {libraryWritable && importJob && (
             <section className={`import-progress ${importJob.status}`} aria-live="polite">
               <div className="import-progress-icon">
                 {importActive ? (
@@ -360,19 +386,25 @@ export function MuseLensApp() {
                   ? "暂时无法读取图片库"
                   : activeQuery
                     ? "没有足够相关的图片"
-                    : "从一个图片文件夹开始"}
+                    : demoMode
+                      ? "演示图库尚未准备完成"
+                      : "从一个图片文件夹开始"}
               </h2>
               <p>
                 {activeQuery
                   ? "系统不会为了凑数返回低相关结果。当前模型优先支持英文描述，可以尝试更具体的查询。"
-                  : "图片只会复制到 MuseLens 专用目录，原始文件不会被移动或修改。"}
+                  : demoMode
+                    ? "公开版本只读取固定样例，不会保存访客上传的图片。"
+                    : "图片只会复制到 MuseLens 专用目录，原始文件不会被移动或修改。"}
               </p>
               {activeQuery ? (
                 <button onClick={clearSearch}><X size={17} /> 清除搜索</button>
-              ) : (
+              ) : libraryWritable ? (
                 <button onClick={() => fileRef.current?.click()} disabled={importActive}>
                   <FolderOpen size={17} /> 选择图片文件夹
                 </button>
+              ) : (
+                <span className="mode-badge"><LockKeyhole size={14} /> 只读演示模式</span>
               )}
             </section>
           )}
@@ -385,11 +417,10 @@ export function MuseLensApp() {
             <X size={20} />
           </button>
           <div className="lightbox-content" onClick={(event) => event.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={imageUrl(selected.image_id)} alt={selected.filename} />
             <div className="lightbox-meta">
               <div>
-                <span>本地图片</span>
+                <span>{demoMode ? "演示图片" : "本地图片"}</span>
                 <strong>{selected.filename}</strong>
               </div>
               {selected.score !== undefined && (

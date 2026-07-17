@@ -1,5 +1,3 @@
-"use client";
-
 import { Command, Search, X } from "lucide-react";
 import { FormEvent, RefObject } from "react";
 

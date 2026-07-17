@@ -8,7 +8,7 @@ import type {
 } from "./types";
 
 export const API_BASE =
-  process.env.NEXT_PUBLIC_MUSELENS_API ?? "http://localhost:8000";
+  import.meta.env.VITE_MUSELENS_API ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, init);

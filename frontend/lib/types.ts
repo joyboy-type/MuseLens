@@ -18,6 +18,8 @@ export type Health = {
   status: string;
   indexed_images: number;
   model_loaded: boolean;
+  mode: "local" | "demo";
+  library_writable: boolean;
 };
 
 export type ImportResult = ImageRecord & {

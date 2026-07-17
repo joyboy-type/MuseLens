@@ -1,5 +1,3 @@
-"use client";
-
 import { thumbnailUrl } from "@/lib/api";
 import type { LibraryItem } from "@/lib/types";
 import { ImageOff, Maximize2 } from "lucide-react";
@@ -32,7 +30,6 @@ export function PhotoGrid({ items, onOpen }: PhotoGridProps) {
                   图片不可用
                 </span>
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={thumbnailUrl(item.image_id)}
                   alt={item.filename}

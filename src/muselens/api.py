@@ -7,6 +7,7 @@ from uuid import uuid4
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .encoder import ClipEncoder
@@ -29,8 +30,36 @@ from .schemas import (
 )
 
 
+def seed_demo_library(
+    seed_dir: Path,
+    image_dir: Path,
+    state_dir: Path,
+    thumbnail_dir: Path,
+) -> None:
+    seed_images = seed_dir / "images"
+    if seed_images.is_dir() and (not image_dir.exists() or not any(image_dir.iterdir())):
+        shutil.copytree(seed_images, image_dir, dirs_exist_ok=True)
+
+    seed_state = seed_dir / "state"
+    if seed_state.is_dir() and not (state_dir / "index.sqlite3").exists():
+        shutil.copytree(seed_state, state_dir, dirs_exist_ok=True)
+
+    seed_thumbnails = seed_dir / "thumbnails"
+    if seed_thumbnails.is_dir() and (
+        not thumbnail_dir.exists() or not any(thumbnail_dir.iterdir())
+    ):
+        shutil.copytree(seed_thumbnails, thumbnail_dir, dirs_exist_ok=True)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.mode == "demo" and settings.demo_seed_dir:
+        seed_demo_library(
+            settings.demo_seed_dir,
+            settings.image_dir,
+            settings.state_dir,
+            settings.thumbnail_dir,
+        )
     settings.image_dir.mkdir(parents=True, exist_ok=True)
     settings.state_dir.mkdir(parents=True, exist_ok=True)
     index = VectorIndex()
@@ -62,6 +91,8 @@ async def lifespan(app: FastAPI):
     app.state.library = library
     app.state.job_repository = job_repository
     app.state.job_service = job_service
+    app.state.mode = settings.mode
+    app.state.library_writable = settings.mode == "local"
     yield
 
 
@@ -73,12 +104,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:3000",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
-    ],
+    allow_origins=list(settings.cors_origins),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,7 +117,17 @@ def health(request: Request) -> HealthResponse:
         status="ok",
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
+        mode=request.app.state.mode,
+        library_writable=request.app.state.library_writable,
     )
+
+
+def require_library_writes(request: Request) -> None:
+    if not request.app.state.library_writable:
+        raise HTTPException(
+            status_code=403,
+            detail="The public demo uses a fixed image library. Import is disabled.",
+        )
 
 
 @app.get("/v1/images", response_model=list[ImageRecordResponse])
@@ -181,6 +217,7 @@ async def create_import_job(
     background_tasks: BackgroundTasks,
     files: list[UploadFile] = File(...),
 ) -> ImportJobResponse:
+    require_library_writes(request)
     if not files:
         raise HTTPException(status_code=400, detail="Select at least one image.")
     if len(files) > settings.max_job_files:
@@ -219,6 +256,7 @@ def retry_import_job(
     request: Request,
     background_tasks: BackgroundTasks,
 ) -> ImportJobResponse:
+    require_library_writes(request)
     try:
         job = request.app.state.job_repository.reset_failed(job_id)
     except KeyError as error:
@@ -234,6 +272,7 @@ async def index_image(
     request: Request,
     file: UploadFile = File(...),
 ) -> ImportResponse:
+    require_library_writes(request)
     content = await file.read()
     try:
         candidate = prepare_image(
@@ -258,6 +297,7 @@ async def index_image_batch(
     request: Request,
     files: list[UploadFile] = File(...),
 ) -> list[ImportResponse]:
+    require_library_writes(request)
     if len(files) > settings.max_batch_files:
         raise HTTPException(
             status_code=400,
@@ -338,3 +378,11 @@ async def search_by_image(
         )
         for hit in hits
     ]
+
+
+if settings.frontend_dist.is_dir():
+    app.mount(
+        "/",
+        StaticFiles(directory=settings.frontend_dist, html=True),
+        name="frontend",
+    )

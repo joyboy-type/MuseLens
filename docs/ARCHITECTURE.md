@@ -3,9 +3,9 @@
 ## 数据流
 
 ```text
-React / TypeScript 前端
-        ↓ HTTP
-FastAPI 输入校验与接口层
+React / Vite / TypeScript 前端
+        ↓ 同源 HTTP
+FastAPI 静态托管、输入校验与接口层
         ↓
 ImageLibrary 业务层
    ↙          ↘
@@ -27,6 +27,8 @@ VectorIndex      MuseLensLibrary
 - `src/muselens/index.py`：统一向量索引接口与余弦检索。
 - `src/muselens/repository.py`：SQLite 持久化与启动恢复。
 - `scripts`：可重复的数据下载与离线评测任务。
+- `deploy/huggingface`：Space 元数据模板，不保存业务代码副本。
+- `Dockerfile`：先构建前端，再生成只包含 FastAPI 运行时的单容器镜像。
 
 ## 开源项目借鉴
 
@@ -48,4 +50,7 @@ VectorIndex      MuseLensLibrary
 - 导入时生成最长边 640px 的版本化 WebP 缩略图；旧图片首次请求时自动补建，图库与灯箱分别加载缩略图和原图。
 - 文件夹导入先写入本地暂存区，任务与逐文件状态保存到 SQLite；模型分批后台索引，服务中断后任务转为可重试状态。
 - CLIP 延迟加载，健康检查和普通列表请求不会占用模型内存。
-- 前端直接连接本机 FastAPI，因此当前版本定位为本地应用，不部署到公共网站。
+- `local` 模式开放导入和持久化，定位为个人本地图库。
+- `demo` 模式从固定种子恢复演示图库；后端对所有图库写接口返回 403，不能靠隐藏按钮冒充只读。
+- 生产环境由 FastAPI 同源托管 Vite 静态产物，避免跨域配置和双进程容器。
+- GitHub 是唯一源码仓库；Space 发布目录由 CI 临时组装，避免部署副本长期漂移。

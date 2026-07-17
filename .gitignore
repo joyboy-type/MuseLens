@@ -28,3 +28,4 @@ artifacts/training/**
 !artifacts/training/**/training_result.json
 frontend/node_modules/
 frontend/dist/
+frontend/*.tsbuildinfo

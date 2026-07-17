@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 :root {
   --bg: #0c0d0d;
   --panel: #111313;
@@ -24,7 +22,7 @@ body {
     radial-gradient(circle at 72% -20%, rgba(216, 243, 106, 0.07), transparent 33rem),
     var(--bg);
   color: var(--text);
-  font-family: Arial, var(--font-geist-sans), sans-serif;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-width: 320px;
 }
 
@@ -101,6 +99,7 @@ button { color: inherit; }
 }
 .import-button:hover { background: #202322; border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
 .import-button:disabled { opacity: .55; cursor: wait; }
+.mode-badge { justify-self: end; height: 38px; padding: 0 12px; border-radius: 11px; border: 1px solid rgba(216,243,106,.2); background: rgba(216,243,106,.07); color: #dff68a; display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
 .content-wrap { max-width: 1560px; margin: 0 auto; padding: 42px 32px 70px; }
 .hero-row { display: flex; justify-content: space-between; align-items: end; gap: 32px; margin-bottom: 26px; }

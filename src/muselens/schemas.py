@@ -9,6 +9,8 @@ class HealthResponse(BaseModel):
     status: str
     indexed_images: int
     model_loaded: bool
+    mode: Literal["local", "demo"]
+    library_writable: bool
 
 
 class ImageRecordResponse(BaseModel):

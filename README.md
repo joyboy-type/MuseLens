@@ -27,7 +27,9 @@
 - [x] SQLite 持久化后台索引任务、实时进度与失败重试
 - [x] 无关查询拒答评测、校准/留出切分与阈值策略对比
 - [x] GitHub Actions CI
-- [ ] Docker 与演示视频
+- [x] React/Vite + FastAPI 同源单容器部署骨架
+- [x] 后端强制的本地完整模式 / 固定语料演示模式
+- [ ] 公开演示语料、Hugging Face Space 与演示视频
 
 ## 快速开始
 
@@ -39,7 +41,7 @@ python -m pip install -e '.[dev]'
 pytest
 ```
 
-启动 API：
+开发时启动 API：
 
 ```bash
 uvicorn muselens.api:app --reload
@@ -47,7 +49,7 @@ uvicorn muselens.api:app --reload
 
 打开 <http://127.0.0.1:8000/docs>，可在交互式文档中测试接口。
 
-另开一个终端启动前端：
+另开一个终端启动 Vite 前端：
 
 ```bash
 cd frontend
@@ -65,7 +67,28 @@ make lint
 make test
 ```
 
-配置项示例见 `.env.example`。本项目没有认证层，API 只应绑定本机地址，不应直接暴露到公网。
+Vite 会在开发环境把 `/health` 和 `/v1` 转发到本地 API。生产构建由 FastAPI
+同源托管，不再需要额外配置 CORS 或前端 API 地址。
+
+配置项示例见 `.env.example`。`local` 模式没有认证层，只应绑定本机地址；公开部署必须
+使用 `demo` 模式，由后端禁止图库写入。
+
+## Docker
+
+```bash
+docker build -t muselens .
+docker run --rm -p 7860:7860 \
+  -v muselens-data:/data \
+  -e MUSELENS_MODE=local \
+  muselens
+```
+
+访问 <http://localhost:7860>。Docker 使用多阶段构建：Node 只负责生成静态前端，最终由
+一个 FastAPI 容器同时提供页面、API、图片和模型推理。
+
+Hugging Face Space 不是手工维护的代码副本。GitHub Actions 会调用
+`scripts/package_space.py` 临时生成干净的发布目录，再同步到 `sinbaby/MuseLens`。
+发布前仍需准备带许可证清单的固定演示语料，并在 GitHub 仓库配置 `HF_TOKEN`。
 
 运行可复现的文本搜图基线：
 
@@ -85,7 +108,7 @@ python scripts/evaluate_rejection.py
 
 ## 接口
 
-- `GET /health`：服务、模型和索引状态
+- `GET /health`：服务、模型、索引、运行模式和图库写入能力
 - `GET /v1/images`：已索引图片
 - `GET /v1/images/{image_id}/content`：读取原图
 - `GET /v1/images/{image_id}/thumbnail`：读取或按需生成缓存缩略图

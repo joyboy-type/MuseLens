@@ -1,14 +1,37 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal, cast
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LIBRARY_DIR = Path.home() / "Pictures" / "MuseLensLibrary"
 
 
+def runtime_mode() -> Literal["local", "demo"]:
+    default = "demo" if os.getenv("SPACE_ID") else "local"
+    value = os.getenv("MUSELENS_MODE", default).strip().lower()
+    if value not in {"local", "demo"}:
+        raise ValueError("MUSELENS_MODE must be either 'local' or 'demo'.")
+    return cast(Literal["local", "demo"], value)
+
+
+def cors_origins() -> tuple[str, ...]:
+    defaults = (
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    )
+    value = os.getenv("MUSELENS_CORS_ORIGINS")
+    if not value:
+        return defaults
+    return tuple(origin.strip() for origin in value.split(",") if origin.strip())
+
+
 @dataclass(frozen=True)
 class Settings:
+    mode: Literal["local", "demo"] = runtime_mode()
     image_dir: Path = Path(
         os.getenv("MUSELENS_IMAGE_DIR", DEFAULT_LIBRARY_DIR)
     )
@@ -37,6 +60,13 @@ class Settings:
     max_batch_files: int = int(os.getenv("MUSELENS_MAX_BATCH_FILES", "100"))
     max_job_files: int = int(os.getenv("MUSELENS_MAX_JOB_FILES", "500"))
     max_job_total_mb: int = int(os.getenv("MUSELENS_MAX_JOB_TOTAL_MB", "512"))
+    frontend_dist: Path = Path(
+        os.getenv("MUSELENS_FRONTEND_DIST", PROJECT_ROOT / "frontend" / "dist")
+    )
+    demo_seed_dir: Path | None = (
+        Path(value) if (value := os.getenv("MUSELENS_DEMO_SEED_DIR")) else None
+    )
+    cors_origins: tuple[str, ...] = cors_origins()
 
 
 settings = Settings()
