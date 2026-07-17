@@ -19,6 +19,7 @@ export type Health = {
   status: string;
   indexed_images: number;
   model_loaded: boolean;
+  index_backend: "numpy" | "faiss";
   mode: "local" | "demo";
   library_writable: boolean;
   temporary_galleries_enabled: boolean;

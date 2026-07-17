@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .encoder import ClipEncoder
-from .index import IndexedImage, VectorIndex
+from .index import IndexedImage, SearchIndex
 from .repository import ImageRepository, StoredImage
 
 
@@ -72,7 +72,7 @@ class ImageLibrary:
         self,
         image_dir: Path,
         repository: ImageRepository,
-        index: VectorIndex,
+        index: SearchIndex,
         encoder: ClipEncoder,
         thumbnail_dir: Path | None = None,
         thumbnail_max_size: int = 640,

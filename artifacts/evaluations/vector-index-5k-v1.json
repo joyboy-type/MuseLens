@@ -1,0 +1,99 @@
+{
+  "experiment": "exact-vector-index-comparison",
+  "run_at": "2026-07-17T11:07:35.092237+00:00",
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.12.7",
+    "numpy": "2.5.1",
+    "faiss_cpu": "1.14.3"
+  },
+  "database": "data/benchmarks/coco-live/state/index.sqlite3",
+  "model_id": "google/siglip2-base-patch16-224",
+  "images": 5000,
+  "embedding_dimension": 768,
+  "top_k": 10,
+  "backends": [
+    {
+      "backend": "legacy-loop",
+      "add_seconds": 0.016260958000202663,
+      "first_search_build_ms": 4.508583006099798,
+      "queries_per_trial": 1000,
+      "trials": 5,
+      "measured_queries": 5000,
+      "total_seconds": 19.712129959007143,
+      "queries_per_second": 253.65092511047138,
+      "mean_latency_ms": 3.94221510210773,
+      "p50_latency_ms": 3.758874998311512,
+      "p95_latency_ms": 6.539291003718972,
+      "p99_latency_ms": 7.402040995657444,
+      "trial_mean_latency_ms": [
+        3.8967153709818376,
+        3.970702414851985,
+        3.9332511182583403,
+        3.960002531995997,
+        3.950404074450489
+      ]
+    },
+    {
+      "backend": "numpy",
+      "add_seconds": 0.008722667000256479,
+      "first_search_build_ms": 3.126541996607557,
+      "queries_per_trial": 1000,
+      "trials": 5,
+      "measured_queries": 5000,
+      "total_seconds": 1.8145499579695752,
+      "queries_per_second": 2755.504183304407,
+      "mean_latency_ms": 0.3627428480307572,
+      "p50_latency_ms": 0.3398749977350235,
+      "p95_latency_ms": 0.43287500739097595,
+      "p99_latency_ms": 0.7140840025385842,
+      "trial_mean_latency_ms": [
+        0.40634464628237765,
+        0.345888093157555,
+        0.3549009420530638,
+        0.3549705829937011,
+        0.3516099756670883
+      ]
+    },
+    {
+      "backend": "faiss",
+      "add_seconds": 0.008544500000425614,
+      "first_search_build_ms": 3.118541993899271,
+      "queries_per_trial": 1000,
+      "trials": 5,
+      "measured_queries": 5000,
+      "total_seconds": 1.1869211679731961,
+      "queries_per_second": 4212.57968508395,
+      "mean_latency_ms": 0.23727371647546533,
+      "p50_latency_ms": 0.22837499273009598,
+      "p95_latency_ms": 0.27975000557489693,
+      "p99_latency_ms": 0.3172080032527447,
+      "trial_mean_latency_ms": [
+        0.24260938860243186,
+        0.23670783678244334,
+        0.23445675296534318,
+        0.23706866285647266,
+        0.23552594117063563
+      ]
+    }
+  ],
+  "agreement_with_numpy": {
+    "legacy-loop": {
+      "exact_ranking_queries": 1000,
+      "queries": 1000,
+      "exact_ranking_rate": 1.0,
+      "max_common_score_difference": 2.980232238769531e-07
+    },
+    "faiss": {
+      "exact_ranking_queries": 1000,
+      "queries": 1000,
+      "exact_ranking_rate": 1.0,
+      "max_common_score_difference": 2.980232238769531e-07
+    }
+  },
+  "speedup_over_legacy_mean": {
+    "numpy": 10.86779552928213,
+    "faiss": 16.61463039676948
+  }
+}

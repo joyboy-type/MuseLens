@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .encoder import ClipEncoder
-from .index import VectorIndex, filter_relevant_hits
+from .index import create_vector_index, filter_relevant_hits
 from .jobs import ImportJob, ImportJobRepository, ImportJobService, StagedFile
 from .library import (
     SUPPORTED_CONTENT_TYPES,
@@ -70,7 +70,7 @@ async def lifespan(app: FastAPI):
         )
     settings.image_dir.mkdir(parents=True, exist_ok=True)
     settings.state_dir.mkdir(parents=True, exist_ok=True)
-    index = VectorIndex()
+    index = create_vector_index(settings.index_backend)
     encoder = ClipEncoder(settings.clip_model_id)
     repository = ImageRepository(settings.state_dir / "index.sqlite3")
     repository.initialize()
@@ -95,6 +95,7 @@ async def lifespan(app: FastAPI):
         max_image_pixels=settings.max_image_pixels,
     )
     app.state.index = index
+    app.state.index_backend = settings.index_backend
     app.state.encoder = encoder
     app.state.library = library
     app.state.job_repository = job_repository
@@ -158,6 +159,7 @@ def health(request: Request) -> HealthResponse:
         status="ok",
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
+        index_backend=request.app.state.index_backend,
         mode=request.app.state.mode,
         library_writable=request.app.state.library_writable,
         temporary_galleries_enabled=request.app.state.temporary_galleries_enabled,

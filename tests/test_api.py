@@ -30,6 +30,7 @@ def test_health_reports_service_status() -> None:
     assert response.json()["status"] == "ok"
     assert response.json()["indexed_images"] == 0
     assert isinstance(response.json()["model_loaded"], bool)
+    assert response.json()["index_backend"] == "numpy"
     assert response.json()["mode"] == "local"
     assert response.json()["library_writable"] is True
     assert response.json()["temporary_galleries_enabled"] is False

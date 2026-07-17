@@ -1,0 +1,326 @@
+{
+  "experiment": "live-api-library-scale",
+  "run_started_at": "2026-07-17T11:03:20.255235+00:00",
+  "base_url": "http://127.0.0.1:8001",
+  "sample": "data/evaluation/coco-val2017",
+  "checkpoints": [
+    {
+      "target_images": 5000,
+      "indexed_images": 5000,
+      "new_images": 0,
+      "import_seconds": 1.0624993592500687e-05,
+      "import_throughput_images_per_second": 0.0,
+      "jobs": [],
+      "retrieval": {
+        "queries": 5000,
+        "recall_at_1": 0.4556,
+        "recall_at_5": 0.6982,
+        "recall_at_10": 0.7782,
+        "empty_result_rate": 0.0,
+        "mean_result_count": 6.7648,
+        "mean_latency_ms": 18.310781486626365,
+        "p95_latency_ms": 25.575749998097308,
+        "p99_latency_ms": 32.71225000207778,
+        "failure_examples": [
+          {
+            "filename": "000000000872.jpg",
+            "query": "A couple of baseball player standing on a field.",
+            "returned": [
+              "000000537827.jpg",
+              "000000356094.jpg",
+              "000000062355.jpg",
+              "000000383384.jpg",
+              "000000182021.jpg",
+              "000000512776.jpg",
+              "000000132931.jpg",
+              "000000516038.jpg",
+              "000000554328.jpg",
+              "000000447088.jpg"
+            ]
+          },
+          {
+            "filename": "000000000885.jpg",
+            "query": "a male tennis player in white shorts is playing tennis",
+            "returned": [
+              "000000025424.jpg",
+              "000000171788.jpg",
+              "000000133418.jpg",
+              "000000240023.jpg",
+              "000000126137.jpg",
+              "000000152686.jpg",
+              "000000379332.jpg",
+              "000000088970.jpg",
+              "000000382009.jpg",
+              "000000201072.jpg"
+            ]
+          },
+          {
+            "filename": "000000001000.jpg",
+            "query": "The people are posing for a group photo.",
+            "returned": [
+              "000000509451.jpg",
+              "000000323799.jpg",
+              "000000012670.jpg",
+              "000000086956.jpg",
+              "000000274460.jpg",
+              "000000546219.jpg",
+              "000000352684.jpg",
+              "000000203389.jpg",
+              "000000005193.jpg",
+              "000000075612.jpg"
+            ]
+          },
+          {
+            "filename": "000000001268.jpg",
+            "query": "A beautiful woman taking a picture with her smart phone.",
+            "returned": [
+              "000000151000.jpg",
+              "000000120420.jpg",
+              "000000154644.jpg",
+              "000000001296.jpg",
+              "000000581317.jpg",
+              "000000292488.jpg",
+              "000000498032.jpg",
+              "000000459272.jpg",
+              "000000209753.jpg",
+              "000000100624.jpg"
+            ]
+          },
+          {
+            "filename": "000000001425.jpg",
+            "query": "A meal is lying on a plate on a table.",
+            "returned": [
+              "000000496571.jpg",
+              "000000066817.jpg",
+              "000000231097.jpg",
+              "000000017714.jpg",
+              "000000419312.jpg",
+              "000000447522.jpg",
+              "000000237517.jpg",
+              "000000025986.jpg",
+              "000000153632.jpg",
+              "000000104669.jpg"
+            ]
+          },
+          {
+            "filename": "000000001532.jpg",
+            "query": "A street scene with focus on the street signs on an overpass.",
+            "returned": [
+              "000000528977.jpg",
+              "000000476491.jpg",
+              "000000579893.jpg",
+              "000000054967.jpg",
+              "000000225532.jpg",
+              "000000343976.jpg",
+              "000000041488.jpg",
+              "000000228771.jpg",
+              "000000259854.jpg",
+              "000000333697.jpg"
+            ]
+          },
+          {
+            "filename": "000000002006.jpg",
+            "query": "a big purple bus parked in a parking spot",
+            "returned": [
+              "000000203294.jpg",
+              "000000313182.jpg"
+            ]
+          },
+          {
+            "filename": "000000002153.jpg",
+            "query": "Batter preparing to swing at pitch during major game.",
+            "returned": [
+              "000000279774.jpg",
+              "000000514586.jpg",
+              "000000217285.jpg",
+              "000000060507.jpg",
+              "000000398028.jpg",
+              "000000548339.jpg",
+              "000000464089.jpg",
+              "000000569825.jpg",
+              "000000311002.jpg",
+              "000000006471.jpg"
+            ]
+          },
+          {
+            "filename": "000000002431.jpg",
+            "query": "A plate on a wooden table full of bread.",
+            "returned": [
+              "000000064084.jpg",
+              "000000181796.jpg",
+              "000000344100.jpg"
+            ]
+          },
+          {
+            "filename": "000000002685.jpg",
+            "query": "A group of people standing around each other.",
+            "returned": [
+              "000000012670.jpg",
+              "000000172946.jpg",
+              "000000352684.jpg",
+              "000000554002.jpg",
+              "000000075612.jpg",
+              "000000323799.jpg",
+              "000000059044.jpg",
+              "000000306139.jpg",
+              "000000329323.jpg",
+              "000000174371.jpg"
+            ]
+          },
+          {
+            "filename": "000000003255.jpg",
+            "query": "a group of people riding skis on a snowy surface",
+            "returned": [
+              "000000334767.jpg",
+              "000000438955.jpg",
+              "000000197388.jpg",
+              "000000384666.jpg",
+              "000000041990.jpg",
+              "000000053626.jpg",
+              "000000236308.jpg",
+              "000000361919.jpg",
+              "000000516677.jpg",
+              "000000414170.jpg"
+            ]
+          },
+          {
+            "filename": "000000004765.jpg",
+            "query": "A man riding a surfboard on a wave in the ocean.",
+            "returned": [
+              "000000390246.jpg",
+              "000000185292.jpg",
+              "000000485071.jpg",
+              "000000190007.jpg",
+              "000000051314.jpg",
+              "000000115898.jpg",
+              "000000441286.jpg",
+              "000000263403.jpg",
+              "000000220584.jpg",
+              "000000051976.jpg"
+            ]
+          },
+          {
+            "filename": "000000005037.jpg",
+            "query": "A passenger bus pulling up to the side of a street.",
+            "returned": [
+              "000000315187.jpg",
+              "000000220732.jpg",
+              "000000243867.jpg",
+              "000000460347.jpg",
+              "000000213605.jpg",
+              "000000423519.jpg",
+              "000000026204.jpg",
+              "000000377723.jpg",
+              "000000165039.jpg",
+              "000000176037.jpg"
+            ]
+          },
+          {
+            "filename": "000000005529.jpg",
+            "query": "A person on skis skiing down a mountain slope.",
+            "returned": [
+              "000000329827.jpg",
+              "000000314709.jpg",
+              "000000038118.jpg",
+              "000000544444.jpg",
+              "000000493442.jpg",
+              "000000424551.jpg",
+              "000000099242.jpg",
+              "000000326542.jpg",
+              "000000038210.jpg",
+              "000000128112.jpg"
+            ]
+          },
+          {
+            "filename": "000000005586.jpg",
+            "query": "a tennis player with a racket on a court ",
+            "returned": [
+              "000000451435.jpg",
+              "000000133418.jpg",
+              "000000554156.jpg",
+              "000000551804.jpg",
+              "000000562581.jpg",
+              "000000341681.jpg",
+              "000000025424.jpg",
+              "000000403122.jpg",
+              "000000039551.jpg",
+              "000000171788.jpg"
+            ]
+          },
+          {
+            "filename": "000000006213.jpg",
+            "query": "A shower curtain sits open in an empty and clean bathroom. ",
+            "returned": [
+              "000000357567.jpg",
+              "000000092124.jpg",
+              "000000384850.jpg",
+              "000000068078.jpg",
+              "000000547816.jpg",
+              "000000032285.jpg",
+              "000000351362.jpg",
+              "000000311081.jpg",
+              "000000507893.jpg",
+              "000000446574.jpg"
+            ]
+          },
+          {
+            "filename": "000000006460.jpg",
+            "query": "a person riding a surf board on a wave",
+            "returned": [
+              "000000390246.jpg",
+              "000000185292.jpg",
+              "000000561223.jpg",
+              "000000051976.jpg",
+              "000000002261.jpg",
+              "000000441286.jpg",
+              "000000393056.jpg",
+              "000000485071.jpg",
+              "000000270122.jpg",
+              "000000513524.jpg"
+            ]
+          },
+          {
+            "filename": "000000006471.jpg",
+            "query": "A baseball player holding a bat next to a base.",
+            "returned": [
+              "000000356094.jpg",
+              "000000512776.jpg",
+              "000000062355.jpg",
+              "000000491464.jpg",
+              "000000311002.jpg",
+              "000000182021.jpg",
+              "000000254516.jpg",
+              "000000264968.jpg",
+              "000000302107.jpg",
+              "000000462031.jpg"
+            ]
+          },
+          {
+            "filename": "000000007278.jpg",
+            "query": "there is a male surfer that is riding in the wave",
+            "returned": [
+              "000000032570.jpg",
+              "000000390246.jpg",
+              "000000190007.jpg",
+              "000000149770.jpg",
+              "000000115898.jpg",
+              "000000185292.jpg",
+              "000000054164.jpg",
+              "000000220584.jpg",
+              "000000513524.jpg",
+              "000000051314.jpg"
+            ]
+          },
+          {
+            "filename": "000000007386.jpg",
+            "query": "a small motor bike outside of the garage",
+            "returned": [
+              "000000149406.jpg"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "run_completed_at": "2026-07-17T11:04:51.957838+00:00"
+}

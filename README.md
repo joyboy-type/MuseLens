@@ -17,7 +17,8 @@
 - [x] SQLite 图片元数据与向量持久化
 - [x] SHA-256 去重与批量导入
 - [x] 服务重启后自动恢复向量索引
-- [ ] FAISS/Qdrant 向量索引
+- [x] NumPy 连续矩阵精确索引与可选 FAISS 后端
+- [ ] 5 万图以上的 ANN/Qdrant 对比
 - [x] 中英文检索基线、模型对比与安全向量迁移
 - [x] 冻结主干的双塔残差 Adapter 与对称 InfoNCE 训练骨架
 - [x] 5000/500/100 官方 split Adapter 训练、消融与最终测试
@@ -122,6 +123,11 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 45.56%、Recall@10 为 77.82%，平均延迟 51.40 ms，重启后恢复 5000/5000 张。规模测试
 证明当前线性索引可用，也量化了引入矩阵化/FAISS 索引的必要性。详见
 `docs/COCO_SCALE_RESULTS.md`。
+
+索引已从 Python 逐向量循环升级为连续 NumPy 矩阵：5000 图纯索引平均延迟由 3.94 ms
+降至 0.363 ms，真实 HTTP 平均热查询由 51.40 ms 降至 18.31 ms，Top-10 排名和 Recall
+保持不变。FAISS 更快但在 M4 的 pip PyTorch 同进程中存在 OpenMP 冲突，因此没有盲目设为
+默认。详见 `docs/INDEX_BENCHMARK.md`。
 
 ## 接口
 

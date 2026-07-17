@@ -9,6 +9,7 @@ class HealthResponse(BaseModel):
     status: str
     indexed_images: int
     model_loaded: bool
+    index_backend: Literal["numpy", "faiss"]
     mode: Literal["local", "demo"]
     library_writable: bool
     temporary_galleries_enabled: bool

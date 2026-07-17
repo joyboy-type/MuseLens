@@ -30,6 +30,13 @@ def cors_origins() -> tuple[str, ...]:
     return tuple(origin.strip() for origin in value.split(",") if origin.strip())
 
 
+def vector_index_backend() -> Literal["numpy", "faiss"]:
+    value = os.getenv("MUSELENS_INDEX_BACKEND", "numpy").strip().lower()
+    if value not in {"numpy", "faiss"}:
+        raise ValueError("MUSELENS_INDEX_BACKEND must be either 'numpy' or 'faiss'.")
+    return cast(Literal["numpy", "faiss"], value)
+
+
 @dataclass(frozen=True)
 class Settings:
     mode: Literal["local", "demo"] = runtime_mode()
@@ -51,6 +58,7 @@ class Settings:
         "MUSELENS_CLIP_MODEL",
         "google/siglip2-base-patch16-224",
     )
+    index_backend: Literal["numpy", "faiss"] = vector_index_backend()
     max_upload_mb: int = int(os.getenv("MUSELENS_MAX_UPLOAD_MB", "12"))
     max_image_pixels: int = int(os.getenv("MUSELENS_MAX_IMAGE_PIXELS", "40000000"))
     default_top_k: int = int(os.getenv("MUSELENS_TOP_K", "12"))
