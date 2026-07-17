@@ -1,0 +1,54 @@
+{
+  "experiment": "local-library-live-api-e2e",
+  "run_date": "2026-07-17",
+  "mode": "local",
+  "model_id": "google/siglip2-base-patch16-224",
+  "library": {
+    "source": "data/evaluation/sample-v1/images",
+    "source_images": 100,
+    "indexed_before": 10,
+    "imported": 90,
+    "duplicates": 10,
+    "failed": 0,
+    "indexed_after": 100,
+    "import_seconds": 4.59,
+    "throughput_images_per_second": 21.77
+  },
+  "retrieval": {
+    "flickr8k_english": {
+      "queries": 500,
+      "recall_at_1": 0.916,
+      "recall_at_5": 0.99,
+      "recall_at_10": 0.992,
+      "empty_result_rate": 0.0,
+      "mean_latency_ms": 15.57,
+      "p95_latency_ms": 20.51
+    },
+    "paired_english": {
+      "queries": 30,
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "empty_result_rate": 0.0,
+      "mean_latency_ms": 12.66,
+      "p95_latency_ms": 14.42
+    },
+    "paired_chinese": {
+      "queries": 30,
+      "recall_at_1": 0.9667,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "empty_result_rate": 0.0,
+      "mean_latency_ms": 12.88,
+      "p95_latency_ms": 14.31
+    }
+  },
+  "restart_recovery": {
+    "indexed_images_after_restart": 100,
+    "latest_import_status": "completed",
+    "english_dog_results": 5,
+    "chinese_dog_results": 5,
+    "model_loaded_before_first_search": false,
+    "model_loaded_after_first_search": true
+  }
+}
