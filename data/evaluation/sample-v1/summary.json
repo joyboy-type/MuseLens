@@ -1,0 +1,9 @@
+{
+  "dataset": "intro/flickr8k",
+  "split": "test",
+  "license_from_dataset_card": "CC0",
+  "sample_rule": "sort file_name ascending and take first N rows",
+  "images": 100,
+  "captions_per_image": 5,
+  "manifest_sha256": "53f21719bd166d71133223757dd76354f5673309491817b345459d9f4f512f29"
+}

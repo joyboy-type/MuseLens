@@ -1,0 +1,42 @@
+{
+  "experiment": "zero-shot-text-to-image-retrieval",
+  "model_id": "google/siglip2-base-patch16-224",
+  "device": "mps",
+  "sample": "data/evaluation/sample-v1",
+  "query_set": "data/evaluation/sample-v1/bilingual_queries.jsonl",
+  "images": 100,
+  "queries": 60,
+  "metrics": {
+    "recall_at_1": 0.9833333333333333,
+    "recall_at_5": 1.0,
+    "recall_at_10": 1.0,
+    "mrr": 0.9916666666666667,
+    "mean_rank": 1.0166666666666666,
+    "median_rank": 1.0
+  },
+  "metrics_by_language": {
+    "en": {
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "mean_rank": 1.0,
+      "median_rank": 1.0
+    },
+    "zh": {
+      "recall_at_1": 0.9666666666666667,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.9833333333333333,
+      "mean_rank": 1.0333333333333334,
+      "median_rank": 1.0
+    }
+  },
+  "timing_seconds": {
+    "model_load": 3.513200166999013,
+    "image_encoding_total": 2.8737807080033235,
+    "image_encoding_per_item": 0.028737807080033234,
+    "text_encoding_total": 0.42549895800766535,
+    "text_encoding_per_query": 0.007091649300127756
+  }
+}

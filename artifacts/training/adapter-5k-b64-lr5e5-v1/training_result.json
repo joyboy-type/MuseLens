@@ -1,0 +1,164 @@
+{
+  "experiment": "frozen-siglip2-dual-adapter",
+  "model_id": "google/siglip2-base-patch16-224",
+  "device": "mps",
+  "data_dir": "data/training/flickr8k-train-v1",
+  "images": 5500,
+  "train_images": 5000,
+  "validation_images": 500,
+  "captions_per_image": 5,
+  "trainable_parameters": 198275,
+  "baseline_validation": {
+    "recall_at_1": 0.7856,
+    "recall_at_5": 0.9552,
+    "recall_at_10": 0.9836,
+    "mrr": 0.8610750413297934,
+    "mean_rank": 1.8084,
+    "median_rank": 1.0
+  },
+  "best_validation_mrr": 0.8632655881518098,
+  "feature_cache": {
+    "train": "artifacts/feature-cache/google--siglip2-base-patch16-224-9965212edf75.npz",
+    "validation": "artifacts/feature-cache/google--siglip2-base-patch16-224-e60088590037.npz"
+  },
+  "checkpoint": "artifacts/training/adapter-5k-b64-lr5e5-v1/best.pt",
+  "duration_seconds": 4.375996957998723,
+  "config": {
+    "data_dir": "data/training/flickr8k-train-v1",
+    "validation_data_dir": "data/training/flickr8k-validation-v1",
+    "model_id": "google/siglip2-base-patch16-224",
+    "output_dir": "artifacts/training/adapter-5k-b64-lr5e5-v1",
+    "epochs": 30,
+    "batch_size": 128,
+    "image_batch_size": 8,
+    "text_batch_size": 64,
+    "bottleneck_dim": 64,
+    "learning_rate": 5e-05,
+    "weight_decay": 0.001,
+    "validation_fraction": 0.15,
+    "patience": 5,
+    "seed": 2026
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.766953891515732,
+      "validation": {
+        "recall_at_1": 0.7864,
+        "recall_at_5": 0.9552,
+        "recall_at_10": 0.9836,
+        "mrr": 0.8615788464894889,
+        "mean_rank": 1.8032,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 2,
+      "train_loss": 2.7380232930183412,
+      "validation": {
+        "recall_at_1": 0.786,
+        "recall_at_5": 0.9548,
+        "recall_at_10": 0.9844,
+        "mrr": 0.8611748198984882,
+        "mean_rank": 1.7968,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 3,
+      "train_loss": 2.707425320148468,
+      "validation": {
+        "recall_at_1": 0.7872,
+        "recall_at_5": 0.9544,
+        "recall_at_10": 0.9836,
+        "mrr": 0.8621004141498088,
+        "mean_rank": 1.7784,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 4,
+      "train_loss": 2.638458976149559,
+      "validation": {
+        "recall_at_1": 0.7912,
+        "recall_at_5": 0.9548,
+        "recall_at_10": 0.9832,
+        "mrr": 0.8632515758435342,
+        "mean_rank": 1.7792,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 5,
+      "train_loss": 2.556766948103905,
+      "validation": {
+        "recall_at_1": 0.7928,
+        "recall_at_5": 0.9544,
+        "recall_at_10": 0.98,
+        "mrr": 0.8632655881518098,
+        "mean_rank": 1.8168,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 6,
+      "train_loss": 2.4683749318122863,
+      "validation": {
+        "recall_at_1": 0.7908,
+        "recall_at_5": 0.95,
+        "recall_at_10": 0.9784,
+        "mrr": 0.8610635398137749,
+        "mean_rank": 1.8792,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 7,
+      "train_loss": 2.3573922604322433,
+      "validation": {
+        "recall_at_1": 0.7816,
+        "recall_at_5": 0.946,
+        "recall_at_10": 0.9736,
+        "mrr": 0.85516739564132,
+        "mean_rank": 1.9948,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 8,
+      "train_loss": 2.2597283869981766,
+      "validation": {
+        "recall_at_1": 0.7772,
+        "recall_at_5": 0.9436,
+        "recall_at_10": 0.9716,
+        "mrr": 0.850902839437779,
+        "mean_rank": 2.1264,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 9,
+      "train_loss": 2.190686621516943,
+      "validation": {
+        "recall_at_1": 0.7744,
+        "recall_at_5": 0.942,
+        "recall_at_10": 0.9704,
+        "mrr": 0.8489535857617604,
+        "mean_rank": 2.226,
+        "median_rank": 1.0
+      }
+    },
+    {
+      "epoch": 10,
+      "train_loss": 2.1208908408880234,
+      "validation": {
+        "recall_at_1": 0.77,
+        "recall_at_5": 0.9416,
+        "recall_at_10": 0.9676,
+        "mrr": 0.8460579209896314,
+        "mean_rank": 2.2872,
+        "median_rank": 1.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "experiment": "irrelevant-query-rejection-v1",
+  "model_id": "google/siglip2-base-patch16-224",
+  "device": "mps",
+  "sample": "data/evaluation/sample-v1",
+  "images": 100,
+  "positive_queries": 500,
+  "negative_queries": 30,
+  "split": "alternating calibration/evaluation split",
+  "policies": {
+    "legacy_fixed": {
+      "parameters": {
+        "absolute_floor": 0.22,
+        "minimum_z_score": 0.0
+      },
+      "calibration_metrics": {
+        "positive_accept_rate": 0.012,
+        "recall_at_5_after_rejection": 0.012,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.506
+      },
+      "evaluation_metrics": {
+        "positive_accept_rate": 0.02,
+        "recall_at_5_after_rejection": 0.02,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.51
+      }
+    },
+    "calibrated_fixed": {
+      "parameters": {
+        "absolute_floor": 0.12000000000000027,
+        "minimum_z_score": 0.0
+      },
+      "calibration_metrics": {
+        "positive_accept_rate": 0.944,
+        "recall_at_5_after_rejection": 0.936,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.968
+      },
+      "evaluation_metrics": {
+        "positive_accept_rate": 0.964,
+        "recall_at_5_after_rejection": 0.96,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.98
+      }
+    },
+    "adaptive_z_score": {
+      "parameters": {
+        "absolute_floor": 0.12000000000000027,
+        "minimum_z_score": 0.0
+      },
+      "calibration_metrics": {
+        "positive_accept_rate": 0.944,
+        "recall_at_5_after_rejection": 0.936,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.968
+      },
+      "evaluation_metrics": {
+        "positive_accept_rate": 0.964,
+        "recall_at_5_after_rejection": 0.96,
+        "negative_rejection_rate": 1.0,
+        "balanced_score": 0.98
+      }
+    }
+  }
+}

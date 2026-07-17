@@ -1,0 +1,29 @@
+{
+  "experiment": "siglip2-frozen-dual-adapter-decision-v1",
+  "data": {
+    "train_images": 5000,
+    "validation_images": 500,
+    "test_images": 100,
+    "captions_per_image": 5
+  },
+  "selected_config": {
+    "bottleneck_dim": 64,
+    "learning_rate": 0.00005,
+    "trainable_parameters": 198275,
+    "best_epoch": 5
+  },
+  "validation": {
+    "baseline_mrr": 0.8610750413297934,
+    "adapter_mrr": 0.8632655881518098
+  },
+  "test": {
+    "baseline_english_recall_at_1": 0.916,
+    "adapter_english_recall_at_1": 0.916,
+    "baseline_english_mrr": 0.9507145161290322,
+    "adapter_english_mrr": 0.9509722222222222,
+    "baseline_chinese_recall_at_1": 0.9666666666666667,
+    "adapter_chinese_recall_at_1": 0.9333333333333333
+  },
+  "decision": "do_not_deploy",
+  "reason": "Negligible English gain and a 3.4 percentage-point Chinese Recall@1 regression."
+}
