@@ -15,3 +15,12 @@ MuseLens 的首个检索评测样本来自 Hugging Face 数据集 `intro/flickr8
 ```bash
 python scripts/download_evaluation_sample.py --count 100
 ```
+
+规模测试使用 COCO 2017 validation 的全部 5000 张图片、人工描述和实例类别。压缩包支持
+断点续传；每张图片的来源与 license id 保存在本地 manifest 中：
+
+```bash
+python scripts/prepare_coco_validation.py
+```
+
+生成目录为 `data/evaluation/coco-val2017`，原始图片、标注和下载缓存均不上传 GitHub。
