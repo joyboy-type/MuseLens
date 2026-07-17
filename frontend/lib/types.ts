@@ -12,6 +12,7 @@ export type SearchHit = {
 
 export type LibraryItem = ImageRecord & {
   score?: number;
+  session_id?: string;
 };
 
 export type Health = {
@@ -20,6 +21,10 @@ export type Health = {
   model_loaded: boolean;
   mode: "local" | "demo";
   library_writable: boolean;
+  temporary_galleries_enabled: boolean;
+  temporary_gallery_max_files: number;
+  temporary_gallery_ttl_seconds: number;
+  temporary_gallery_max_sessions: number;
 };
 
 export type ImportResult = ImageRecord & {
@@ -45,4 +50,17 @@ export type ImportJob = {
   error: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type TemporaryGallery = {
+  session_id: string;
+  status: ImportJobStatus;
+  total_files: number;
+  processed_files: number;
+  imported_files: number;
+  duplicate_files: number;
+  failed_files: number;
+  error: string | null;
+  created_at: string;
+  expires_at: string;
 };

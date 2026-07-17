@@ -31,7 +31,7 @@ export function PhotoGrid({ items, onOpen }: PhotoGridProps) {
                 </span>
               ) : (
                 <img
-                  src={thumbnailUrl(item.image_id)}
+                  src={thumbnailUrl(item.image_id, item.session_id)}
                   alt={item.filename}
                   loading="lazy"
                   decoding="async"

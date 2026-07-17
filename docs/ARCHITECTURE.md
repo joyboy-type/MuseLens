@@ -14,6 +14,14 @@ CLIP 编码器    SQLite Repository
 VectorIndex      MuseLensLibrary
         ↘          ↙
         语义搜索结果
+
+公开 Demo 的访客上传
+        ↓
+TemporaryGalleryService（限额、随机会话、TTL）
+        ↓
+每会话 SQLite + VectorIndex + 私有临时目录
+        ↓
+全局串行模型编码队列 → 仅返回本会话结果
 ```
 
 ## 代码边界
@@ -26,6 +34,7 @@ VectorIndex      MuseLensLibrary
 - `src/muselens/encoder.py`：可替换的 CLIP 模型适配器。
 - `src/muselens/index.py`：统一向量索引接口与余弦检索。
 - `src/muselens/repository.py`：SQLite 持久化与启动恢复。
+- `src/muselens/sessions.py`：访客临时图库、会话隔离、资源上限与到期清理。
 - `scripts`：可重复的数据下载与离线评测任务。
 - `deploy/huggingface`：Space 元数据模板，不保存业务代码副本。
 - `Dockerfile`：先构建前端，再生成只包含 FastAPI 运行时的单容器镜像。
@@ -51,6 +60,9 @@ VectorIndex      MuseLensLibrary
 - 文件夹导入先写入本地暂存区，任务与逐文件状态保存到 SQLite；模型分批后台索引，服务中断后任务转为可重试状态。
 - CLIP 延迟加载，健康检查和普通列表请求不会占用模型内存。
 - `local` 模式开放导入和持久化，定位为个人本地图库。
-- `demo` 模式从固定种子恢复演示图库；后端对所有图库写接口返回 403，不能靠隐藏按钮冒充只读。
+- `demo` 模式从固定种子恢复示例图库；持久化写接口返回 403。访客上传使用独立临时 API，
+  每个会话拥有自己的文件目录、SQLite 元数据和内存向量索引，不会污染示例图库。
+- 临时图库限制文件数、单文件和总大小、全局活动会话数；模型任务串行执行，完成后默认
+  保留 30 分钟并由周期任务清理，服务重启也会清空全部访客状态。
 - 生产环境由 FastAPI 同源托管 Vite 静态产物，避免跨域配置和双进程容器。
 - GitHub 是唯一源码仓库；Space 发布目录由 CI 临时组装，避免部署副本长期漂移。

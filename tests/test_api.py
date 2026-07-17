@@ -1,10 +1,23 @@
 from io import BytesIO
 
 from fastapi.testclient import TestClient
+import numpy as np
 from PIL import Image
 
 from muselens.api import app, seed_demo_library
 from muselens.index import VectorIndex
+from muselens.sessions import TemporaryGalleryService
+
+
+class TemporaryEncoder:
+    model_id = "temporary-api-encoder"
+    loaded = True
+
+    def encode_images(self, images: list[Image.Image]) -> np.ndarray:
+        return np.asarray([[1.0, 0.0] for _image in images], dtype=np.float32)
+
+    def encode_texts(self, texts: list[str]) -> np.ndarray:
+        return np.asarray([[1.0, 0.0] for _text in texts], dtype=np.float32)
 
 
 def test_health_reports_service_status() -> None:
@@ -17,6 +30,7 @@ def test_health_reports_service_status() -> None:
     assert isinstance(response.json()["model_loaded"], bool)
     assert response.json()["mode"] == "local"
     assert response.json()["library_writable"] is True
+    assert response.json()["temporary_galleries_enabled"] is False
 
 
 def test_empty_library_can_be_searched_without_loading_clip() -> None:
@@ -65,3 +79,43 @@ def test_demo_seed_populates_precreated_runtime_directories(tmp_path) -> None:
     assert (images / "sample.jpg").read_bytes() == b"image"
     assert (state / "index.sqlite3").read_bytes() == b"database"
     assert (thumbnails / "sample.webp").read_bytes() == b"thumbnail"
+
+
+def test_temporary_gallery_api_indexes_and_isolates_uploads(tmp_path) -> None:
+    image = BytesIO()
+    Image.new("RGB", (10, 10), "purple").save(image, format="PNG")
+
+    with TestClient(app) as client:
+        service = TemporaryGalleryService(tmp_path / "sessions", TemporaryEncoder())
+        service.initialize()
+        app.state.temporary_galleries_enabled = True
+        app.state.temporary_gallery_service = service
+
+        created = client.post(
+            "/v1/demo/sessions",
+            files=[("files", ("private.png", image.getvalue(), "image/png"))],
+        )
+        assert created.status_code == 202
+        session_id = created.json()["session_id"]
+
+        status = client.get(f"/v1/demo/sessions/{session_id}")
+        assert status.json()["status"] == "completed"
+        assert status.json()["imported_files"] == 1
+
+        images = client.get(f"/v1/demo/sessions/{session_id}/images")
+        assert [item["filename"] for item in images.json()] == ["private.png"]
+        image_id = images.json()[0]["image_id"]
+        content = client.get(
+            f"/v1/demo/sessions/{session_id}/images/{image_id}/content"
+        )
+        assert content.status_code == 200
+        assert content.headers["cache-control"] == "private, no-store"
+
+        search = client.post(
+            f"/v1/demo/sessions/{session_id}/search/text",
+            json={"query": "anything", "top_k": 5},
+        )
+        assert [item["filename"] for item in search.json()] == ["private.png"]
+
+        assert client.get("/v1/demo/sessions/not-this-user/images").status_code == 404
+        assert client.delete(f"/v1/demo/sessions/{session_id}").status_code == 204

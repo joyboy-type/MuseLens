@@ -102,6 +102,12 @@ button { color: inherit; }
 .mode-badge { justify-self: end; height: 38px; padding: 0 12px; border-radius: 11px; border: 1px solid rgba(216,243,106,.2); background: rgba(216,243,106,.07); color: #dff68a; display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
 .content-wrap { max-width: 1560px; margin: 0 auto; padding: 42px 32px 70px; }
+.gallery-mode-switch { margin: -18px 0 30px; display: flex; align-items: center; gap: 6px; }
+.gallery-mode-switch button { height: 34px; padding: 0 11px; border: 1px solid var(--line); border-radius: 10px; background: rgba(23,25,25,.72); color: #858b87; display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 650; cursor: pointer; transition: 160ms ease; }
+.gallery-mode-switch button:hover { border-color: var(--line-strong); color: var(--text); }
+.gallery-mode-switch button.active { border-color: rgba(216,243,106,.28); background: rgba(216,243,106,.09); color: #e1f78a; }
+.gallery-mode-switch button span { min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; display: inline-grid; place-items: center; background: rgba(255,255,255,.08); font-size: 9px; }
+.gallery-mode-switch small { margin-left: auto; color: #686e6a; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; }
 .hero-row { display: flex; justify-content: space-between; align-items: end; gap: 32px; margin-bottom: 26px; }
 .eyebrow { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .17em; margin-bottom: 12px; }
 .hero-row h1 { font-size: clamp(30px, 4vw, 54px); max-width: 800px; margin: 0; letter-spacing: -.055em; line-height: 1.04; font-weight: 630; }
@@ -152,7 +158,8 @@ button { color: inherit; }
 .progress-track { height: 4px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); }
 .progress-track span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s ease; }
 .import-progress.partial .progress-track span, .import-progress.failed .progress-track span { background: var(--danger); }
-.import-progress-meta { display: flex; gap: 12px; margin-top: 7px; }
+.import-progress-meta { display: flex; gap: 12px; margin-top: 7px; flex-wrap: wrap; }
+.import-progress-meta span { display: inline-flex; align-items: center; gap: 4px; }
 .retry-button { height: 34px; padding: 0 11px; border: 1px solid rgba(255,141,134,.22); border-radius: 9px; background: rgba(255,141,134,.08); color: #ffb0aa; display: flex; align-items: center; gap: 6px; font-size: 11px; cursor: pointer; }
 .dismiss-job { width: 30px; height: 30px; border: 0; border-radius: 8px; display: grid; place-items: center; background: transparent; color: #707672; cursor: pointer; }
 .dismiss-job:hover { background: rgba(255,255,255,.05); color: var(--text); }
@@ -180,6 +187,8 @@ button { color: inherit; }
   .wordmark small { display: none; }
   .search-shell { grid-column: 1 / -1; grid-row: 2; }
   .content-wrap { padding: 32px 18px 60px; }
+  .gallery-mode-switch { margin-top: -10px; flex-wrap: wrap; }
+  .gallery-mode-switch small { width: 100%; margin: 5px 0 0; }
   .hero-row { align-items: flex-start; flex-direction: column; }
   .status-cluster { justify-content: flex-start; }
   .photo-grid { columns: 3 180px; }
@@ -195,6 +204,8 @@ button { color: inherit; }
   .photo-card { margin-bottom: 8px; }
   .lightbox { padding: 12px; }
   .lightbox-close { top: 14px; right: 14px; }
+  .import-progress { align-items: flex-start; flex-wrap: wrap; }
+  .import-progress .retry-button { margin-left: 49px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

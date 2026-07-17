@@ -11,6 +11,10 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     mode: Literal["local", "demo"]
     library_writable: bool
+    temporary_galleries_enabled: bool
+    temporary_gallery_max_files: int
+    temporary_gallery_ttl_seconds: int
+    temporary_gallery_max_sessions: int
 
 
 class ImageRecordResponse(BaseModel):
@@ -46,3 +50,16 @@ class ImportJobResponse(BaseModel):
     error: str | None
     created_at: str
     updated_at: str
+
+
+class TemporaryGalleryResponse(BaseModel):
+    session_id: str
+    status: Literal["queued", "running", "completed", "partial", "failed"]
+    total_files: int
+    processed_files: int
+    imported_files: int
+    duplicate_files: int
+    failed_files: int
+    error: str | None
+    created_at: str
+    expires_at: str

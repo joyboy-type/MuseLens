@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
+import tempfile
 from typing import Literal, cast
 
 
@@ -65,6 +66,27 @@ class Settings:
     )
     demo_seed_dir: Path | None = (
         Path(value) if (value := os.getenv("MUSELENS_DEMO_SEED_DIR")) else None
+    )
+    temporary_gallery_dir: Path = Path(
+        os.getenv(
+            "MUSELENS_TEMP_GALLERY_DIR",
+            Path(tempfile.gettempdir()) / "muselens-temporary-galleries",
+        )
+    )
+    temporary_gallery_max_files: int = int(
+        os.getenv("MUSELENS_TEMP_GALLERY_MAX_FILES", "30")
+    )
+    temporary_gallery_max_upload_mb: int = int(
+        os.getenv("MUSELENS_TEMP_GALLERY_MAX_UPLOAD_MB", "8")
+    )
+    temporary_gallery_max_total_mb: int = int(
+        os.getenv("MUSELENS_TEMP_GALLERY_MAX_TOTAL_MB", "120")
+    )
+    temporary_gallery_ttl_seconds: int = int(
+        os.getenv("MUSELENS_TEMP_GALLERY_TTL_SECONDS", "1800")
+    )
+    temporary_gallery_max_sessions: int = int(
+        os.getenv("MUSELENS_TEMP_GALLERY_MAX_SESSIONS", "8")
     )
     cors_origins: tuple[str, ...] = cors_origins()
 
