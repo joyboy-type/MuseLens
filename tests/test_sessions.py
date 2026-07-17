@@ -16,7 +16,11 @@ class FakeEncoder:
     model_id = "fake-session-encoder"
     loaded = True
 
+    def __init__(self) -> None:
+        self.image_batch_sizes: list[int] = []
+
     def encode_images(self, images: list[Image.Image]) -> np.ndarray:
+        self.image_batch_sizes.append(len(images))
         vectors = []
         for image in images:
             red, _green, blue = np.asarray(image, dtype=np.float32).mean(axis=(0, 1))
@@ -95,3 +99,21 @@ def test_running_gallery_cannot_be_deleted(tmp_path) -> None:
     service.run("active")
     assert service.delete("active") is True
     assert service.delete("active") is False
+
+
+def test_temporary_gallery_encodes_valid_images_in_one_batch(tmp_path) -> None:
+    encoder = FakeEncoder()
+    service = TemporaryGalleryService(tmp_path / "sessions", encoder)
+    service.initialize()
+    session_id = "batch"
+    staged = [
+        staged_image(service, session_id, "one.png", "red"),
+        staged_image(service, session_id, "two.png", "blue"),
+        staged_image(service, session_id, "three.png", "green"),
+    ]
+
+    service.create(session_id, staged)
+    service.run(session_id)
+
+    assert encoder.image_batch_sizes == [3]
+    assert service.get(session_id).imported_files == 3

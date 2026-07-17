@@ -39,3 +39,12 @@ def test_relevance_filter_keeps_only_the_strong_cluster() -> None:
     ]
     filtered = filter_relevant_hits(hits, 0.22, 0.035, 12)
     assert [hit.score for hit in filtered] == [0.29, 0.28, 0.26]
+
+
+def test_relative_only_filter_never_discards_the_best_match() -> None:
+    image = IndexedImage("one", "one.jpg", "image/jpeg")
+    hits = [SearchHit(image, 0.07), SearchHit(image, 0.02)]
+
+    filtered = filter_relevant_hits(hits, None, 0.035, 12)
+
+    assert [hit.score for hit in filtered] == [0.07]

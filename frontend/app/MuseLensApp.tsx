@@ -676,7 +676,9 @@ export function MuseLensApp() {
               </h2>
               <p>
                 {activeQuery
-                  ? "系统不会为了凑数返回低相关结果。当前模型优先支持英文描述，可以尝试更具体的查询。"
+                  ? temporaryActive
+                    ? "临时图库始终保留最接近的结果，并按与最高分的差距截断较弱匹配。可以尝试更具体的中英文描述。"
+                    : "系统不会为了凑数返回低相关结果。可以尝试更具体的中英文描述。"
                   : temporaryActive
                     ? temporaryGallery
                       ? "索引完成后，你可以用自然语言检索刚刚上传的任意图片。"

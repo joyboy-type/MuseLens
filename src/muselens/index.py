@@ -19,17 +19,16 @@ class SearchHit:
 
 def filter_relevant_hits(
     hits: list[SearchHit],
-    absolute_floor: float,
+    absolute_floor: float | None,
     relative_margin: float,
     max_results: int,
 ) -> list[SearchHit]:
     """Drop weak nearest neighbours instead of always returning the whole library."""
-    if not hits or hits[0].score < absolute_floor:
+    if not hits or (absolute_floor is not None and hits[0].score < absolute_floor):
         return []
-    threshold = max(
-        absolute_floor,
-        hits[0].score - relative_margin,
-    )
+    threshold = hits[0].score - relative_margin
+    if absolute_floor is not None:
+        threshold = max(absolute_floor, threshold)
     return [hit for hit in hits if hit.score >= threshold][:max_results]
 
 

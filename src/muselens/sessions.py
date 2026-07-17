@@ -158,6 +158,7 @@ class TemporaryGalleryService:
         with self._encoder_lock:
             with self._lock:
                 gallery.status = "running"
+            prepared = []
             for staged in gallery.staged_files:
                 try:
                     candidate = prepare_image(
@@ -167,20 +168,30 @@ class TemporaryGalleryService:
                         max_upload_bytes=self.max_upload_bytes,
                         max_image_pixels=self.max_image_pixels,
                     )
-                    result = gallery.library.import_candidates([candidate])[0]
-                    with self._lock:
-                        if result.duplicate:
-                            gallery.duplicate_files += 1
-                        else:
-                            gallery.imported_files += 1
+                    prepared.append(candidate)
                 except Exception as error:
                     with self._lock:
                         gallery.failed_files += 1
                         gallery.error = str(error)
-                finally:
-                    with self._lock:
                         gallery.processed_files += 1
+                finally:
                     staged.path.unlink(missing_ok=True)
+
+            if prepared:
+                try:
+                    results = gallery.library.import_candidates(prepared)
+                    with self._lock:
+                        gallery.imported_files += sum(not result.duplicate for result in results)
+                        gallery.duplicate_files += sum(result.duplicate for result in results)
+                        gallery.processed_files += len(prepared)
+                except Exception as error:
+                    with self._lock:
+                        gallery.failed_files += len(prepared)
+                        gallery.processed_files += len(prepared)
+                        gallery.error = str(error)
+                finally:
+                    for candidate in prepared:
+                        candidate.image.close()
 
             with self._lock:
                 if gallery.failed_files == 0:

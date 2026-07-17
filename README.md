@@ -99,6 +99,7 @@ Hugging Face Space 不是手工维护的代码副本。GitHub Actions 会调用
 python scripts/download_evaluation_sample.py --count 100
 python scripts/evaluate_retrieval.py --batch-size 16
 python scripts/evaluate_rejection.py
+python scripts/evaluate_gallery_smoke.py
 ```
 
 首个小样本结果：Recall@1 0.852、Recall@5 0.976、Recall@10 0.998、MRR 0.908。候选集只有100张图片，因此这只是工程基线，不代表最终系统效果。详见 `docs/BASELINE_RESULTS.md`。
@@ -108,6 +109,9 @@ python scripts/evaluate_rejection.py
 轻量 Adapter 在5000张训练图上完成真实训练与消融，但最终英文收益可以忽略，中文 Recall@1 反而下降3.4个百分点，因此没有为了展示“训练成功”而上线。完整结果和决策见 `docs/TRAINING_RESULTS.md`。
 
 无关查询拒答实验中，留出集综合分数由 0.923 提升到 0.974；动态 z-score 未超过校准固定阈值，因此没有为了复杂度强行上线。详见 `docs/REJECTION_RESULTS.md`。
+
+临时图库另有 8 张混合图片、12 条中英文短词的端到端搜索契约测试。当前 SigLIP2
+Top-1 为 12/12；该测试专门防止“索引成功但搜索返回空页”的回归。
 
 ## 接口
 

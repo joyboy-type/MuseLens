@@ -88,9 +88,6 @@ class Settings:
     temporary_gallery_max_sessions: int = int(
         os.getenv("MUSELENS_TEMP_GALLERY_MAX_SESSIONS", "8")
     )
-    temporary_gallery_search_min_score: float = float(
-        os.getenv("MUSELENS_TEMP_GALLERY_SEARCH_MIN_SCORE", "0.075")
-    )
     temporary_gallery_search_relative_margin: float = float(
         os.getenv("MUSELENS_TEMP_GALLERY_SEARCH_RELATIVE_MARGIN", "0.035")
     )

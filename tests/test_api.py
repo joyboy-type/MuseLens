@@ -17,9 +17,9 @@ class TemporaryEncoder:
         return np.asarray([[1.0, 0.0] for _image in images], dtype=np.float32)
 
     def encode_texts(self, texts: list[str]) -> np.ndarray:
-        # Cosine score 0.10: below the calibrated large-corpus floor (0.12),
-        # but valid for the more permissive temporary-gallery ranking policy.
-        return np.asarray([[0.1, np.sqrt(0.99)] for _text in texts], dtype=np.float32)
+        # Deliberately tiny cosine score: a temporary gallery must still return
+        # its best ranked match instead of applying a large-corpus absolute floor.
+        return np.asarray([[0.01, np.sqrt(0.9999)] for _text in texts], dtype=np.float32)
 
 
 def test_health_reports_service_status() -> None:
