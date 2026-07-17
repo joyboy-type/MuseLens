@@ -607,8 +607,8 @@ def search_temporary_gallery_by_text(
     hits = gallery.index.search(query_vector, payload.top_k)
     hits = filter_relevant_hits(
         hits,
-        absolute_floor=settings.search_min_score,
-        relative_margin=settings.search_relative_margin,
+        absolute_floor=settings.temporary_gallery_search_min_score,
+        relative_margin=settings.temporary_gallery_search_relative_margin,
         max_results=payload.top_k,
     )
     return [
