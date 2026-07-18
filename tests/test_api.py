@@ -30,6 +30,8 @@ def test_health_reports_service_status() -> None:
     assert response.json()["status"] == "ok"
     assert response.json()["indexed_images"] == 0
     assert isinstance(response.json()["model_loaded"], bool)
+    assert response.json()["reranker_enabled"] is False
+    assert response.json()["reranker_loaded"] is False
     assert response.json()["index_backend"] == "numpy"
     assert response.json()["mode"] == "local"
     assert response.json()["library_writable"] is True
@@ -135,6 +137,13 @@ def test_temporary_gallery_api_indexes_and_isolates_uploads(tmp_path) -> None:
             json={"query": "anything", "top_k": 5},
         )
         assert [item["filename"] for item in search.json()] == ["private.png"]
+
+        image_search = client.post(
+            f"/v1/demo/sessions/{session_id}/search/image",
+            files={"file": ("query.png", image.getvalue(), "image/png")},
+        )
+        assert image_search.status_code == 200
+        assert image_search.json() == []  # The exact query asset is not a useful similar result.
 
         assert client.get("/v1/demo/sessions/not-this-user/images").status_code == 404
         assert client.delete(f"/v1/demo/sessions/{session_id}").status_code == 204

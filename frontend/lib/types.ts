@@ -2,17 +2,39 @@ export type ImageRecord = {
   image_id: string;
   filename: string;
   content_type: string;
+  width: number;
+  height: number;
+  size_bytes: number;
+  created_at: string;
 };
 
 export type SearchHit = {
   image_id: string;
   filename: string;
-  score: number;
+  score?: number | null;
+  content_type: string;
+  width: number;
+  height: number;
+  size_bytes: number;
+  created_at: string;
 };
 
 export type LibraryItem = ImageRecord & {
-  score?: number;
+  score?: number | null;
   session_id?: string;
+};
+
+export type SearchSort = "relevance" | "newest" | "oldest" | "size_desc";
+export type ImageOrientation = "landscape" | "portrait" | "square";
+export type DatePreset = "all" | "week" | "month" | "year";
+
+export type SearchFilters = {
+  contentTypes: string[];
+  orientations: ImageOrientation[];
+  minWidth: number | null;
+  maxSizeMB: number | null;
+  datePreset: DatePreset;
+  sort: SearchSort;
 };
 
 export type Health = {

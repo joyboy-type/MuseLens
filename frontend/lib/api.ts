@@ -5,6 +5,7 @@ import type {
   ImportResult,
   LibraryItem,
   SearchHit,
+  SearchFilters,
   TemporaryGallery,
 } from "./types";
 
@@ -41,13 +42,44 @@ export function listImages(): Promise<ImageRecord[]> {
   return request<ImageRecord[]>("/v1/images");
 }
 
-export async function searchImages(query: string): Promise<LibraryItem[]> {
+function searchPayload(query: string, filters: SearchFilters) {
+  const importedAfter = filters.datePreset === "all"
+    ? undefined
+    : new Date(
+        Date.now() -
+          ({ week: 7, month: 30, year: 365 }[filters.datePreset] * 24 * 60 * 60 * 1000),
+      ).toISOString();
+  return {
+    query,
+    top_k: 60,
+    content_types: filters.contentTypes,
+    orientations: filters.orientations,
+    min_width: filters.minWidth ?? undefined,
+    max_size_bytes: filters.maxSizeMB ? filters.maxSizeMB * 1024 * 1024 : undefined,
+    imported_after: importedAfter,
+    sort: filters.sort,
+  };
+}
+
+export async function searchImages(
+  query: string,
+  filters: SearchFilters,
+): Promise<LibraryItem[]> {
   const hits = await request<SearchHit[]>("/v1/search/text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, top_k: 12 }),
+    body: JSON.stringify(searchPayload(query, filters)),
   });
-  return hits.map((hit) => ({ ...hit, content_type: "image/jpeg" }));
+  return hits;
+}
+
+export async function searchImagesByImage(file: File): Promise<LibraryItem[]> {
+  const form = new FormData();
+  form.append("file", file);
+  return request<SearchHit[]>("/v1/search/image", {
+    method: "POST",
+    body: form,
+  });
 }
 
 export function importImages(files: File[]): Promise<ImportResult[]> {
@@ -103,17 +135,30 @@ export async function listTemporaryGalleryImages(sessionId: string): Promise<Lib
 export async function searchTemporaryGallery(
   sessionId: string,
   query: string,
+  filters: SearchFilters,
 ): Promise<LibraryItem[]> {
   const hits = await request<SearchHit[]>(`/v1/demo/sessions/${sessionId}/search/text`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, top_k: 12 }),
+    body: JSON.stringify(searchPayload(query, filters)),
   });
   return hits.map((hit) => ({
     ...hit,
-    content_type: "image/jpeg",
     session_id: sessionId,
   }));
+}
+
+export async function searchTemporaryGalleryByImage(
+  sessionId: string,
+  file: File,
+): Promise<LibraryItem[]> {
+  const form = new FormData();
+  form.append("file", file);
+  const hits = await request<SearchHit[]>(
+    `/v1/demo/sessions/${sessionId}/search/image`,
+    { method: "POST", body: form },
+  );
+  return hits.map((hit) => ({ ...hit, session_id: sessionId }));
 }
 
 export function deleteTemporaryGallery(sessionId: string): Promise<void> {

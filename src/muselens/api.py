@@ -20,7 +20,8 @@ from .library import (
     InvalidImageError,
     prepare_image,
 )
-from .repository import ImageRepository
+from .repository import ImageRepository, StoredImage
+from .reranker import QwenVLReranker, rerank_candidates
 from .schemas import (
     HealthResponse,
     ImageRecordResponse,
@@ -83,6 +84,7 @@ async def lifespan(app: FastAPI):
         thumbnail_max_size=settings.thumbnail_max_size,
         thumbnail_quality=settings.thumbnail_quality,
     )
+    library.backfill_dimensions()
     library.restore_index()
     job_repository = ImportJobRepository(settings.state_dir / "index.sqlite3")
     job_repository.initialize()
@@ -97,6 +99,11 @@ async def lifespan(app: FastAPI):
     app.state.index = index
     app.state.index_backend = settings.index_backend
     app.state.encoder = encoder
+    app.state.reranker = (
+        QwenVLReranker(settings.reranker_model_id)
+        if settings.reranker_model_id
+        else None
+    )
     app.state.library = library
     app.state.job_repository = job_repository
     app.state.job_service = job_service
@@ -155,10 +162,13 @@ app.add_middleware(
 
 @app.get("/health", response_model=HealthResponse)
 def health(request: Request) -> HealthResponse:
+    reranker = request.app.state.reranker
     return HealthResponse(
         status="ok",
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
+        reranker_enabled=reranker is not None,
+        reranker_loaded=bool(reranker and reranker.loaded),
         index_backend=request.app.state.index_backend,
         mode=request.app.state.mode,
         library_writable=request.app.state.library_writable,
@@ -188,9 +198,70 @@ def temporary_gallery_response(snapshot: TemporaryGallerySnapshot) -> TemporaryG
     return TemporaryGalleryResponse(**vars(snapshot))
 
 
+def image_record_response(stored) -> ImageRecordResponse:
+    return ImageRecordResponse(
+        **vars(stored.image),
+        width=stored.width,
+        height=stored.height,
+        size_bytes=stored.size_bytes,
+        created_at=stored.created_at,
+    )
+
+
+def search_hit_response(stored, score: float | None = None) -> SearchHitResponse:
+    return SearchHitResponse(
+        **vars(stored.image),
+        score=score,
+        width=stored.width,
+        height=stored.height,
+        size_bytes=stored.size_bytes,
+        created_at=stored.created_at,
+    )
+
+
+def matches_search_filters(stored, payload: TextSearchRequest) -> bool:
+    if payload.content_types and stored.image.content_type not in payload.content_types:
+        return False
+    if payload.min_width and stored.width < payload.min_width:
+        return False
+    if payload.max_size_bytes and stored.size_bytes > payload.max_size_bytes:
+        return False
+    if payload.imported_after and stored.created_at < payload.imported_after:
+        return False
+    if payload.orientations:
+        if stored.width <= 0 or stored.height <= 0:
+            return False
+        ratio = stored.width / stored.height
+        orientation = "landscape" if ratio > 1.08 else "portrait" if ratio < 0.92 else "square"
+        if orientation not in payload.orientations:
+            return False
+    return True
+
+
+def sort_filtered_results(results, sort: str):
+    if sort == "newest":
+        return sorted(results, key=lambda item: item[1].created_at, reverse=True)
+    if sort == "oldest":
+        return sorted(results, key=lambda item: item[1].created_at)
+    if sort == "size_desc":
+        return sorted(results, key=lambda item: item[1].size_bytes, reverse=True)
+    return results
+
+
+def indexed_fallback(hit) -> StoredImage:
+    """Keep index-only adapters usable while production state remains repository-backed."""
+    return StoredImage(
+        image=hit.image,
+        stored_filename="",
+        sha256="",
+        size_bytes=0,
+        model_id="",
+    )
+
+
 @app.get("/v1/images", response_model=list[ImageRecordResponse])
 def list_images(request: Request) -> list[ImageRecordResponse]:
-    return [ImageRecordResponse(**vars(image)) for image in request.app.state.index.list_images()]
+    return [image_record_response(stored) for stored in request.app.state.library.repository.list_stored()]
 
 
 @app.get("/v1/images/{image_id}/content")
@@ -391,6 +462,10 @@ async def index_image(
     result = request.app.state.library.import_candidates([candidate])[0]
     return ImportResponse(
         **vars(result.stored.image),
+        width=result.stored.width,
+        height=result.stored.height,
+        size_bytes=result.stored.size_bytes,
+        created_at=result.stored.created_at,
         duplicate=result.duplicate,
         sha256=result.stored.sha256,
     )
@@ -425,6 +500,10 @@ async def index_image_batch(
     return [
         ImportResponse(
             **vars(result.stored.image),
+            width=result.stored.width,
+            height=result.stored.height,
+            size_bytes=result.stored.size_bytes,
+            created_at=result.stored.created_at,
             duplicate=result.duplicate,
             sha256=result.stored.sha256,
         )
@@ -434,26 +513,68 @@ async def index_image_batch(
 
 @app.post("/v1/search/text", response_model=list[SearchHitResponse])
 def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchHitResponse]:
-    if len(request.app.state.index) == 0:
+    index = request.app.state.index
+    repository = request.app.state.library.repository
+    if len(index) == 0:
         return []
-    query_vector = request.app.state.encoder.encode_texts([payload.query])[0]
-    hits = request.app.state.index.search(query_vector, payload.top_k)
-    hits = filter_relevant_hits(
-        hits,
-        absolute_floor=(
-            settings.search_min_score if request.app.state.mode == "demo" else None
-        ),
-        relative_margin=settings.search_relative_margin,
-        max_results=payload.top_k,
+    normalized_query = payload.query.strip()
+    if not normalized_query:
+        results = [
+            (None, stored)
+            for stored in repository.list_stored()
+            if matches_search_filters(stored, payload)
+        ]
+        return [search_hit_response(stored) for _, stored in sort_filtered_results(results, payload.sort)[:payload.top_k]]
+
+    reranker = request.app.state.reranker
+    recall_query = (
+        settings.reranker_recall_template.format(query=normalized_query)
+        if reranker
+        else normalized_query
     )
-    return [
-        SearchHitResponse(
-            image_id=hit.image.image_id,
-            score=hit.score,
-            filename=hit.image.filename,
+    query_vector = request.app.state.encoder.encode_texts([recall_query])[0]
+    candidates = index.search(query_vector, min(len(index), 100))
+    filtered = []
+    for hit in candidates:
+        stored = repository.find_by_id(hit.image.image_id)
+        if stored is None and not any(
+            [
+                payload.content_types,
+                payload.orientations,
+                payload.min_width,
+                payload.max_size_bytes,
+                payload.imported_after,
+            ]
+        ):
+            stored = indexed_fallback(hit)
+        if stored and matches_search_filters(stored, payload):
+            filtered.append((hit, stored))
+    if reranker:
+        filtered = rerank_candidates(
+            normalized_query,
+            filtered,
+            request.app.state.library.original_path,
+            reranker,
+            settings.reranker_min_score,
+            settings.reranker_recall_k,
         )
-        for hit in hits
-    ]
+    else:
+        relevant_hits = filter_relevant_hits(
+            [hit for hit, _ in filtered],
+            absolute_floor=(
+                settings.search_min_score if request.app.state.mode == "demo" else None
+            ),
+            relative_margin=settings.search_relative_margin,
+            max_results=payload.top_k,
+        )
+        relevant_ids = {hit.image.image_id for hit in relevant_hits}
+        filtered = [
+            (hit, stored)
+            for hit, stored in filtered
+            if hit.image.image_id in relevant_ids
+        ]
+    filtered = sort_filtered_results(filtered, payload.sort)[:payload.top_k]
+    return [search_hit_response(stored, hit.score) for hit, stored in filtered]
 
 
 @app.post("/v1/search/image", response_model=list[SearchHitResponse])
@@ -474,15 +595,76 @@ async def search_by_image(
         )
     except InvalidImageError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
-    query_vector = request.app.state.encoder.encode_images([candidate.image])[0]
-    hits = request.app.state.index.search(query_vector, settings.default_top_k)
+    try:
+        query_vector = request.app.state.encoder.encode_images([candidate.image])[0]
+    finally:
+        candidate.image.close()
+    hits = request.app.state.index.search(
+        query_vector,
+        min(len(request.app.state.index), settings.default_top_k),
+    )
+    exact_match = request.app.state.library.repository.find_by_sha256(candidate.digest)
+    if exact_match:
+        hits = [hit for hit in hits if hit.image.image_id != exact_match.image.image_id]
+    hits = filter_relevant_hits(
+        hits,
+        absolute_floor=settings.search_min_score if request.app.state.mode == "demo" else None,
+        relative_margin=settings.image_search_relative_margin,
+        max_results=settings.default_top_k,
+    )
     return [
-        SearchHitResponse(
-            image_id=hit.image.image_id,
-            score=hit.score,
-            filename=hit.image.filename,
-        )
+        search_hit_response(stored, hit.score)
         for hit in hits
+        if (stored := request.app.state.library.repository.find_by_id(hit.image.image_id))
+    ]
+
+
+@app.post(
+    "/v1/demo/sessions/{session_id}/search/image",
+    response_model=list[SearchHitResponse],
+)
+async def search_temporary_gallery_by_image(
+    session_id: str,
+    request: Request,
+    file: UploadFile = File(...),
+) -> list[SearchHitResponse]:
+    service = temporary_gallery_service(request)
+    try:
+        gallery = service.gallery(session_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+    if gallery.status not in {"completed", "partial"}:
+        raise HTTPException(status_code=409, detail="Temporary gallery is still being indexed.")
+
+    content = await file.read()
+    try:
+        candidate = prepare_image(
+            filename=file.filename or "query",
+            content_type=file.content_type or "application/octet-stream",
+            content=content,
+            max_upload_bytes=settings.temporary_gallery_max_upload_mb * 1024 * 1024,
+            max_image_pixels=settings.max_image_pixels,
+        )
+    except InvalidImageError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    try:
+        query_vector = service.encoder.encode_images([candidate.image])[0]
+    finally:
+        candidate.image.close()
+    hits = gallery.index.search(query_vector, min(len(gallery.index), settings.default_top_k))
+    exact_match = gallery.library.repository.find_by_sha256(candidate.digest)
+    if exact_match:
+        hits = [hit for hit in hits if hit.image.image_id != exact_match.image.image_id]
+    hits = filter_relevant_hits(
+        hits,
+        absolute_floor=None,
+        relative_margin=settings.image_search_relative_margin,
+        max_results=settings.default_top_k,
+    )
+    return [
+        search_hit_response(stored, hit.score)
+        for hit in hits
+        if (stored := gallery.library.repository.find_by_id(hit.image.image_id))
     ]
 
 
@@ -546,7 +728,7 @@ def list_temporary_gallery_images(
         gallery = service.gallery(session_id)
     except KeyError as error:
         raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
-    return [ImageRecordResponse(**vars(image)) for image in gallery.index.list_images()]
+    return [image_record_response(stored) for stored in gallery.library.repository.list_stored()]
 
 
 @app.get("/v1/demo/sessions/{session_id}/images/{image_id}/content")
@@ -607,22 +789,33 @@ def search_temporary_gallery_by_text(
         raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
     if gallery.status not in {"completed", "partial"}:
         raise HTTPException(status_code=409, detail="Temporary gallery is still being indexed.")
-    query_vector = service.encoder.encode_texts([payload.query])[0]
-    hits = gallery.index.search(query_vector, payload.top_k)
-    hits = filter_relevant_hits(
-        hits,
+    repository = gallery.library.repository
+    normalized_query = payload.query.strip()
+    if not normalized_query:
+        results = [
+            (None, stored)
+            for stored in repository.list_stored()
+            if matches_search_filters(stored, payload)
+        ]
+        return [search_hit_response(stored) for _, stored in sort_filtered_results(results, payload.sort)[:payload.top_k]]
+
+    query_vector = service.encoder.encode_texts([normalized_query])[0]
+    candidates = gallery.index.search(query_vector, min(len(gallery.index), 100))
+    filtered = []
+    for hit in candidates:
+        stored = repository.find_by_id(hit.image.image_id)
+        if stored and matches_search_filters(stored, payload):
+            filtered.append((hit, stored))
+    relevant_hits = filter_relevant_hits(
+        [hit for hit, _ in filtered],
         absolute_floor=None,
         relative_margin=settings.temporary_gallery_search_relative_margin,
         max_results=payload.top_k,
     )
-    return [
-        SearchHitResponse(
-            image_id=hit.image.image_id,
-            score=hit.score,
-            filename=hit.image.filename,
-        )
-        for hit in hits
-    ]
+    relevant_ids = {hit.image.image_id for hit in relevant_hits}
+    filtered = [(hit, stored) for hit, stored in filtered if hit.image.image_id in relevant_ids]
+    filtered = sort_filtered_results(filtered, payload.sort)[:payload.top_k]
+    return [search_hit_response(stored, hit.score) for hit, stored in filtered]
 
 
 @app.delete("/v1/demo/sessions/{session_id}", status_code=204)

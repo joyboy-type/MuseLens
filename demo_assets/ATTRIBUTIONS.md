@@ -1,0 +1,28 @@
+# Demo image attributions
+
+These unmodified images are used in the MuseLens public demo under [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/).
+
+- [IMGP3815](https://www.flickr.com/photos/mandiees/3939243337/) by [mandiees](https://www.flickr.com/photos/mandiees/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Bird On Parking Meter](https://www.flickr.com/photos/pasa/9089660689/) by [pasa47](https://www.flickr.com/photos/pasa/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Daniella's Birthday 7](https://www.flickr.com/photos/celesteh/2243132921/) by [celesteh](https://www.flickr.com/photos/celesteh/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Taking the Elephants out for a spin](https://www.flickr.com/photos/thewilliams/5382853203/) by [Big EUG](https://www.flickr.com/photos/thewilliams/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Carrefour - St. André des Arts](https://www.flickr.com/photos/sergemelki/3364389746/) by [Serge Melki](https://www.flickr.com/photos/sergemelki/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [private airplane landing at haf 4](https://www.flickr.com/photos/sadsnaps/2962435573/) by [stevendamron](https://www.flickr.com/photos/sadsnaps/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Cows on the beach](https://www.flickr.com/photos/breakfastology/8336832110/) by [Mr Fun](https://www.flickr.com/photos/breakfastology/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Buddy's Pizza Eatup](https://www.flickr.com/photos/montage_man/3776048035/) by [@joefoodie](https://www.flickr.com/photos/montage_man/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Tweetup at La Pizza Rina](https://www.flickr.com/photos/bytemarks/3275441569/) by [Bytemarks](https://www.flickr.com/photos/bytemarks/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Austin sends one to the outfield](https://www.flickr.com/photos/librarygroover/5931706250/) by [Librarygroover](https://www.flickr.com/photos/librarygroover/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Judy... ski school](https://www.flickr.com/photos/runnr_az/5389083366/) by [runnr_az](https://www.flickr.com/photos/runnr_az/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Living Room](https://www.flickr.com/photos/meadowbrook19053/6149027966/) by [meadowbrook19053](https://www.flickr.com/photos/meadowbrook19053/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Ah Shan Hostel](https://www.flickr.com/photos/donotlick/4222801461/) by [DoNotLick](https://www.flickr.com/photos/donotlick/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Todd Martin](https://www.flickr.com/photos/efleming/2315297307/) by [efleming](https://www.flickr.com/photos/efleming/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [000000229358](https://www.flickr.com/photos/paalia/3512771461/) by [paalia](https://www.flickr.com/photos/paalia/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Harley](https://www.flickr.com/photos/goblinbox/8643440732/) by [goblinbox_(queen_of_ad_hoc_bento)](https://www.flickr.com/photos/goblinbox/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [DSC01812](https://www.flickr.com/photos/dccentralkitchen/7115744429/) by [DC Central Kitchen](https://www.flickr.com/photos/dccentralkitchen/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [banana haute couture](https://www.flickr.com/photos/cumidanciki/8026451116/) by [CCFoodTravel.com](https://www.flickr.com/photos/cumidanciki/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Kitchen](https://www.flickr.com/photos/maggiew/6255196340/) by [Pot Noodle](https://www.flickr.com/photos/maggiew/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Lame catch](https://www.flickr.com/photos/d_lee/195124056/) by [lmnop88a](https://www.flickr.com/photos/d_lee/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Ribbon cutting at LA's First Bike Parking Corral](https://www.flickr.com/photos/ubrayj02/5457068434/) by [ubrayj02](https://www.flickr.com/photos/ubrayj02/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Flying Low 2](https://www.flickr.com/photos/joeguitar/3506151605/) by [Guitarfool5931](https://www.flickr.com/photos/joeguitar/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [Taiwan Trip](https://www.flickr.com/photos/desmondchieng/8282824777/) by [Desmond Chieng](https://www.flickr.com/photos/desmondchieng/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)
+- [000000248810](https://www.flickr.com/photos/jennyellenbrown/490309492/) by [jenny-bee](https://www.flickr.com/photos/jennyellenbrown/) — [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)

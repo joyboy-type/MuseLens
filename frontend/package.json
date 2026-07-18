@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "npm run build && node --test tests/build-output.test.mjs",
+    "test": "npm run build && vitest run tests/relevance.test.ts && node --test tests/build-output.test.mjs",
     "lint": "eslint ."
   },
   "dependencies": {
