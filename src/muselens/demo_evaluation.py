@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+import json
 from typing import Any
+from urllib.parse import urljoin
+from urllib.request import Request, urlopen
 
 
 @dataclass(frozen=True)
@@ -12,6 +15,19 @@ class QueryOutcome:
     hit_at_5: bool
     top_filename: str | None
     top_score: float | None
+
+
+def search_text_api(base_url: str, query: str, timeout: float) -> list[dict[str, Any]]:
+    """Call the real text-search endpoint used by deployment evaluations."""
+    payload = json.dumps({"query": query, "top_k": 5}).encode()
+    request = Request(
+        urljoin(base_url.rstrip("/") + "/", "v1/search/text"),
+        data=payload,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    with urlopen(request, timeout=timeout) as response:  # noqa: S310 - caller URL
+        return json.load(response)
 
 
 def evaluate_positive_query(
@@ -74,4 +90,35 @@ def summarize_outcomes(
         "negative_queries": len(negative),
         "negative_rejection_rate": rate([item.returned == 0 for item in negative]),
         "language_metrics": language_metrics,
+    }
+
+
+def threshold_metrics(
+    outcomes: list[dict[str, Any]],
+    threshold: float,
+) -> dict[str, float]:
+    positive = [item for item in outcomes if item["kind"] == "positive"]
+    negative = [item for item in outcomes if item["kind"] == "negative"]
+    hit_at_1 = 0
+    hit_at_5 = 0
+    for item in positive:
+        accepted = [
+            candidate
+            for candidate in item["candidates"]
+            if candidate["score"] >= threshold
+        ]
+        expected = item["expected_category"]
+        hit_at_1 += bool(accepted and expected in accepted[0]["categories"])
+        hit_at_5 += any(
+            expected in candidate["categories"] for candidate in accepted[:5]
+        )
+    rejected = sum(
+        not item["candidates"] or item["candidates"][0]["score"] < threshold
+        for item in negative
+    )
+    return {
+        "threshold": threshold,
+        "positive_hit_at_1": hit_at_1 / len(positive),
+        "positive_hit_at_5": hit_at_5 / len(positive),
+        "negative_rejection_rate": rejected / len(negative),
     }

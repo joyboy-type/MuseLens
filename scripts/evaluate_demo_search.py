@@ -9,13 +9,12 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
-from urllib.request import Request, urlopen
 
 from muselens.demo_evaluation import (
     QueryOutcome,
     evaluate_negative_query,
     evaluate_positive_query,
+    search_text_api,
     summarize_outcomes,
 )
 
@@ -46,18 +45,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def search(base_url: str, query: str, timeout: float) -> list[dict[str, Any]]:
-    payload = json.dumps({"query": query, "top_k": 5}).encode()
-    request = Request(
-        urljoin(base_url.rstrip("/") + "/", "v1/search/text"),
-        data=payload,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        method="POST",
-    )
-    with urlopen(request, timeout=timeout) as response:  # noqa: S310 - caller URL
-        return json.load(response)
-
-
 def print_failures(label: str, outcomes: list[QueryOutcome]) -> None:
     failed = [outcome for outcome in outcomes if not outcome.hit_at_5]
     print(f"{label}_failures={len(failed)}")
@@ -85,7 +72,7 @@ def run_queries(
         outcomes.append(
             evaluator(
                 specification,
-                search(base_url, template.format(query=query), timeout),
+                search_text_api(base_url, template.format(query=query), timeout),
                 *evaluator_args,
             )
         )

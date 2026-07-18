@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from muselens.demo_evaluation import search_text_api, threshold_metrics
 from muselens.reranker import QwenVLReranker
-from scripts.evaluate_demo_search import search
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -38,28 +38,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--timeout", type=float, default=120)
     return parser.parse_args()
-
-
-def threshold_metrics(outcomes: list[dict[str, Any]], threshold: float) -> dict[str, float]:
-    positive = [item for item in outcomes if item["kind"] == "positive"]
-    negative = [item for item in outcomes if item["kind"] == "negative"]
-    hit_at_1 = 0
-    hit_at_5 = 0
-    for item in positive:
-        accepted = [candidate for candidate in item["candidates"] if candidate["score"] >= threshold]
-        expected = item["expected_category"]
-        hit_at_1 += bool(accepted and expected in accepted[0]["categories"])
-        hit_at_5 += any(expected in candidate["categories"] for candidate in accepted[:5])
-    rejected = sum(
-        not item["candidates"] or item["candidates"][0]["score"] < threshold
-        for item in negative
-    )
-    return {
-        "threshold": threshold,
-        "positive_hit_at_1": hit_at_1 / len(positive),
-        "positive_hit_at_5": hit_at_5 / len(positive),
-        "negative_rejection_rate": rejected / len(negative),
-    }
 
 
 def write_artifact(
@@ -100,7 +78,7 @@ def main() -> None:
 
     for index, specification in enumerate(specifications, start=1):
         query = specification["query"]
-        recalled = search(
+        recalled = search_text_api(
             args.base_url,
             args.template.format(query=query),
             args.timeout,

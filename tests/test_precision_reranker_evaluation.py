@@ -1,4 +1,4 @@
-from scripts.evaluate_precision_reranker import threshold_metrics
+from muselens.demo_evaluation import threshold_metrics
 
 
 def test_threshold_metrics_balance_hits_and_rejections() -> None:
