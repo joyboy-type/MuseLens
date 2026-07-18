@@ -36,7 +36,9 @@
 - [x] React/Vite + FastAPI 同源单容器部署骨架
 - [x] 后端强制的本地完整模式 / 会话隔离的公开演示模式
 - [x] 访客临时图库：限额上传、后台索引、30 分钟 TTL 与主动清除
-- [ ] 公开演示语料、Hugging Face Space 与演示视频
+- [x] 24 张 CC BY 2.0 署名演示语料、预计算索引与容器冷启动优化
+- [x] Cloud Run 无长期密钥部署工作流、成本边界与线上冒烟测试
+- [ ] 公开 Cloud Run 地址与演示视频
 
 ## 快速开始
 
@@ -96,9 +98,13 @@ docker run --rm -p 7860:7860 \
 访问 <http://localhost:7860>。Docker 使用多阶段构建：Node 只负责生成静态前端，最终由
 一个 FastAPI 容器同时提供页面、API、图片和模型推理。
 
-Hugging Face Space 不是手工维护的代码副本。GitHub Actions 会调用
-`scripts/package_space.py` 临时生成干净的发布目录，再同步到 `sinbaby/MuseLens`。
-发布前仍需准备带许可证清单的固定演示语料，并在 GitHub 仓库配置 `HF_TOKEN`。
+公开演示优先使用 `.github/workflows/deploy-cloud-run.yml`：GitHub Actions 通过
+Workload Identity Federation 获取短期 Google 凭据，从当前 `main` 构建同一个 Dockerfile，
+并以 2 GiB、最小实例 0、最大实例 1、并发 1 的边界部署。部署后会自动验证只读 demo
+模式、固定索引和真实文本检索。一次性账号配置见 `docs/CLOUD_RUN_DEPLOYMENT.md`。
+
+Hugging Face 发布器仍作为可选路径保留；它会调用 `scripts/package_space.py` 生成干净的
+发布树，不维护第二份源码。是否能创建 Docker Space 取决于账号当时的订阅与平台配额。
 
 运行可复现的文本搜图基线：
 

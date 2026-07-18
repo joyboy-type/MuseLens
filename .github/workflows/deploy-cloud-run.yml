@@ -1,0 +1,102 @@
+name: Deploy Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: Google Cloud region
+        required: true
+        default: us-central1
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-cloud-run-production
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ inputs.region }}
+  SERVICE: muselens
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Require the attributed demo corpus
+        run: |
+          test -f demo_assets/manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("demo_assets")
+          manifest = json.loads((root / "manifest.json").read_text())
+          records = manifest["images"]
+          assert manifest["image_count"] == len(records) >= 20
+          assert len(list((root / "images").glob("*"))) == len(records)
+          assert len(list((root / "thumbnails").glob("*.webp"))) == len(records)
+          assert all(record["creator"] and record["source_url"] for record in records)
+          PY
+
+      - name: Authenticate without a service-account key
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Build and deploy the Docker service
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --source . \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --allow-unauthenticated \
+            --port 7860 \
+            --execution-environment gen2 \
+            --cpu 1 \
+            --memory 2Gi \
+            --concurrency 1 \
+            --min-instances 0 \
+            --max-instances 1 \
+            --timeout 300 \
+            --set-env-vars MUSELENS_MODE=demo,MUSELENS_SEARCH_MIN_SCORE=-1 \
+            --quiet
+
+      - name: Resolve the deployed URL
+        id: service
+        run: |
+          url="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --format='value(status.url)')"
+          test -n "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke-test the public service
+        env:
+          PYTHONPATH: src
+        run: python scripts/smoke_deployment.py "${{ steps.service.outputs.url }}" --query dog --timeout 300
+
+      - name: Publish deployment summary
+        run: |
+          {
+            echo "## MuseLens Cloud Run deployment"
+            echo
+            echo "- URL: ${{ steps.service.outputs.url }}"
+            echo "- Region: $REGION"
+            echo "- Guardrails: min 0, max 1, concurrency 1, 2 GiB"
+            echo "- Commit: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
