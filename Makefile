@@ -1,4 +1,4 @@
-.PHONY: install test lint build dev-api dev-web smoke-deployment
+.PHONY: install test lint build dev-api dev-web package-modelscope smoke-deployment
 
 install:
 	python3 -m venv .venv
@@ -21,6 +21,11 @@ dev-api:
 
 dev-web:
 	cd frontend && npm run dev
+
+package-modelscope:
+	.venv/bin/python scripts/package_modelscope.py /tmp/muselens-modelscope
+	.venv/bin/python scripts/publish_modelscope.py /tmp/muselens-modelscope \
+		--repo-id "$${MODELSCOPE_STUDIO_ID}" --dry-run
 
 smoke-deployment:
 	test -n "$(URL)"

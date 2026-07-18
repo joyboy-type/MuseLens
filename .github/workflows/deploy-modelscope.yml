@@ -1,0 +1,74 @@
+name: Deploy ModelScope Studio
+
+on:
+  workflow_dispatch:
+    inputs:
+      studio_id:
+        description: ModelScope Studio owner/name
+        required: true
+        type: string
+      public_url:
+        description: Public Studio application URL for post-deployment verification
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-modelscope-${{ inputs.studio_id }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Package the Docker Studio without local data
+        run: python scripts/package_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
+
+      - name: Validate the release package
+        run: >-
+          python scripts/publish_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
+          --repo-id "${{ inputs.studio_id }}" --dry-run
+
+      - name: Push and trigger ModelScope deployment
+        env:
+          MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
+        run: >-
+          python scripts/publish_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
+          --repo-id "${{ inputs.studio_id }}" --deploy
+
+      - name: Install MuseLens verification client
+        if: inputs.public_url != ''
+        run: python -m pip install -e .
+
+      - name: Wait for the new deployment
+        if: inputs.public_url != ''
+        run: >-
+          python scripts/wait_for_deployment.py "${{ inputs.public_url }}"
+          --timeout 1800 --interval 15
+
+      - name: Run the bilingual deployment gate
+        if: inputs.public_url != ''
+        run: >-
+          python scripts/smoke_deployment.py "${{ inputs.public_url }}"
+          --contract quick --min-hit-at-5 0.9 --timeout 300
+
+      - name: Publish deployment summary
+        run: |
+          {
+            echo "## MuseLens ModelScope deployment"
+            echo
+            echo "- Studio: ${{ inputs.studio_id }}"
+            echo "- URL: ${{ inputs.public_url || 'not supplied' }}"
+            echo "- Runtime: Docker, CPU 2 vCore / 16 GiB, read-only demo"
+            echo "- Commit: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"

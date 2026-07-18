@@ -80,6 +80,9 @@ The same single-container application can be published as a Hugging Face Docker 
 a ModelScope Docker Studio, or a guarded Cloud Run service. ModelScope is the preferred
 China-accessible public endpoint; Hugging Face remains the international mirror. The
 ModelScope manifest forces read-only demo mode instead of relying on platform detection.
+The manual GitHub workflow packages only runtime files, pushes through a token-safe Git
+credential helper, triggers deployment through the official OpenAPI, waits for a cold
+instance, and then runs the bilingual quality gate.
 
 Validate a deployment with more than a single showcase keyword:
 

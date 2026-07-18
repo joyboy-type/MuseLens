@@ -44,6 +44,7 @@
 - [x] Cloud Run 无长期密钥部署工作流、成本边界与线上冒烟测试
 - [x] ModelScope Studio Docker 部署配置（国内公开演示候选）
 - [x] ModelScope 强制只读配置与跨类别中英文线上验收合同
+- [x] GitHub → ModelScope 最小发布包、令牌推送、OpenAPI 部署与自动验收工作流
 - [ ] 公开 ModelScope Studio 地址与演示视频
 
 ## 快速开始
@@ -118,6 +119,11 @@ docker run --rm -p 7860:7860 \
 国内公开演示优先使用 ModelScope Studio Docker 模式：根目录 `ms_deploy.json` 已声明
 2 核 CPU / 16 GB 内存、7860 端口以及强制只读 `demo` 模式，直接复用同一个 Dockerfile。账号注册和发布验收步骤
 见 `docs/MODELSCOPE_DEPLOYMENT.md`。
+
+`.github/workflows/deploy-modelscope.yml` 可以从 `main` 生成不含训练数据和本地状态的最小
+发布包，推送到 ModelScope Studio、调用 OpenAPI 触发部署，并在提供公开 URL 时等待冷启动
+完成后自动运行中英文质量门。访问令牌只保存在 GitHub Environment Secret
+`MODELSCOPE_API_TOKEN` 中。
 
 部署成功后不再用单个 `dog` 查询作为验收依据。快速合同会覆盖 4 类内容的 8 条中英文
 查询，并要求 Hit@5 不低于 90%；完整合同运行全部 44 条正例和 10 条图库外查询：
