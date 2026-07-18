@@ -1,0 +1,117 @@
+{
+  "experiment": "image-to-image-robustness-coco500-v1",
+  "model_id": "google/siglip2-base-patch16-224",
+  "device": "mps",
+  "source": "data/evaluation/coco-val2017/images",
+  "work_dir": "data/evaluation/image-retrieval-coco500-v1",
+  "seed": 20260718,
+  "gallery_images": 500,
+  "query_images": 2500,
+  "variants": [
+    "center_crop",
+    "jpeg_low",
+    "blur",
+    "dark",
+    "low_resolution"
+  ],
+  "metrics": {
+    "recall_at_1": 0.9936,
+    "recall_at_5": 0.9996,
+    "recall_at_10": 1.0,
+    "mrr": 0.9963571428571429,
+    "mean_rank": 1.0104,
+    "median_rank": 1.0
+  },
+  "metrics_by_variant": {
+    "center_crop": {
+      "recall_at_1": 0.994,
+      "recall_at_5": 0.998,
+      "recall_at_10": 1.0,
+      "mrr": 0.9962857142857142,
+      "mean_rank": 1.016,
+      "median_rank": 1.0
+    },
+    "jpeg_low": {
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "mean_rank": 1.0,
+      "median_rank": 1.0
+    },
+    "blur": {
+      "recall_at_1": 0.986,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.9923333333333333,
+      "mean_rank": 1.018,
+      "median_rank": 1.0
+    },
+    "dark": {
+      "recall_at_1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "mean_rank": 1.0,
+      "median_rank": 1.0
+    },
+    "low_resolution": {
+      "recall_at_1": 0.988,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "mrr": 0.9931666666666666,
+      "mean_rank": 1.018,
+      "median_rank": 1.0
+    }
+  },
+  "rank_distribution": {
+    "worst_rank": 7,
+    "p95_rank": 1.0
+  },
+  "product_policy_comparison": [
+    {
+      "relative_margin": 0.015,
+      "recall_at_5_after_policy": 0.9964,
+      "empty_result_rate": 0.0,
+      "average_results": 1.0084,
+      "p95_results": 1.0
+    },
+    {
+      "relative_margin": 0.025,
+      "recall_at_5_after_policy": 0.9976,
+      "empty_result_rate": 0.0,
+      "average_results": 1.0192,
+      "p95_results": 1.0
+    },
+    {
+      "relative_margin": 0.035,
+      "recall_at_5_after_policy": 0.998,
+      "empty_result_rate": 0.0,
+      "average_results": 1.0464,
+      "p95_results": 1.0
+    },
+    {
+      "relative_margin": 0.05,
+      "recall_at_5_after_policy": 0.9996,
+      "empty_result_rate": 0.0,
+      "average_results": 1.11,
+      "p95_results": 2.0
+    },
+    {
+      "relative_margin": 0.075,
+      "recall_at_5_after_policy": 0.9996,
+      "empty_result_rate": 0.0,
+      "average_results": 1.3072,
+      "p95_results": 3.0
+    }
+  ],
+  "timing_seconds": {
+    "model_load": 14.78714458399918,
+    "gallery_encoding_total": 14.045261791994562,
+    "gallery_encoding_per_image": 0.028090523583989124,
+    "query_encoding_total": 63.590242417005356,
+    "query_encoding_per_image": 0.025436096966802144,
+    "matrix_search_total": 0.04372529199463315,
+    "matrix_search_per_query": 1.749011679785326e-05
+  }
+}

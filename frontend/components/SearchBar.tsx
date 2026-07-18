@@ -1,4 +1,4 @@
-import { Command, Search, X } from "lucide-react";
+import { Command, ImagePlus, SlidersHorizontal, Search, X } from "lucide-react";
 import { FormEvent, RefObject } from "react";
 
 type SearchBarProps = {
@@ -8,6 +8,10 @@ type SearchBarProps = {
   onClear: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
   busy: boolean;
+  filterCount: number;
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  onOpenImageSearch: () => void;
 };
 
 export function SearchBar({
@@ -17,6 +21,10 @@ export function SearchBar({
   onClear,
   inputRef,
   busy,
+  filterCount,
+  filtersOpen,
+  onToggleFilters,
+  onOpenImageSearch,
 }: SearchBarProps) {
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -43,7 +51,32 @@ export function SearchBar({
           <Command size={12} /> K
         </span>
       )}
-      <button className="search-submit" type="submit" disabled={busy || !value.trim()}>
+      <button
+        aria-expanded={filtersOpen}
+        aria-label="打开组合筛选"
+        className={`filter-trigger ${filtersOpen || filterCount ? "active" : ""}`}
+        onClick={onToggleFilters}
+        type="button"
+      >
+        <SlidersHorizontal size={16} />
+        <span>筛选</span>
+        {filterCount > 0 && <b>{filterCount}</b>}
+      </button>
+      <button
+        aria-label="以图搜图"
+        className="image-search-trigger"
+        onClick={onOpenImageSearch}
+        title="上传一张图片查找相似画面"
+        type="button"
+      >
+        <ImagePlus size={16} />
+        <span>以图搜图</span>
+      </button>
+      <button
+        className="search-submit"
+        type="submit"
+        disabled={busy || (!value.trim() && filterCount === 0)}
+      >
         {busy ? "搜索中" : "搜索"}
       </button>
     </form>

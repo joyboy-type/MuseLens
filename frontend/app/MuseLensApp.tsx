@@ -1,5 +1,12 @@
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { SearchBar } from "@/components/SearchBar";
+import { FilterPanel } from "@/components/FilterPanel";
+import {
+  ImageSearchDialog,
+  type ImageQueryCandidate,
+} from "@/components/ImageSearchDialog";
+import { activeFilterCount, EMPTY_FILTERS } from "@/lib/search-filters";
+import { filenameEvidence, relevanceFor } from "@/lib/relevance";
 import {
   createTemporaryGallery,
   createImportJob,
@@ -13,20 +20,31 @@ import {
   listTemporaryGalleryImages,
   retryImportJob,
   searchImages,
+  searchImagesByImage,
   searchTemporaryGallery,
+  searchTemporaryGalleryByImage,
 } from "@/lib/api";
-import type { Health, ImportJob, LibraryItem, TemporaryGallery } from "@/lib/types";
+import type {
+  Health,
+  ImportJob,
+  LibraryItem,
+  SearchFilters,
+  TemporaryGallery,
+} from "@/lib/types";
 import {
   Check,
   ChevronRight,
   Clock3,
   CloudOff,
   FolderOpen,
+  Filter,
   Images,
+  ImagePlus,
   LoaderCircle,
   LockKeyhole,
   RotateCcw,
   Search,
+  ScanSearch,
   Sparkles,
   Trash2,
   Upload,
@@ -42,6 +60,12 @@ export function MuseLensApp() {
   const [health, setHealth] = useState<Health | null>(null);
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
+  const [filters, setFilters] = useState<SearchFilters>(EMPTY_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchMs, setSearchMs] = useState<number | null>(null);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [pendingImageQuery, setPendingImageQuery] = useState<ImageQueryCandidate | null>(null);
+  const [activeImageQuery, setActiveImageQuery] = useState<ImageQueryCandidate | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [importJob, setImportJob] = useState<ImportJob | null>(null);
@@ -53,6 +77,7 @@ export function MuseLensApp() {
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const searchRequestRef = useRef(0);
+  const previewUrlsRef = useRef<Set<string>>(new Set());
   const importActive =
     uploading ||
     importJob?.status === "queued" ||
@@ -67,6 +92,26 @@ export function MuseLensApp() {
   const activeJobStatus = importJob?.status;
   const temporarySessionId = temporaryGallery?.session_id;
   const temporaryStatus = temporaryGallery?.status;
+  const filterCount = activeFilterCount(filters);
+  const searchActive = Boolean(activeQuery || activeImageQuery || filterCount);
+  const retrievalEvidence = activeQuery ? filenameEvidence(activeQuery, items) : null;
+
+  function createPreviewUrl(file: File): string {
+    const url = URL.createObjectURL(file);
+    previewUrlsRef.current.add(url);
+    return url;
+  }
+
+  function releasePreviewUrl(candidate: ImageQueryCandidate | null) {
+    if (!candidate || candidate.source !== "device") return;
+    URL.revokeObjectURL(candidate.previewUrl);
+    previewUrlsRef.current.delete(candidate.previewUrl);
+  }
+
+  useEffect(() => () => {
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrlsRef.current.clear();
+  }, []);
 
   const refreshLibrary = useCallback(async () => {
     const [library, status] = await Promise.all([listImages(), getHealth()]);
@@ -237,15 +282,36 @@ export function MuseLensApp() {
         event.preventDefault();
         searchRef.current?.focus();
       }
-      if (event.key === "Escape") setSelected(null);
+      if (event.key === "Escape") {
+        setSelected(null);
+        setFiltersOpen(false);
+      }
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  async function runSearch(nextQuery = query) {
+  async function runSearch(nextQuery = query, nextFilters = filters) {
     const normalized = nextQuery.trim();
-    if (!normalized) return;
+    if (!normalized && activeFilterCount(nextFilters) === 0) {
+      searchRequestRef.current += 1;
+      setFilters(EMPTY_FILTERS);
+      setActiveQuery("");
+      setSearchMs(null);
+      setBusy(true);
+      try {
+        setItems(
+          temporaryActive && temporaryGallery
+            ? await listTemporaryGalleryImages(temporaryGallery.session_id)
+            : await listImages(),
+        );
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "加载失败");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (
       temporaryActive &&
       (!temporaryGallery || !["completed", "partial"].includes(temporaryGallery.status))
@@ -257,14 +323,18 @@ export function MuseLensApp() {
     const requestId = ++searchRequestRef.current;
     setError("");
     setActiveQuery(normalized);
+    releasePreviewUrl(activeImageQuery);
+    setActiveImageQuery(null);
+    const startedAt = performance.now();
     try {
       const searchRequest = temporaryActive && temporaryGallery
-        ? searchTemporaryGallery(temporaryGallery.session_id, normalized)
-        : searchImages(normalized);
+        ? searchTemporaryGallery(temporaryGallery.session_id, normalized, nextFilters)
+        : searchImages(normalized, nextFilters);
       const [results, status] = await Promise.all([searchRequest, getHealth()]);
       if (requestId !== searchRequestRef.current) return;
       setItems(results);
       setHealth(status);
+      setSearchMs(Math.round(performance.now() - startedAt));
     } catch (reason) {
       if (requestId === searchRequestRef.current) {
         setError(reason instanceof Error ? reason.message : "搜索失败");
@@ -278,6 +348,11 @@ export function MuseLensApp() {
     searchRequestRef.current += 1;
     setQuery("");
     setActiveQuery("");
+    setFilters(EMPTY_FILTERS);
+    setFiltersOpen(false);
+    setSearchMs(null);
+    releasePreviewUrl(activeImageQuery);
+    setActiveImageQuery(null);
     setBusy(true);
     try {
       if (temporaryActive && temporaryGallery) {
@@ -289,6 +364,93 @@ export function MuseLensApp() {
       setError(reason instanceof Error ? reason.message : "加载失败");
     } finally {
       setBusy(false);
+    }
+  }
+
+  function selectImageQuery(file: File) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("查询图片仅支持 JPEG、PNG 和 WebP");
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      setError("查询图片不能超过 12 MB");
+      return;
+    }
+    releasePreviewUrl(pendingImageQuery);
+    setPendingImageQuery({
+      file,
+      previewUrl: createPreviewUrl(file),
+      source: "device",
+    });
+    setError("");
+  }
+
+  function closeImageDialog() {
+    if (busy) return;
+    releasePreviewUrl(pendingImageQuery);
+    setPendingImageQuery(null);
+    setImageDialogOpen(false);
+  }
+
+  async function runImageSearch() {
+    if (!pendingImageQuery) return;
+    if (
+      temporaryActive &&
+      (!temporaryGallery || !["completed", "partial"].includes(temporaryGallery.status))
+    ) {
+      setError("请先上传图片并等待临时图库索引完成");
+      return;
+    }
+    const candidate = pendingImageQuery;
+    const startedAt = performance.now();
+    const requestId = ++searchRequestRef.current;
+    setBusy(true);
+    setError("");
+    try {
+      const results = temporaryActive && temporaryGallery
+        ? await searchTemporaryGalleryByImage(temporaryGallery.session_id, candidate.file)
+        : await searchImagesByImage(candidate.file);
+      if (requestId !== searchRequestRef.current) return;
+      releasePreviewUrl(activeImageQuery);
+      setItems(
+        candidate.imageId
+          ? results.filter((item) => item.image_id !== candidate.imageId)
+          : results,
+      );
+      setActiveImageQuery(candidate);
+      setPendingImageQuery(null);
+      setImageDialogOpen(false);
+      setQuery("");
+      setActiveQuery("");
+      setFilters(EMPTY_FILTERS);
+      setFiltersOpen(false);
+      setSearchMs(Math.round(performance.now() - startedAt));
+    } catch (reason) {
+      if (requestId === searchRequestRef.current) {
+        setError(reason instanceof Error ? reason.message : "以图搜图失败");
+      }
+    } finally {
+      if (requestId === searchRequestRef.current) setBusy(false);
+    }
+  }
+
+  async function findSimilarFromLibrary(item: LibraryItem) {
+    setError("");
+    try {
+      const response = await fetch(imageUrl(item.image_id, item.session_id));
+      if (!response.ok) throw new Error("无法读取这张图片");
+      const blob = await response.blob();
+      const file = new File([blob], item.filename, { type: item.content_type });
+      setPendingImageQuery({
+        file,
+        previewUrl: imageUrl(item.image_id, item.session_id),
+        source: "library",
+        imageId: item.image_id,
+      });
+      setSelected(null);
+      setImageDialogOpen(true);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "无法准备查询图片");
     }
   }
 
@@ -353,6 +515,9 @@ export function MuseLensApp() {
     setGalleryMode("curated");
     setQuery("");
     setActiveQuery("");
+    releasePreviewUrl(activeImageQuery);
+    setActiveImageQuery(null);
+    setSearchMs(null);
     setBusy(true);
     setError("");
     try {
@@ -369,6 +534,9 @@ export function MuseLensApp() {
     setGalleryMode("temporary");
     setQuery("");
     setActiveQuery("");
+    releasePreviewUrl(activeImageQuery);
+    setActiveImageQuery(null);
+    setSearchMs(null);
     setBusy(true);
     setError("");
     try {
@@ -395,6 +563,9 @@ export function MuseLensApp() {
       setGalleryMode("curated");
       setQuery("");
       setActiveQuery("");
+      releasePreviewUrl(activeImageQuery);
+      setActiveImageQuery(null);
+      setSearchMs(null);
       setItems(await listImages());
       setNotice("临时图库已立即清除");
     } catch (reason) {
@@ -440,6 +611,23 @@ export function MuseLensApp() {
             onClear={clearSearch}
             inputRef={searchRef}
             busy={busy}
+            filterCount={filterCount}
+            filtersOpen={filtersOpen}
+            onToggleFilters={() => setFiltersOpen((open) => !open)}
+            onOpenImageSearch={() => {
+              setPendingImageQuery(null);
+              setImageDialogOpen(true);
+            }}
+          />
+          <FilterPanel
+            open={filtersOpen}
+            filters={filters}
+            onChange={setFilters}
+            onApply={() => {
+              setFiltersOpen(false);
+              runSearch(query, filters);
+            }}
+            onClose={() => setFiltersOpen(false)}
           />
           {libraryWritable || temporaryEnabled ? (
             <>
@@ -489,7 +677,9 @@ export function MuseLensApp() {
           <section className="hero-row">
             <div>
               <div className="eyebrow">
-                {activeQuery
+                {activeImageQuery
+                  ? "VISUAL SIMILARITY RESULTS"
+                  : searchActive
                   ? "SEMANTIC RESULTS"
                   : temporaryActive
                     ? "YOUR PRIVATE DEMO SESSION"
@@ -497,10 +687,20 @@ export function MuseLensApp() {
                     ? "CURATED DEMO LIBRARY"
                     : "YOUR PRIVATE LIBRARY"}
               </div>
-              <h1>{activeQuery ? `“${activeQuery}”` : "用语言，重新发现照片"}</h1>
+              <h1>
+                {activeImageQuery
+                  ? "找到相似的画面"
+                  : activeQuery
+                  ? `“${activeQuery}”`
+                  : filterCount
+                    ? "筛选后的图片"
+                    : "用语言，重新发现照片"}
+              </h1>
               <p>
-                {activeQuery
-                  ? `按语义相关度展示 ${items.length} 个结果`
+                {activeImageQuery
+                  ? `根据构图、主体和视觉语义展示 ${items.length} 个相似结果`
+                  : searchActive
+                  ? `${activeQuery ? "语义与图片属性共同检索" : "按图片属性筛选"}，展示 ${items.length} 个结果`
                   : temporaryActive
                     ? "上传任意图片，现场建立只属于本次会话的语义索引。"
                     : demoMode
@@ -521,7 +721,25 @@ export function MuseLensApp() {
             </div>
           </section>
 
-          {!activeQuery && items.length > 0 && (
+          {activeImageQuery && (
+            <section className="active-image-query" aria-label="当前查询图片">
+              <img alt="当前查询图片" src={activeImageQuery.previewUrl} />
+              <div>
+                <span><ScanSearch size={13} /> 当前视觉查询</span>
+                <strong>{activeImageQuery.file.name}</strong>
+                <small>查询图仅参与特征提取，没有写入图片库</small>
+              </div>
+              <button onClick={() => {
+                setPendingImageQuery(null);
+                setImageDialogOpen(true);
+              }}><ImagePlus size={14} /> 更换图片</button>
+              <button className="clear-image-query" onClick={clearSearch} aria-label="清除图片查询">
+                <X size={16} />
+              </button>
+            </section>
+          )}
+
+          {!searchActive && items.length > 0 && (
             <div className="suggestion-row" aria-label="搜索建议">
               <span>快速探索</span>
               {SUGGESTIONS.map((suggestion) => (
@@ -536,6 +754,106 @@ export function MuseLensApp() {
                 </button>
               ))}
             </div>
+          )}
+
+          {filterCount > 0 && (
+            <div className="active-filters" aria-label="已应用筛选">
+              <span><Filter size={13} /> 已应用</span>
+              {filters.contentTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => {
+                    const next = { ...filters, contentTypes: filters.contentTypes.filter((item) => item !== type) };
+                    setFilters(next);
+                    runSearch(activeQuery, next);
+                  }}
+                >
+                  {{ "image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WebP" }[type]} <X size={12} />
+                </button>
+              ))}
+              {filters.orientations.map((orientation) => (
+                <button
+                  key={orientation}
+                  onClick={() => {
+                    const next = { ...filters, orientations: filters.orientations.filter((item) => item !== orientation) };
+                    setFilters(next);
+                    runSearch(activeQuery, next);
+                  }}
+                >
+                  {{ landscape: "横图", portrait: "竖图", square: "方图" }[orientation]} <X size={12} />
+                </button>
+              ))}
+              {filters.datePreset !== "all" && (
+                <button onClick={() => {
+                  const next = { ...filters, datePreset: "all" as const };
+                  setFilters(next);
+                  runSearch(activeQuery, next);
+                }}>
+                  {{ week: "近 7 天", month: "近 30 天", year: "近一年" }[filters.datePreset]} <X size={12} />
+                </button>
+              )}
+              {filters.minWidth && <button onClick={() => {
+                const next = { ...filters, minWidth: null };
+                setFilters(next);
+                runSearch(activeQuery, next);
+              }}>宽度 ≥ {filters.minWidth}px <X size={12} /></button>}
+              {filters.maxSizeMB && <button onClick={() => {
+                const next = { ...filters, maxSizeMB: null };
+                setFilters(next);
+                runSearch(activeQuery, next);
+              }}>文件 ≤ {filters.maxSizeMB}MB <X size={12} /></button>}
+              {filters.sort !== "relevance" && <button onClick={() => {
+                const next = { ...filters, sort: "relevance" as const };
+                setFilters(next);
+                runSearch(activeQuery, next);
+              }}>{{ newest: "最新导入", oldest: "最早导入", size_desc: "文件最大" }[filters.sort]} <X size={12} /></button>}
+              <button
+                className="clear-filter-chips"
+                onClick={() => {
+                  setFilters(EMPTY_FILTERS);
+                  runSearch(activeQuery, EMPTY_FILTERS);
+                }}
+              >
+                清除全部
+              </button>
+            </div>
+          )}
+
+          {!busy && activeQuery && items.length > 0 && retrievalEvidence && (
+            <section className="retrieval-insight" aria-label="语义检索效果说明">
+              <div className="insight-icon"><Sparkles size={17} /></div>
+              <div className="insight-copy">
+                <span>SEMANTIC EVIDENCE</span>
+                <strong>
+                  {retrievalEvidence.semanticOnly === retrievalEvidence.total
+                    ? "这些结果来自画面理解，而不是文件名"
+                    : "语义理解补充了文件名搜索的不足"}
+                </strong>
+                <p>
+                  本次 {retrievalEvidence.total} 张结果中，{retrievalEvidence.semanticOnly} 张图片的文件名
+                  不包含查询词，由 SigLIP2 根据画面与描述的语义关系召回。
+                </p>
+              </div>
+              <div className="insight-metrics">
+                <div><strong>{retrievalEvidence.total}</strong><span>语义结果</span></div>
+                <div><strong>{retrievalEvidence.filenameMatches}</strong><span>文件名命中</span></div>
+              </div>
+            </section>
+          )}
+
+          {!busy && activeImageQuery && items.length > 0 && (
+            <section className="retrieval-insight image-evidence" aria-label="视觉检索效果说明">
+              <div className="insight-icon"><ScanSearch size={17} /></div>
+              <div className="insight-copy">
+                <span>VISUAL EVIDENCE</span>
+                <strong>不依赖标签或文件名，直接比较画面内容</strong>
+                <p>SigLIP2 将查询图和图库图片编码到同一向量空间，并按视觉语义距离排序。</p>
+              </div>
+              <div className="insight-metrics">
+                <div><strong>{items.length}</strong><span>相似结果</span></div>
+                <div><strong>{searchMs ?? "—"}</strong><span>处理毫秒</span></div>
+              </div>
+            </section>
           )}
 
           {(error || notice) && (
@@ -651,6 +969,17 @@ export function MuseLensApp() {
             </section>
           )}
 
+          {!busy && searchActive && (
+            <div className="results-toolbar">
+              <div><strong>{items.length}</strong> 个匹配结果</div>
+              <div>
+                {searchMs !== null && <span><Clock3 size={13} /> {searchMs} ms</span>}
+                {(activeQuery || activeImageQuery) && <span title="相关性根据当前查询的结果排名与分数差计算，不代表概率">相对相关性 · 非概率</span>}
+                <span>最多展示 60 张</span>
+              </div>
+            </div>
+          )}
+
           {busy ? (
             <div className="loading-state">
               <LoaderCircle className="spin" size={25} />
@@ -660,11 +989,11 @@ export function MuseLensApp() {
             <PhotoGrid items={items} onOpen={setSelected} />
           ) : (
             <section className="empty-state">
-              <div className="empty-icon">{activeQuery ? <Search size={25} /> : <Upload size={25} />}</div>
+              <div className="empty-icon">{searchActive ? <Search size={25} /> : <Upload size={25} />}</div>
               <h2>
                 {error
                   ? "暂时无法读取图片库"
-                  : activeQuery
+                  : searchActive
                     ? "没有足够相关的图片"
                     : temporaryActive
                       ? temporaryGallery
@@ -675,8 +1004,10 @@ export function MuseLensApp() {
                       : "从一个图片文件夹开始"}
               </h2>
               <p>
-                {activeQuery
-                  ? temporaryActive || !demoMode
+                {searchActive
+                  ? activeImageQuery
+                    ? "系统已截断与查询图差距过大的结果。可以换一张主体更清晰的参考图片。"
+                    : temporaryActive || !demoMode
                     ? "用户图库始终保留最接近的结果，并按与最高分的差距截断较弱匹配。可以尝试更具体的中英文描述。"
                     : "系统不会为了凑数返回低相关结果。可以尝试更具体的中英文描述。"
                   : temporaryActive
@@ -687,8 +1018,8 @@ export function MuseLensApp() {
                     ? "公开版本只读取固定样例，不会保存访客上传的图片。"
                     : "图片只会复制到 MuseLens 专用目录，原始文件不会被移动或修改。"}
               </p>
-              {activeQuery ? (
-                <button onClick={clearSearch}><X size={17} /> 清除搜索</button>
+              {searchActive ? (
+                <button onClick={clearSearch}><X size={17} /> 清除当前查询</button>
               ) : libraryWritable || (temporaryEnabled && temporaryActive) ? (
                 <button onClick={() => fileRef.current?.click()} disabled={importActive}>
                   <FolderOpen size={17} /> {libraryWritable ? "选择图片文件夹" : "选择图片"}
@@ -713,13 +1044,35 @@ export function MuseLensApp() {
                 <span>{selected.session_id ? "临时图片" : demoMode ? "演示图片" : "本地图片"}</span>
                 <strong>{selected.filename}</strong>
               </div>
-              {selected.score !== undefined && (
-                <span className="lightbox-score">语义相似度 {selected.score.toFixed(3)}</span>
-              )}
+              {selected.score != null && (() => {
+                const index = items.findIndex((item) => item.image_id === selected.image_id);
+                const relevance = relevanceFor(selected, Math.max(index, 0), items);
+                return relevance && (
+                  <div className="lightbox-relevance">
+                    <strong>{relevance.label} · 第 {index + 1} 位</strong>
+                    <span>模型排序分 {selected.score.toFixed(3)}，仅用于本次查询内比较</span>
+                  </div>
+                );
+              })()}
+              <button
+                className="find-similar-button"
+                onClick={() => findSimilarFromLibrary(selected)}
+              >
+                <ScanSearch size={14} /> 查找相似图片
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <ImageSearchDialog
+        busy={busy}
+        candidate={pendingImageQuery}
+        onClose={closeImageDialog}
+        onSearch={runImageSearch}
+        onSelect={selectImageQuery}
+        open={imageDialogOpen}
+      />
     </main>
   );
 }

@@ -136,5 +136,12 @@ def test_temporary_gallery_api_indexes_and_isolates_uploads(tmp_path) -> None:
         )
         assert [item["filename"] for item in search.json()] == ["private.png"]
 
+        image_search = client.post(
+            f"/v1/demo/sessions/{session_id}/search/image",
+            files={"file": ("query.png", image.getvalue(), "image/png")},
+        )
+        assert image_search.status_code == 200
+        assert image_search.json() == []  # The exact query asset is not a useful similar result.
+
         assert client.get("/v1/demo/sessions/not-this-user/images").status_code == 404
         assert client.delete(f"/v1/demo/sessions/{session_id}").status_code == 204

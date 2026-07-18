@@ -25,6 +25,10 @@
 - [ ] 重复图片检测与自动标签
 - [x] Recall@K、MRR 与编码延迟评测
 - [x] React + TypeScript 响应式图片画廊前端
+- [x] 语义 + 格式/方向/时间/尺寸的后端组合检索与响应式筛选面板
+- [x] 查询内相关性分级、语义召回/文件名命中对比与非概率分数解释
+- [x] 外部图片预览确认、图库内“查找相似”与临时会话隔离的以图搜图
+- [x] COCO 500/2,500 查询以图搜图鲁棒性评测与独立阈值校准
 - [x] 版本化 WebP 缩略图缓存与旧图片按需补建
 - [x] SQLite 持久化后台索引任务、实时进度与失败重试
 - [x] 无关查询拒答评测、校准/留出切分与阈值策略对比
@@ -60,7 +64,8 @@ npm install
 npm run dev
 ```
 
-浏览器访问 <http://localhost:3000>。界面支持文件夹批量导入、语义搜索、瀑布流结果、匹配度展示和图片灯箱预览。
+浏览器访问 <http://localhost:3000>。界面支持文件夹批量导入、语义与图片属性组合检索、
+可移除筛选标签、瀑布流结果、检索耗时、匹配度展示和图片灯箱预览。
 
 也可以使用统一命令：
 
@@ -102,6 +107,7 @@ python scripts/download_evaluation_sample.py --count 100
 python scripts/evaluate_retrieval.py --batch-size 16
 python scripts/evaluate_rejection.py
 python scripts/evaluate_gallery_smoke.py
+python scripts/evaluate_image_retrieval.py --count 500 --batch-size 16
 ```
 
 首个小样本结果：Recall@1 0.852、Recall@5 0.976、Recall@10 0.998、MRR 0.908。候选集只有100张图片，因此这只是工程基线，不代表最终系统效果。详见 `docs/BASELINE_RESULTS.md`。
@@ -129,6 +135,10 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 保持不变。FAISS 更快但在 M4 的 pip PyTorch 同进程中存在 OpenMP 冲突，因此没有盲目设为
 默认。详见 `docs/INDEX_BENCHMARK.md`。
 
+以图搜图已完成 500 张图库原图、2,500 张扰动查询的真实 MPS 评测：Recall@1 为
+99.36%，Recall@5 为 99.96%。图片搜索相对分差据此从 0.035 独立校准为 0.05；完整
+协议、分扰动结果和适用边界见 `docs/IMAGE_RETRIEVAL_RESULTS.md`。
+
 ## 接口
 
 - `GET /health`：服务、模型、索引、运行模式和图库写入能力
@@ -141,12 +151,13 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 - `GET /v1/import-jobs/latest`：恢复最近一次任务状态
 - `GET /v1/import-jobs/{job_id}`：查询任务进度
 - `POST /v1/import-jobs/{job_id}/retry`：重试失败文件
-- `POST /v1/search/text`：文本搜索图片
-- `POST /v1/search/image`：以图搜图
+- `POST /v1/search/text`：文本与格式、方向、尺寸、时间、排序的组合检索；查询文本可留空
+- `POST /v1/search/image`：以图搜图，并排除图库中的完全相同文件
 - `POST /v1/demo/sessions`：上传图片并创建隔离的临时图库
 - `GET /v1/demo/sessions/{session_id}`：读取临时索引进度和到期时间
 - `GET /v1/demo/sessions/{session_id}/images`：读取本会话图片
 - `POST /v1/demo/sessions/{session_id}/search/text`：只搜索本会话图片
+- `POST /v1/demo/sessions/{session_id}/search/image`：在本会话内以图搜图
 - `DELETE /v1/demo/sessions/{session_id}`：立即清除临时图库
 
 ## 学习方式

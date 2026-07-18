@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
 
@@ -23,6 +22,9 @@ class StoredImage:
     sha256: str
     size_bytes: int
     model_id: str
+    width: int = 0
+    height: int = 0
+    created_at: str = ""
 
 
 class ImageRepository:
@@ -46,6 +48,8 @@ class ImageRepository:
                     content_type TEXT NOT NULL,
                     sha256 TEXT NOT NULL UNIQUE,
                     size_bytes INTEGER NOT NULL,
+                    width INTEGER NOT NULL DEFAULT 0,
+                    height INTEGER NOT NULL DEFAULT 0,
                     embedding BLOB NOT NULL,
                     embedding_dim INTEGER NOT NULL,
                     model_id TEXT NOT NULL,
@@ -53,6 +57,13 @@ class ImageRepository:
                 )
                 """
             )
+            columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(images)").fetchall()
+            }
+            if "width" not in columns:
+                connection.execute("ALTER TABLE images ADD COLUMN width INTEGER NOT NULL DEFAULT 0")
+            if "height" not in columns:
+                connection.execute("ALTER TABLE images ADD COLUMN height INTEGER NOT NULL DEFAULT 0")
 
     def insert(self, stored: StoredImage, vector: np.ndarray) -> None:
         embedding = np.asarray(vector, dtype=np.float32).reshape(-1)
@@ -61,8 +72,8 @@ class ImageRepository:
                 """
                 INSERT INTO images (
                     image_id, original_filename, stored_filename, content_type,
-                    sha256, size_bytes, embedding, embedding_dim, model_id, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    sha256, size_bytes, width, height, embedding, embedding_dim, model_id, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     stored.image.image_id,
@@ -71,12 +82,26 @@ class ImageRepository:
                     stored.image.content_type,
                     stored.sha256,
                     stored.size_bytes,
+                    stored.width,
+                    stored.height,
                     embedding.tobytes(),
                     embedding.size,
                     stored.model_id,
-                    datetime.now(timezone.utc).isoformat(),
+                    stored.created_at,
                 ),
             )
+
+    def update_dimensions(self, image_id: str, width: int, height: int) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "UPDATE images SET width = ?, height = ? WHERE image_id = ?",
+                (width, height, image_id),
+            )
+
+    def list_stored(self) -> list[StoredImage]:
+        with self.connect() as connection:
+            rows = connection.execute("SELECT * FROM images ORDER BY created_at DESC").fetchall()
+        return [self._stored_image(row) for row in rows]
 
     def find_by_sha256(self, digest: str) -> StoredImage | None:
         with self.connect() as connection:
@@ -143,4 +168,7 @@ class ImageRepository:
             sha256=row["sha256"],
             size_bytes=row["size_bytes"],
             model_id=row["model_id"],
+            width=row["width"],
+            height=row["height"],
+            created_at=row["created_at"],
         )

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from hashlib import sha256
 from io import BytesIO
 from pathlib import Path
@@ -92,6 +93,24 @@ class ImageLibrary:
             self.index.add(stored.image, vector)
         return len(entries)
 
+    def backfill_dimensions(self) -> int:
+        """Populate dimensions for libraries created before metadata filtering existed."""
+        updated = 0
+        for stored in self.repository.list_stored():
+            if stored.width > 0 and stored.height > 0:
+                continue
+            original = self.original_path(stored)
+            if not original.is_file():
+                continue
+            try:
+                with Image.open(original) as opened:
+                    width, height = ImageOps.exif_transpose(opened).size
+            except (UnidentifiedImageError, OSError):
+                continue
+            self.repository.update_dimensions(stored.image.image_id, width, height)
+            updated += 1
+        return updated
+
     def rebuild_embeddings(self, batch_size: int = 16) -> int:
         """Re-encode stored originals, then atomically switch the persisted model."""
         entries = self.repository.load_index()
@@ -176,6 +195,9 @@ class ImageLibrary:
             sha256=candidate.digest,
             size_bytes=len(candidate.content),
             model_id=self.encoder.model_id,
+            width=candidate.image.width,
+            height=candidate.image.height,
+            created_at=datetime.now(timezone.utc).isoformat(),
         )
         try:
             self._write_thumbnail(candidate.image, self.thumbnail_path(image_id))

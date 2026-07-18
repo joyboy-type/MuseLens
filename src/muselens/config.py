@@ -66,6 +66,9 @@ class Settings:
     search_relative_margin: float = float(
         os.getenv("MUSELENS_SEARCH_RELATIVE_MARGIN", "0.035")
     )
+    image_search_relative_margin: float = float(
+        os.getenv("MUSELENS_IMAGE_SEARCH_RELATIVE_MARGIN", "0.05")
+    )
     max_batch_files: int = int(os.getenv("MUSELENS_MAX_BATCH_FILES", "100"))
     max_job_files: int = int(os.getenv("MUSELENS_MAX_JOB_FILES", "500"))
     max_job_total_mb: int = int(os.getenv("MUSELENS_MAX_JOB_TOTAL_MB", "512"))

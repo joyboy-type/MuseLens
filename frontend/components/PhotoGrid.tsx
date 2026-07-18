@@ -1,5 +1,6 @@
 import { thumbnailUrl } from "@/lib/api";
 import type { LibraryItem } from "@/lib/types";
+import { relevanceFor } from "@/lib/relevance";
 import { ImageOff, Maximize2 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,9 +47,18 @@ export function PhotoGrid({ items, onOpen }: PhotoGridProps) {
                   <Maximize2 size={14} />
                 </span>
               </span>
-              {item.score !== undefined && (
-                <span className="score-pill">相似度 {item.score.toFixed(3)}</span>
-              )}
+              {item.score != null && (() => {
+                const relevance = relevanceFor(item, index, items);
+                return relevance && (
+                  <span
+                    className={`relevance-pill ${relevance.tier}`}
+                    title={`模型排序分 ${item.score.toFixed(3)}；该分数仅用于本次查询内排序`}
+                  >
+                    <i><span style={{ width: `${relevance.strength}%` }} /></i>
+                    <b>#{index + 1}</b> {relevance.label}
+                  </span>
+                );
+              })()}
             </span>
           </button>
         );
