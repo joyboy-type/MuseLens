@@ -1,0 +1,3478 @@
+{
+  "suite": "MuseLens public demo bilingual search contract",
+  "suite_version": "1.0",
+  "evaluated_at": "2026-07-18T06:41:27.262269+00:00",
+  "base_url": "http://127.0.0.1:7860",
+  "recall_template": "A photo of {query}.",
+  "reranker_model": "Qwen/Qwen3-VL-Reranker-2B",
+  "completed_queries": 54,
+  "threshold_metrics": [
+    {
+      "threshold": 0.05,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 1.0,
+      "negative_rejection_rate": 0.0
+    },
+    {
+      "threshold": 0.1,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 1.0,
+      "negative_rejection_rate": 0.0
+    },
+    {
+      "threshold": 0.15,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 1.0,
+      "negative_rejection_rate": 0.0
+    },
+    {
+      "threshold": 0.2,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 1.0,
+      "negative_rejection_rate": 0.0
+    },
+    {
+      "threshold": 0.25,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 0.9772727272727273,
+      "negative_rejection_rate": 0.1
+    },
+    {
+      "threshold": 0.3,
+      "positive_hit_at_1": 0.9545454545454546,
+      "positive_hit_at_5": 0.9545454545454546,
+      "negative_rejection_rate": 0.4
+    },
+    {
+      "threshold": 0.35,
+      "positive_hit_at_1": 0.9318181818181818,
+      "positive_hit_at_5": 0.9318181818181818,
+      "negative_rejection_rate": 0.8
+    },
+    {
+      "threshold": 0.4,
+      "positive_hit_at_1": 0.9318181818181818,
+      "positive_hit_at_5": 0.9318181818181818,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.45,
+      "positive_hit_at_1": 0.8181818181818182,
+      "positive_hit_at_5": 0.8181818181818182,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.5,
+      "positive_hit_at_1": 0.4318181818181818,
+      "positive_hit_at_5": 0.4318181818181818,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "positive_hit_at_1": 0.25,
+      "positive_hit_at_5": 0.25,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.6,
+      "positive_hit_at_1": 0.09090909090909091,
+      "positive_hit_at_5": 0.09090909090909091,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.65,
+      "positive_hit_at_1": 0.022727272727272728,
+      "positive_hit_at_5": 0.022727272727272728,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.7,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.95,
+      "positive_hit_at_1": 0.0,
+      "positive_hit_at_5": 0.0,
+      "negative_rejection_rate": 1.0
+    }
+  ],
+  "outcomes": [
+    {
+      "kind": "positive",
+      "query": "dog",
+      "language": "en",
+      "expected_category": "dog",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.10323603451251984,
+          "score": 0.5078125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.09837868064641953,
+          "score": 0.2412109375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "狗",
+      "language": "zh",
+      "expected_category": "dog",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.09129485487937927,
+          "score": 0.52734375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.09568928927183151,
+          "score": 0.283203125
+        },
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.07702787220478058,
+          "score": 0.236328125
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07095318287611008,
+          "score": 0.166015625
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.07593047618865967,
+          "score": 0.158203125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "a dog lying on a bed",
+      "language": "en",
+      "expected_category": "dog",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.1004316508769989,
+          "score": 0.6640625
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.12306109815835953,
+          "score": 0.36328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "一只躺在床上的狗",
+      "language": "zh",
+      "expected_category": "dog",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.10387495905160904,
+          "score": 0.58203125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.11552046239376068,
+          "score": 0.33203125
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.09376239776611328,
+          "score": 0.166015625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "cat",
+      "language": "en",
+      "expected_category": "cat",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.11366390436887741,
+          "score": 0.51953125
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.08557256311178207,
+          "score": 0.23828125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "猫",
+      "language": "zh",
+      "expected_category": "cat",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.11377282440662384,
+          "score": 0.53515625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "bird",
+      "language": "en",
+      "expected_category": "bird",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.12848183512687683,
+          "score": 0.55078125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "鸟",
+      "language": "zh",
+      "expected_category": "bird",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.10661283880472183,
+          "score": 0.56640625
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.07260122895240784,
+          "score": 0.36328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "elephant",
+      "language": "en",
+      "expected_category": "elephant",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "726b7b7f952544599c0a5e7daddce378",
+          "original_filename": "000000132796.jpg",
+          "categories": [
+            "backpack",
+            "bench",
+            "chair",
+            "elephant",
+            "person"
+          ],
+          "recall_score": 0.12413643300533295,
+          "score": 0.486328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "大象",
+      "language": "zh",
+      "expected_category": "elephant",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "726b7b7f952544599c0a5e7daddce378",
+          "original_filename": "000000132796.jpg",
+          "categories": [
+            "backpack",
+            "bench",
+            "chair",
+            "elephant",
+            "person"
+          ],
+          "recall_score": 0.09996482729911804,
+          "score": 0.46875
+        },
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.0790107250213623,
+          "score": 0.271484375
+        },
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.06601519882678986,
+          "score": 0.2578125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.06788395345211029,
+          "score": 0.2041015625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "car",
+      "language": "en",
+      "expected_category": "car",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06927645206451416,
+          "score": 0.48828125
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.08963478356599808,
+          "score": 0.482421875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07793046534061432,
+          "score": 0.33984375
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.06041958928108215,
+          "score": 0.283203125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.06160465255379677,
+          "score": 0.248046875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "汽车",
+      "language": "zh",
+      "expected_category": "car",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.07866008579730988,
+          "score": 0.46875
+        },
+        {
+          "image_id": "5269624f128340748e1670f06bf9ed59",
+          "original_filename": "000000147740.jpg",
+          "categories": [
+            "banana",
+            "car",
+            "handbag",
+            "motorcycle",
+            "person"
+          ],
+          "recall_score": 0.04910164326429367,
+          "score": 0.4453125
+        },
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06770291924476624,
+          "score": 0.4375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06351093202829361,
+          "score": 0.302734375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.04871964454650879,
+          "score": 0.177734375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "bus",
+      "language": "en",
+      "expected_category": "bus",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.07620854675769806,
+          "score": 0.451171875
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.07850663363933563,
+          "score": 0.3984375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07153815031051636,
+          "score": 0.279296875
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.0812394767999649,
+          "score": 0.26953125
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.0696064755320549,
+          "score": 0.265625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "公交车",
+      "language": "zh",
+      "expected_category": "bus",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.07766322791576385,
+          "score": 0.482421875
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.07103389501571655,
+          "score": 0.337890625
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.05524875223636627,
+          "score": 0.29296875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.05483598634600639,
+          "score": 0.2578125
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.06992219388484955,
+          "score": 0.20703125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "airplane",
+      "language": "en",
+      "expected_category": "airplane",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.12943629920482635,
+          "score": 0.61328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "飞机",
+      "language": "zh",
+      "expected_category": "airplane",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.10142716765403748,
+          "score": 0.61328125
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.07170924544334412,
+          "score": 0.3125
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.0683552697300911,
+          "score": 0.236328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "boat",
+      "language": "en",
+      "expected_category": "boat",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "24a2e104d8014aa086fceb625fb826e0",
+          "original_filename": "000000389451.jpg",
+          "categories": [
+            "boat",
+            "cow",
+            "person"
+          ],
+          "recall_score": 0.07885245978832245,
+          "score": 0.5546875
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.09368427097797394,
+          "score": 0.40625
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06864912062883377,
+          "score": 0.25
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.06047726422548294,
+          "score": 0.25
+        },
+        {
+          "image_id": "726b7b7f952544599c0a5e7daddce378",
+          "original_filename": "000000132796.jpg",
+          "categories": [
+            "backpack",
+            "bench",
+            "chair",
+            "elephant",
+            "person"
+          ],
+          "recall_score": 0.05899990722537041,
+          "score": 0.22265625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "船",
+      "language": "zh",
+      "expected_category": "boat",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "24a2e104d8014aa086fceb625fb826e0",
+          "original_filename": "000000389451.jpg",
+          "categories": [
+            "boat",
+            "cow",
+            "person"
+          ],
+          "recall_score": 0.07082091271877289,
+          "score": 0.46875
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.09211990237236023,
+          "score": 0.373046875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07444203644990921,
+          "score": 0.2431640625
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.08462931215763092,
+          "score": 0.2236328125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.0673300176858902,
+          "score": 0.19921875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "horse",
+      "language": "en",
+      "expected_category": "horse",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.10397570580244064,
+          "score": 0.453125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "马",
+      "language": "zh",
+      "expected_category": "horse",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.08992807567119598,
+          "score": 0.44921875
+        },
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.07895311713218689,
+          "score": 0.390625
+        },
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.07877124100923538,
+          "score": 0.33984375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.08101361989974976,
+          "score": 0.212890625
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.07423137128353119,
+          "score": 0.158203125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "pizza",
+      "language": "en",
+      "expected_category": "pizza",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.08540426194667816,
+          "score": 0.474609375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.0914309099316597,
+          "score": 0.3515625
+        },
+        {
+          "image_id": "3e3ee18101de41409dd78fcf7314f867",
+          "original_filename": "000000199771.jpg",
+          "categories": [
+            "book",
+            "bottle",
+            "bowl",
+            "clock",
+            "cup",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06706903129816055,
+          "score": 0.341796875
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.057636525481939316,
+          "score": 0.279296875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "披萨",
+      "language": "zh",
+      "expected_category": "pizza",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.05546985939145088,
+          "score": 0.4375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.08274988830089569,
+          "score": 0.322265625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "cake",
+      "language": "en",
+      "expected_category": "cake",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.10016775131225586,
+          "score": 0.498046875
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.07922901958227158,
+          "score": 0.27734375
+        },
+        {
+          "image_id": "3e3ee18101de41409dd78fcf7314f867",
+          "original_filename": "000000199771.jpg",
+          "categories": [
+            "book",
+            "bottle",
+            "bowl",
+            "clock",
+            "cup",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06683332473039627,
+          "score": 0.2353515625
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07968690991401672,
+          "score": 0.2001953125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "蛋糕",
+      "language": "zh",
+      "expected_category": "cake",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.07591089606285095,
+          "score": 0.45703125
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.05331476032733917,
+          "score": 0.287109375
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.05252522602677345,
+          "score": 0.28125
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.08392506092786789,
+          "score": 0.2021484375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.0541091114282608,
+          "score": 0.1298828125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "sports ball",
+      "language": "en",
+      "expected_category": "sports ball",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "ba590daf2bc44c9987ed57ffc1c5866a",
+          "original_filename": "000000303713.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "handbag",
+            "laptop",
+            "person",
+            "sports ball",
+            "tennis racket"
+          ],
+          "recall_score": 0.08910604566335678,
+          "score": 0.466796875
+        },
+        {
+          "image_id": "fa957707d9d34e8db54967eaccb717b9",
+          "original_filename": "000000328238.jpg",
+          "categories": [
+            "backpack",
+            "bench",
+            "chair",
+            "frisbee",
+            "person"
+          ],
+          "recall_score": 0.08390012383460999,
+          "score": 0.42578125
+        },
+        {
+          "image_id": "c29ae50379c749f89a6d4313593310fc",
+          "original_filename": "000000192670.jpg",
+          "categories": [
+            "baseball bat",
+            "baseball glove",
+            "bottle",
+            "car",
+            "chair",
+            "person",
+            "sports ball",
+            "truck"
+          ],
+          "recall_score": 0.06599249690771103,
+          "score": 0.4140625
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.06644171476364136,
+          "score": 0.2353515625
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.06296414136886597,
+          "score": 0.2265625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "球",
+      "language": "zh",
+      "expected_category": "sports ball",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "ba590daf2bc44c9987ed57ffc1c5866a",
+          "original_filename": "000000303713.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "handbag",
+            "laptop",
+            "person",
+            "sports ball",
+            "tennis racket"
+          ],
+          "recall_score": 0.07132603228092194,
+          "score": 0.478515625
+        },
+        {
+          "image_id": "fa957707d9d34e8db54967eaccb717b9",
+          "original_filename": "000000328238.jpg",
+          "categories": [
+            "backpack",
+            "bench",
+            "chair",
+            "frisbee",
+            "person"
+          ],
+          "recall_score": 0.06812792271375656,
+          "score": 0.392578125
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.07449613511562347,
+          "score": 0.3359375
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.07201902568340302,
+          "score": 0.322265625
+        },
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06434911489486694,
+          "score": 0.287109375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "snowboard",
+      "language": "en",
+      "expected_category": "snowboard",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "289d0f2508e14890a8708939430d7f47",
+          "original_filename": "000000309655.jpg",
+          "categories": [
+            "person",
+            "skis",
+            "snowboard"
+          ],
+          "recall_score": 0.10193128138780594,
+          "score": 0.421875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "滑雪板",
+      "language": "zh",
+      "expected_category": "snowboard",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "289d0f2508e14890a8708939430d7f47",
+          "original_filename": "000000309655.jpg",
+          "categories": [
+            "person",
+            "skis",
+            "snowboard"
+          ],
+          "recall_score": 0.10072825849056244,
+          "score": 0.458984375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "laptop",
+      "language": "en",
+      "expected_category": "laptop",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07735452055931091,
+          "score": 0.5078125
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.0539637953042984,
+          "score": 0.4921875
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.07892505824565887,
+          "score": 0.3984375
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.06124022603034973,
+          "score": 0.37890625
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.04860977828502655,
+          "score": 0.2431640625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "笔记本电脑",
+      "language": "zh",
+      "expected_category": "laptop",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07802646607160568,
+          "score": 0.51953125
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.06373362243175507,
+          "score": 0.46875
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.0704328641295433,
+          "score": 0.375
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.05434630438685417,
+          "score": 0.349609375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.04890787973999977,
+          "score": 0.2294921875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "cell phone",
+      "language": "en",
+      "expected_category": "cell phone",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "2c01cd98bc634e60909fbcfd6eff9db4",
+          "original_filename": "000000229358.jpg",
+          "categories": [
+            "bottle",
+            "bowl",
+            "cell phone",
+            "cup",
+            "person",
+            "sink",
+            "tie",
+            "toothbrush"
+          ],
+          "recall_score": 0.08879388868808746,
+          "score": 0.431640625
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.07202016562223434,
+          "score": 0.3671875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07708611339330673,
+          "score": 0.265625
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.07104583829641342,
+          "score": 0.2265625
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07840694487094879,
+          "score": 0.2060546875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "手机",
+      "language": "zh",
+      "expected_category": "cell phone",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "2c01cd98bc634e60909fbcfd6eff9db4",
+          "original_filename": "000000229358.jpg",
+          "categories": [
+            "bottle",
+            "bowl",
+            "cell phone",
+            "cup",
+            "person",
+            "sink",
+            "tie",
+            "toothbrush"
+          ],
+          "recall_score": 0.06870652735233307,
+          "score": 0.34375
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.07812565565109253,
+          "score": 0.279296875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.07775048166513443,
+          "score": 0.27734375
+        },
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06533563882112503,
+          "score": 0.24609375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07331573963165283,
+          "score": 0.20703125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "book",
+      "language": "en",
+      "expected_category": "book",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.09090687334537506,
+          "score": 0.43359375
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.07391613721847534,
+          "score": 0.326171875
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.0668487399816513,
+          "score": 0.2890625
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.07229220867156982,
+          "score": 0.259765625
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.06280791014432907,
+          "score": 0.25390625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "书",
+      "language": "zh",
+      "expected_category": "book",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.09442661702632904,
+          "score": 0.453125
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.0753752589225769,
+          "score": 0.322265625
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.06426838040351868,
+          "score": 0.255859375
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.08750070631504059,
+          "score": 0.24609375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06093612313270569,
+          "score": 0.1796875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "clock",
+      "language": "en",
+      "expected_category": "clock",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.06472167372703552,
+          "score": 0.28125
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.06628678739070892,
+          "score": 0.255859375
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.06777025759220123,
+          "score": 0.25
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.06114658713340759,
+          "score": 0.2392578125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07456689327955246,
+          "score": 0.212890625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "时钟",
+      "language": "zh",
+      "expected_category": "clock",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06128113716840744,
+          "score": 0.330078125
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.05126893147826195,
+          "score": 0.283203125
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.056646645069122314,
+          "score": 0.2431640625
+        },
+        {
+          "image_id": "d0840fb7332f4af9ae9f1296715299fb",
+          "original_filename": "000000232088.jpg",
+          "categories": [
+            "chair",
+            "couch",
+            "keyboard",
+            "laptop",
+            "mouse",
+            "remote",
+            "tv"
+          ],
+          "recall_score": 0.05461503192782402,
+          "score": 0.2294921875
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.0664990246295929,
+          "score": 0.1982421875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "bicycle",
+      "language": "en",
+      "expected_category": "bicycle",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.07860948145389557,
+          "score": 0.48046875
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.09247943013906479,
+          "score": 0.443359375
+        },
+        {
+          "image_id": "5269624f128340748e1670f06bf9ed59",
+          "original_filename": "000000147740.jpg",
+          "categories": [
+            "banana",
+            "car",
+            "handbag",
+            "motorcycle",
+            "person"
+          ],
+          "recall_score": 0.06663624942302704,
+          "score": 0.349609375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "自行车",
+      "language": "zh",
+      "expected_category": "bicycle",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.08302673697471619,
+          "score": 0.47265625
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.0871131643652916,
+          "score": 0.3828125
+        },
+        {
+          "image_id": "5269624f128340748e1670f06bf9ed59",
+          "original_filename": "000000147740.jpg",
+          "categories": [
+            "banana",
+            "car",
+            "handbag",
+            "motorcycle",
+            "person"
+          ],
+          "recall_score": 0.06259785592556,
+          "score": 0.3671875
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.05375141650438309,
+          "score": 0.2119140625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "motorcycle",
+      "language": "en",
+      "expected_category": "motorcycle",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "5269624f128340748e1670f06bf9ed59",
+          "original_filename": "000000147740.jpg",
+          "categories": [
+            "banana",
+            "car",
+            "handbag",
+            "motorcycle",
+            "person"
+          ],
+          "recall_score": 0.05676954239606857,
+          "score": 0.51171875
+        },
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.06396239250898361,
+          "score": 0.365234375
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.06257736682891846,
+          "score": 0.33984375
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.059367530047893524,
+          "score": 0.322265625
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.060805898159742355,
+          "score": 0.255859375
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "摩托车",
+      "language": "zh",
+      "expected_category": "motorcycle",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "5269624f128340748e1670f06bf9ed59",
+          "original_filename": "000000147740.jpg",
+          "categories": [
+            "banana",
+            "car",
+            "handbag",
+            "motorcycle",
+            "person"
+          ],
+          "recall_score": 0.061792805790901184,
+          "score": 0.50390625
+        },
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.07100481539964676,
+          "score": 0.37109375
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.058218784630298615,
+          "score": 0.3203125
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.061416976153850555,
+          "score": 0.2490234375
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.04652879387140274,
+          "score": 0.1904296875
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "giraffe",
+      "language": "en",
+      "expected_category": "giraffe",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.1463421881198883,
+          "score": 0.59765625
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "长颈鹿",
+      "language": "zh",
+      "expected_category": "giraffe",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.13663849234580994,
+          "score": 0.6328125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "sheep",
+      "language": "en",
+      "expected_category": "sheep",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.1411583572626114,
+          "score": 0.578125
+        }
+      ]
+    },
+    {
+      "kind": "positive",
+      "query": "羊",
+      "language": "zh",
+      "expected_category": "sheep",
+      "absent_category": null,
+      "candidates": [
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.1315695345401764,
+          "score": 0.5703125
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "train",
+      "language": "en",
+      "expected_category": null,
+      "absent_category": "train",
+      "candidates": [
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.06918740272521973,
+          "score": 0.39453125
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.07305024564266205,
+          "score": 0.384765625
+        },
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.061078451573848724,
+          "score": 0.291015625
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.05898809805512428,
+          "score": 0.28125
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06363734602928162,
+          "score": 0.265625
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "火车",
+      "language": "zh",
+      "expected_category": null,
+      "absent_category": "train",
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.059425488114356995,
+          "score": 0.359375
+        },
+        {
+          "image_id": "a2170da529164634a675328762796edf",
+          "original_filename": "000000542625.jpg",
+          "categories": [
+            "bird",
+            "car",
+            "fire hydrant",
+            "parking meter",
+            "traffic light",
+            "truck"
+          ],
+          "recall_score": 0.07197445631027222,
+          "score": 0.2890625
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06960824131965637,
+          "score": 0.2734375
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.05899377912282944,
+          "score": 0.2421875
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.06934089958667755,
+          "score": 0.2080078125
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "zebra",
+      "language": "en",
+      "expected_category": null,
+      "absent_category": "zebra",
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.08839919418096542,
+          "score": 0.291015625
+        },
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.08197854459285736,
+          "score": 0.2333984375
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.07406213879585266,
+          "score": 0.2109375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.0734928548336029,
+          "score": 0.1884765625
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.06621876358985901,
+          "score": 0.162109375
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "斑马",
+      "language": "zh",
+      "expected_category": null,
+      "absent_category": "zebra",
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.0585806742310524,
+          "score": 0.3125
+        },
+        {
+          "image_id": "1a4b0820ad1a4d56b16a7c65bb45b738",
+          "original_filename": "000000248810.jpg",
+          "categories": [
+            "giraffe",
+            "person"
+          ],
+          "recall_score": 0.08035732805728912,
+          "score": 0.302734375
+        },
+        {
+          "image_id": "e6fd2fc0bbeb4d9c8ef69cbb62c5b436",
+          "original_filename": "000000094871.jpg",
+          "categories": [
+            "handbag",
+            "person",
+            "sheep"
+          ],
+          "recall_score": 0.050748616456985474,
+          "score": 0.28125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.05028754472732544,
+          "score": 0.228515625
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.05359463766217232,
+          "score": 0.197265625
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "surfboard",
+      "language": "en",
+      "expected_category": null,
+      "absent_category": "surfboard",
+      "candidates": [
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.07114414870738983,
+          "score": 0.3046875
+        },
+        {
+          "image_id": "24a2e104d8014aa086fceb625fb826e0",
+          "original_filename": "000000389451.jpg",
+          "categories": [
+            "boat",
+            "cow",
+            "person"
+          ],
+          "recall_score": 0.06811767816543579,
+          "score": 0.2412109375
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.05008964240550995,
+          "score": 0.21875
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.06316249072551727,
+          "score": 0.212890625
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.056132856756448746,
+          "score": 0.158203125
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "冲浪板",
+      "language": "zh",
+      "expected_category": null,
+      "absent_category": "surfboard",
+      "candidates": [
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.05307108908891678,
+          "score": 0.28125
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.06234849989414215,
+          "score": 0.2265625
+        },
+        {
+          "image_id": "24a2e104d8014aa086fceb625fb826e0",
+          "original_filename": "000000389451.jpg",
+          "categories": [
+            "boat",
+            "cow",
+            "person"
+          ],
+          "recall_score": 0.05782253295183182,
+          "score": 0.203125
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.05624669790267944,
+          "score": 0.181640625
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.050591032952070236,
+          "score": 0.13671875
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "donut",
+      "language": "en",
+      "expected_category": null,
+      "absent_category": "donut",
+      "candidates": [
+        {
+          "image_id": "c33c7624fbaf46369d2fe9db3638665f",
+          "original_filename": "000000213547.jpg",
+          "categories": [
+            "bottle",
+            "cake",
+            "clock",
+            "horse",
+            "person",
+            "refrigerator"
+          ],
+          "recall_score": 0.0849355161190033,
+          "score": 0.28515625
+        },
+        {
+          "image_id": "d408b5c75362471695d07e37597fa328",
+          "original_filename": "000000366884.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "chair",
+            "dog",
+            "keyboard",
+            "person",
+            "suitcase",
+            "tv"
+          ],
+          "recall_score": 0.0649859756231308,
+          "score": 0.2421875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.09856522083282471,
+          "score": 0.2197265625
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.06878986954689026,
+          "score": 0.208984375
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "甜甜圈",
+      "language": "zh",
+      "expected_category": null,
+      "absent_category": "donut",
+      "candidates": [
+        {
+          "image_id": "e7a76135b995431ab8301e8462eb2bdc",
+          "original_filename": "000000184324.jpg",
+          "categories": [
+            "backpack",
+            "bicycle",
+            "bus",
+            "car",
+            "handbag",
+            "person",
+            "stop sign",
+            "truck",
+            "umbrella"
+          ],
+          "recall_score": 0.0614781379699707,
+          "score": 0.236328125
+        },
+        {
+          "image_id": "a5b145ec46f5490f822cd2ab7c30e6b7",
+          "original_filename": "000000005001.jpg",
+          "categories": [
+            "bicycle",
+            "handbag",
+            "person",
+            "scissors"
+          ],
+          "recall_score": 0.058552086353302,
+          "score": 0.232421875
+        },
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.09184791892766953,
+          "score": 0.19921875
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.07969542592763901,
+          "score": 0.1552734375
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.07106688618659973,
+          "score": 0.1328125
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "flower",
+      "language": "en",
+      "expected_category": null,
+      "absent_category": "flower",
+      "candidates": [
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.047948725521564484,
+          "score": 0.310546875
+        },
+        {
+          "image_id": "2f2de35bec5b41be9138b10a8f29481d",
+          "original_filename": "000000502347.jpg",
+          "categories": [
+            "airplane",
+            "boat"
+          ],
+          "recall_score": 0.04791106656193733,
+          "score": 0.21875
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.0480252206325531,
+          "score": 0.21484375
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.05889761447906494,
+          "score": 0.203125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.055613502860069275,
+          "score": 0.18359375
+        }
+      ]
+    },
+    {
+      "kind": "negative",
+      "query": "花朵",
+      "language": "zh",
+      "expected_category": null,
+      "absent_category": "flower",
+      "candidates": [
+        {
+          "image_id": "43fdfef4f13a46c1b331cbcd3d974347",
+          "original_filename": "000000350148.jpg",
+          "categories": [
+            "cake",
+            "car",
+            "carrot",
+            "chair",
+            "clock",
+            "cup",
+            "dining table",
+            "fork",
+            "knife",
+            "person",
+            "sandwich"
+          ],
+          "recall_score": 0.04440399631857872,
+          "score": 0.349609375
+        },
+        {
+          "image_id": "81734607f08d4d818817419c76810e03",
+          "original_filename": "000000085157.jpg",
+          "categories": [
+            "bowl",
+            "chair",
+            "cup",
+            "dining table",
+            "fork",
+            "person",
+            "pizza"
+          ],
+          "recall_score": 0.036394260823726654,
+          "score": 0.2451171875
+        },
+        {
+          "image_id": "a0371629fc9a4cc6a235a63a2298db22",
+          "original_filename": "000000014439.jpg",
+          "categories": [
+            "backpack",
+            "chair",
+            "kite",
+            "person"
+          ],
+          "recall_score": 0.04262302815914154,
+          "score": 0.236328125
+        },
+        {
+          "image_id": "6da2e3defd4f40a9a98cd24fef4dd1d9",
+          "original_filename": "000000134882.jpg",
+          "categories": [
+            "bed",
+            "book",
+            "cat",
+            "laptop",
+            "teddy bear"
+          ],
+          "recall_score": 0.04704301059246063,
+          "score": 0.1982421875
+        },
+        {
+          "image_id": "25777754282e416199d7435e206f6981",
+          "original_filename": "000000393569.jpg",
+          "categories": [
+            "backpack",
+            "bed",
+            "bottle",
+            "laptop",
+            "person",
+            "sink",
+            "toilet"
+          ],
+          "recall_score": 0.04523655027151108,
+          "score": 0.185546875
+        }
+      ]
+    }
+  ]
+}

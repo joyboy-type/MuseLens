@@ -32,13 +32,16 @@
 - [x] 版本化 WebP 缩略图缓存与旧图片按需补建
 - [x] SQLite 持久化后台索引任务、实时进度与失败重试
 - [x] 无关查询拒答评测、校准/留出切分与阈值策略对比
+- [x] 44 条中英文正例 + 10 条图库外查询的公开演示检索契约
+- [x] SigLIP2 召回 + Qwen3-VL 精排的可选本地高精度模式
 - [x] GitHub Actions CI
 - [x] React/Vite + FastAPI 同源单容器部署骨架
 - [x] 后端强制的本地完整模式 / 会话隔离的公开演示模式
 - [x] 访客临时图库：限额上传、后台索引、30 分钟 TTL 与主动清除
 - [x] 24 张 CC BY 2.0 署名演示语料、预计算索引与容器冷启动优化
 - [x] Cloud Run 无长期密钥部署工作流、成本边界与线上冒烟测试
-- [ ] 公开 Cloud Run 地址与演示视频
+- [x] ModelScope Studio Docker 部署配置（国内公开演示候选）
+- [ ] 公开 ModelScope Studio 地址与演示视频
 
 ## 快速开始
 
@@ -57,6 +60,17 @@ uvicorn muselens.api:app --reload
 ```
 
 打开 <http://127.0.0.1:8000/docs>，可在交互式文档中测试接口。
+
+需要更可靠的中英文排序和“图库中没有该内容”判定时，可启用本地高精度模式：
+
+```bash
+python -m pip install -e '.[dev,precision]'
+MUSELENS_RERANKER_MODEL=Qwen/Qwen3-VL-Reranker-2B \
+  uvicorn muselens.api:app
+```
+
+首次使用会下载约 4.27 GB 的 Qwen3-VL-Reranker-2B。该模式先用 SigLIP2 召回 5 张候选，
+再逐张精排并以 0.40 阈值拒绝弱匹配；适合 M4 16 GB 本地运行，不作为免费 CPU 演示的默认项。
 
 另开一个终端启动 Vite 前端：
 
@@ -98,7 +112,11 @@ docker run --rm -p 7860:7860 \
 访问 <http://localhost:7860>。Docker 使用多阶段构建：Node 只负责生成静态前端，最终由
 一个 FastAPI 容器同时提供页面、API、图片和模型推理。
 
-公开演示优先使用 `.github/workflows/deploy-cloud-run.yml`：GitHub Actions 通过
+国内公开演示优先使用 ModelScope Studio Docker 模式：根目录 `ms_deploy.json` 已声明
+2 核 CPU / 16 GB 内存与 7860 端口，直接复用同一个 Dockerfile。账号注册和发布验收步骤
+见 `docs/MODELSCOPE_DEPLOYMENT.md`。
+
+Cloud Run 作为有国际支付方式时的备选，使用 `.github/workflows/deploy-cloud-run.yml`：GitHub Actions 通过
 Workload Identity Federation 获取短期 Google 凭据，从当前 `main` 构建同一个 Dockerfile，
 并以 2 GiB、最小实例 0、最大实例 1、并发 1 的边界部署。部署后会自动验证只读 demo
 模式、固定索引和真实文本检索。一次性账号配置见 `docs/CLOUD_RUN_DEPLOYMENT.md`。
@@ -123,6 +141,11 @@ python scripts/evaluate_image_retrieval.py --count 500 --batch-size 16
 轻量 Adapter 在5000张训练图上完成真实训练与消融，但最终英文收益可以忽略，中文 Recall@1 反而下降3.4个百分点，因此没有为了展示“训练成功”而上线。完整结果和决策见 `docs/TRAINING_RESULTS.md`。
 
 无关查询拒答实验中，留出集综合分数由 0.923 提升到 0.974；动态 z-score 未超过校准固定阈值，因此没有为了复杂度强行上线。详见 `docs/REJECTION_RESULTS.md`。
+
+公开演示新增 44 条中英文图库内查询和 10 条图库外查询。轻量 SigLIP2 的 Top-1 为
+75.0%、Top-5 为 97.73%，但图库外拒绝率为 0%；加入 Qwen3-VL 精排后，无阈值 Top-1
+升至 95.45%、Top-5 为 100%，采用 0.40 阈值时图库内命中率为 93.18%、图库外拒绝率为
+100%。完整协议、失败案例和适用边界见 `docs/PRECISION_RERANKING_RESULTS.md`。
 
 临时图库另有 8 张混合图片、12 条中英文短词的端到端搜索契约测试。当前 SigLIP2
 Top-1 为 12/12；该测试专门防止“索引成功但搜索返回空页”的回归。

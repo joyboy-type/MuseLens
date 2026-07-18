@@ -21,6 +21,7 @@ from .library import (
     prepare_image,
 )
 from .repository import ImageRepository, StoredImage
+from .reranker import QwenVLReranker, rerank_candidates
 from .schemas import (
     HealthResponse,
     ImageRecordResponse,
@@ -98,6 +99,11 @@ async def lifespan(app: FastAPI):
     app.state.index = index
     app.state.index_backend = settings.index_backend
     app.state.encoder = encoder
+    app.state.reranker = (
+        QwenVLReranker(settings.reranker_model_id)
+        if settings.reranker_model_id
+        else None
+    )
     app.state.library = library
     app.state.job_repository = job_repository
     app.state.job_service = job_service
@@ -156,10 +162,13 @@ app.add_middleware(
 
 @app.get("/health", response_model=HealthResponse)
 def health(request: Request) -> HealthResponse:
+    reranker = request.app.state.reranker
     return HealthResponse(
         status="ok",
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
+        reranker_enabled=reranker is not None,
+        reranker_loaded=bool(reranker and reranker.loaded),
         index_backend=request.app.state.index_backend,
         mode=request.app.state.mode,
         library_writable=request.app.state.library_writable,
@@ -517,7 +526,13 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
         ]
         return [search_hit_response(stored) for _, stored in sort_filtered_results(results, payload.sort)[:payload.top_k]]
 
-    query_vector = request.app.state.encoder.encode_texts([normalized_query])[0]
+    reranker = request.app.state.reranker
+    recall_query = (
+        settings.reranker_recall_template.format(query=normalized_query)
+        if reranker
+        else normalized_query
+    )
+    query_vector = request.app.state.encoder.encode_texts([recall_query])[0]
     candidates = index.search(query_vector, min(len(index), 100))
     filtered = []
     for hit in candidates:
@@ -534,14 +549,30 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
             stored = indexed_fallback(hit)
         if stored and matches_search_filters(stored, payload):
             filtered.append((hit, stored))
-    relevant_hits = filter_relevant_hits(
-        [hit for hit, _ in filtered],
-        absolute_floor=settings.search_min_score if request.app.state.mode == "demo" else None,
-        relative_margin=settings.search_relative_margin,
-        max_results=payload.top_k,
-    )
-    relevant_ids = {hit.image.image_id for hit in relevant_hits}
-    filtered = [(hit, stored) for hit, stored in filtered if hit.image.image_id in relevant_ids]
+    if reranker:
+        filtered = rerank_candidates(
+            normalized_query,
+            filtered,
+            request.app.state.library.original_path,
+            reranker,
+            settings.reranker_min_score,
+            settings.reranker_recall_k,
+        )
+    else:
+        relevant_hits = filter_relevant_hits(
+            [hit for hit, _ in filtered],
+            absolute_floor=(
+                settings.search_min_score if request.app.state.mode == "demo" else None
+            ),
+            relative_margin=settings.search_relative_margin,
+            max_results=payload.top_k,
+        )
+        relevant_ids = {hit.image.image_id for hit in relevant_hits}
+        filtered = [
+            (hit, stored)
+            for hit, stored in filtered
+            if hit.image.image_id in relevant_ids
+        ]
     filtered = sort_filtered_results(filtered, payload.sort)[:payload.top_k]
     return [search_hit_response(stored, hit.score) for hit, stored in filtered]
 

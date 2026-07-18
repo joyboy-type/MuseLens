@@ -66,6 +66,13 @@ class Settings:
     search_relative_margin: float = float(
         os.getenv("MUSELENS_SEARCH_RELATIVE_MARGIN", "0.035")
     )
+    reranker_model_id: str | None = os.getenv("MUSELENS_RERANKER_MODEL") or None
+    reranker_min_score: float = float(os.getenv("MUSELENS_RERANKER_MIN_SCORE", "0.40"))
+    reranker_recall_k: int = int(os.getenv("MUSELENS_RERANKER_RECALL_K", "5"))
+    reranker_recall_template: str = os.getenv(
+        "MUSELENS_RERANKER_RECALL_TEMPLATE",
+        "A photo of {query}.",
+    )
     image_search_relative_margin: float = float(
         os.getenv("MUSELENS_IMAGE_SEARCH_RELATIVE_MARGIN", "0.05")
     )
