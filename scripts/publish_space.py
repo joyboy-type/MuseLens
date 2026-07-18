@@ -33,3 +33,7 @@ def main() -> None:
         revision=args.revision,
         commit_message="Deploy MuseLens from GitHub",
     )
+
+
+if __name__ == "__main__":
+    main()
