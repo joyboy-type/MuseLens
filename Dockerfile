@@ -21,6 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MUSELENS_STATE_DIR=/data/state \
     MUSELENS_THUMBNAIL_DIR=/data/thumbnails \
     MUSELENS_DEMO_SEED_DIR=/app/demo_assets \
+    MUSELENS_SEARCH_MIN_SCORE=-1 \
     HF_HOME=/data/model-cache
 
 WORKDIR /app
@@ -31,6 +32,7 @@ RUN python -m pip install --no-cache-dir \
       "torch==${TORCH_VERSION}"
 COPY src/ ./src/
 RUN python -m pip install --no-cache-dir .
+RUN python -c "import os; from transformers import AutoModel, AutoProcessor; model_id = os.environ['MUSELENS_CLIP_MODEL']; AutoProcessor.from_pretrained(model_id); AutoModel.from_pretrained(model_id)"
 
 COPY --from=frontend-build /build/frontend/dist /app/frontend-dist
 COPY demo_assets/ /app/demo_assets/
