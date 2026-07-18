@@ -2,5 +2,15 @@
   "$schema": "https://modelscope.cn/api/v1/studios/deploy_schema.json",
   "sdk_type": "docker",
   "resource_configuration": "platform/2v-cpu-16g-mem",
-  "port": 7860
+  "port": 7860,
+  "environment_variables": [
+    {
+      "name": "MUSELENS_MODE",
+      "value": "demo"
+    },
+    {
+      "name": "MUSELENS_SEARCH_MIN_SCORE",
+      "value": "-1"
+    }
+  ]
 }

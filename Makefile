@@ -1,4 +1,4 @@
-.PHONY: install test lint build dev-api dev-web
+.PHONY: install test lint build dev-api dev-web smoke-deployment
 
 install:
 	python3 -m venv .venv
@@ -21,3 +21,7 @@ dev-api:
 
 dev-web:
 	cd frontend && npm run dev
+
+smoke-deployment:
+	test -n "$(URL)"
+	.venv/bin/python scripts/smoke_deployment.py "$(URL)" --contract quick

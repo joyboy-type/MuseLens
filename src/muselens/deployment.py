@@ -21,3 +21,25 @@ def validate_deployment_search(results: list[dict[str, Any]]) -> None:
     missing = required - results[0].keys()
     if missing:
         raise ValueError(f"Search result is missing fields: {sorted(missing)}")
+
+
+def validate_deployment_contract(
+    summary: dict[str, Any],
+    *,
+    min_hit_at_5: float = 0.9,
+) -> None:
+    """Fail a deployment when its bilingual retrieval contract regresses."""
+    positive_queries = int(summary.get("positive_queries", 0))
+    if positive_queries < 2:
+        raise ValueError("Deployment contract must contain multiple positive queries")
+    hit_at_5 = float(summary.get("hit_at_5", 0.0))
+    if hit_at_5 < min_hit_at_5:
+        raise ValueError(
+            f"Deployment Hit@5 {hit_at_5:.2%} is below the required {min_hit_at_5:.2%}"
+        )
+    language_metrics = summary.get("language_metrics", {})
+    missing_languages = {"en", "zh"} - set(language_metrics)
+    if missing_languages:
+        raise ValueError(
+            f"Deployment contract is missing languages: {sorted(missing_languages)}"
+        )

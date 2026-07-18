@@ -1,5 +1,7 @@
 # MuseLens
 
+[中文](README.md) | [English](README_EN.md)
+
 本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。
 
 导入图片的副本默认保存在 `~/Pictures/MuseLensLibrary/` 专用目录，不移动、覆盖或删除用户原始照片。
@@ -41,6 +43,7 @@
 - [x] 24 张 CC BY 2.0 署名演示语料、预计算索引与容器冷启动优化
 - [x] Cloud Run 无长期密钥部署工作流、成本边界与线上冒烟测试
 - [x] ModelScope Studio Docker 部署配置（国内公开演示候选）
+- [x] ModelScope 强制只读配置与跨类别中英文线上验收合同
 - [ ] 公开 ModelScope Studio 地址与演示视频
 
 ## 快速开始
@@ -113,8 +116,17 @@ docker run --rm -p 7860:7860 \
 一个 FastAPI 容器同时提供页面、API、图片和模型推理。
 
 国内公开演示优先使用 ModelScope Studio Docker 模式：根目录 `ms_deploy.json` 已声明
-2 核 CPU / 16 GB 内存与 7860 端口，直接复用同一个 Dockerfile。账号注册和发布验收步骤
+2 核 CPU / 16 GB 内存、7860 端口以及强制只读 `demo` 模式，直接复用同一个 Dockerfile。账号注册和发布验收步骤
 见 `docs/MODELSCOPE_DEPLOYMENT.md`。
+
+部署成功后不再用单个 `dog` 查询作为验收依据。快速合同会覆盖 4 类内容的 8 条中英文
+查询，并要求 Hit@5 不低于 90%；完整合同运行全部 44 条正例和 10 条图库外查询：
+
+```bash
+python scripts/smoke_deployment.py https://你的地址 --contract quick
+python scripts/evaluate_demo_search.py https://你的地址 \
+  --output artifacts/evaluations/public-demo-v1.json
+```
 
 Cloud Run 作为有国际支付方式时的备选，使用 `.github/workflows/deploy-cloud-run.yml`：GitHub Actions 通过
 Workload Identity Federation 获取短期 Google 凭据，从当前 `main` 构建同一个 Dockerfile，

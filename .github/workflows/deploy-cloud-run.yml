@@ -88,7 +88,9 @@ jobs:
       - name: Smoke-test the public service
         env:
           PYTHONPATH: src
-        run: python scripts/smoke_deployment.py "${{ steps.service.outputs.url }}" --query dog --timeout 300
+        run: >-
+          python scripts/smoke_deployment.py "${{ steps.service.outputs.url }}"
+          --contract quick --min-hit-at-5 0.9 --timeout 300
 
       - name: Publish deployment summary
         run: |

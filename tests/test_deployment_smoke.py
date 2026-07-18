@@ -1,6 +1,10 @@
 import pytest
 
-from muselens.deployment import validate_deployment_health, validate_deployment_search
+from muselens.deployment import (
+    validate_deployment_contract,
+    validate_deployment_health,
+    validate_deployment_search,
+)
 
 
 def test_validate_health_accepts_read_only_demo() -> None:
@@ -55,3 +59,30 @@ def test_validate_search_requires_results_and_contract_fields() -> None:
         validate_deployment_search([])
     with pytest.raises(ValueError, match="missing fields"):
         validate_deployment_search([{"image_id": "image-1"}])
+
+
+def test_validate_contract_requires_bilingual_quality_floor() -> None:
+    validate_deployment_contract(
+        {
+            "positive_queries": 8,
+            "hit_at_5": 1.0,
+            "language_metrics": {"en": {}, "zh": {}},
+        }
+    )
+
+    with pytest.raises(ValueError, match="below the required"):
+        validate_deployment_contract(
+            {
+                "positive_queries": 8,
+                "hit_at_5": 0.5,
+                "language_metrics": {"en": {}, "zh": {}},
+            }
+        )
+    with pytest.raises(ValueError, match="missing languages"):
+        validate_deployment_contract(
+            {
+                "positive_queries": 8,
+                "hit_at_5": 1.0,
+                "language_metrics": {"en": {}},
+            }
+        )
