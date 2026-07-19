@@ -10,6 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 def test_modelscope_deployment_is_a_guarded_docker_demo() -> None:
     deployment = json.loads((PROJECT_ROOT / "ms_deploy.json").read_text())
+    dockerfile = (PROJECT_ROOT / "Dockerfile").read_text()
     variables = {
         item["name"]: item["value"]
         for item in deployment["environment_variables"]
@@ -19,6 +20,11 @@ def test_modelscope_deployment_is_a_guarded_docker_demo() -> None:
     assert deployment["port"] == 7860
     assert variables["MUSELENS_MODE"] == "demo"
     assert variables["MUSELENS_SEARCH_MIN_SCORE"] == "-1"
+    # ModelScope may ignore ms_deploy environment variables and cannot reach
+    # huggingface.co at runtime, so the image itself must be safe and offline.
+    assert "MUSELENS_MODE=demo" in dockerfile
+    assert "HF_HUB_OFFLINE=1" in dockerfile
+    assert "TRANSFORMERS_OFFLINE=1" in dockerfile
 
 
 def test_publish_space_cli_executes_main_and_requires_authentication(tmp_path) -> None:

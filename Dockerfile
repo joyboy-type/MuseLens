@@ -34,6 +34,12 @@ COPY src/ ./src/
 RUN python -m pip install --no-cache-dir .
 RUN python -c "import os; from transformers import AutoModel, AutoProcessor; model_id = os.environ['MUSELENS_CLIP_MODEL']; AutoProcessor.from_pretrained(model_id); AutoModel.from_pretrained(model_id)"
 
+# ModelScope containers cannot reliably reach huggingface.co at runtime. The
+# model is cached by the preceding layer, so inference must be network-free.
+ENV MUSELENS_MODE=demo \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
+
 COPY --from=frontend-build /build/frontend/dist /app/frontend-dist
 COPY demo_assets/ /app/demo_assets/
 
