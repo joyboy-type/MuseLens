@@ -44,7 +44,7 @@ jobs:
           MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
         run: >-
           python scripts/publish_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
-          --repo-id "${{ inputs.studio_id }}" --deploy
+          --repo-id "${{ inputs.studio_id }}" --deploy-if-changed
 
       - name: Install MuseLens verification client
         if: inputs.public_url != ''
