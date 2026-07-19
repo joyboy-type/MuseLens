@@ -2,6 +2,6 @@
 
 用户导入的图片副本默认保存在 `~/Pictures/MuseLensLibrary/`。程序不会移动、覆盖或删除原始照片；导入时使用随机 ID 生成新文件名，避免与其他文件冲突。
 
-图片元数据与 CLIP 向量保存在 `~/Pictures/MuseLensLibrary/.muselens/index.sqlite3`。程序启动时从该数据库恢复索引；重复图片通过文件 SHA-256 识别，不会再次复制。
+图片元数据、CLIP 向量、64 位感知哈希和平均色彩指纹保存在 `~/Pictures/MuseLensLibrary/.muselens/index.sqlite3`。程序启动时从该数据库恢复索引；完全相同的文件通过 SHA-256 识别并跳过，缩放、压缩等近似副本由感知哈希分组。清理操作只删除 MuseLens 专用目录中的导入副本，不会操作用户最初选择的源文件。
 
 评测阶段会选用带文本描述的公开图文数据集子集，但不会将数据本体提交到仓库。

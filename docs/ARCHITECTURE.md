@@ -33,6 +33,7 @@ TemporaryGalleryService（限额、随机会话、TTL）
 - `src/muselens/library.py`：导入、去重、编码和文件落盘流程。
 - `src/muselens/encoder.py`：可替换的 CLIP 模型适配器。
 - `src/muselens/index.py`：统一向量索引接口、NumPy 连续矩阵与可选 FAISS 精确检索。
+- `src/muselens/duplicates.py`：感知哈希、归一化色彩约束与精确候选分块分组。
 - `src/muselens/repository.py`：SQLite 持久化与启动恢复。
 - `src/muselens/sessions.py`：访客临时图库、会话隔离、资源上限与到期清理。
 - `scripts`：可重复的数据下载与离线评测任务。
@@ -57,6 +58,8 @@ TemporaryGalleryService（限额、随机会话、TTL）
 - 默认使用连续 NumPy 矩阵进行精确余弦检索；FAISS 保留为兼容平台的可选后端，数据扩大到
   至少 5 万张后再判断是否需要 ANN 或独立向量服务。
 - 图片导入到专用目录，不直接操作原始图片。
+- 导入时同时计算 SHA-256、64 位感知哈希和平均色彩。SHA-256 跳过完全相同文件；感知哈希
+  识别缩放、压缩等近似副本，删除动作只作用于专用目录里的导入副本。
 - 导入时生成最长边 640px 的版本化 WebP 缩略图；旧图片首次请求时自动补建，图库与灯箱分别加载缩略图和原图。
 - 文件夹导入先写入本地暂存区，任务与逐文件状态保存到 SQLite；模型分批后台索引，服务中断后任务转为可重试状态。
 - CLIP 延迟加载，健康检查和普通列表请求不会占用模型内存。

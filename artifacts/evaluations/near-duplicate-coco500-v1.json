@@ -1,0 +1,63 @@
+{
+  "experiment": "near-duplicate-coco500",
+  "evaluated_at": "2026-07-19T10:23:50.264575+00:00",
+  "protocol": {
+    "source_images": 500,
+    "transformed_images": 2500,
+    "variants": {
+      "original": 500,
+      "center_crop": 500,
+      "jpeg_low": 500,
+      "blur": 500,
+      "dark": 500,
+      "low_resolution": 500
+    },
+    "hash_distance": 8,
+    "color_distance": 45
+  },
+  "pair_metrics": {
+    "true_positives": 5000,
+    "false_positives": 0,
+    "false_negatives": 2500,
+    "precision": 1.0,
+    "recall": 0.6666666666666666,
+    "f1": 0.8
+  },
+  "groups": {
+    "detected": 500,
+    "mixed_source_groups": 0,
+    "largest_group": 5
+  },
+  "direct_source_match_by_variant": {
+    "blur": {
+      "matched": 500,
+      "total": 500,
+      "recall": 1.0
+    },
+    "center_crop": {
+      "matched": 0,
+      "total": 500,
+      "recall": 0.0
+    },
+    "dark": {
+      "matched": 500,
+      "total": 500,
+      "recall": 1.0
+    },
+    "jpeg_low": {
+      "matched": 500,
+      "total": 500,
+      "recall": 1.0
+    },
+    "low_resolution": {
+      "matched": 500,
+      "total": 500,
+      "recall": 1.0
+    }
+  },
+  "performance": {
+    "fingerprint_seconds": 3.5078415409952868,
+    "grouping_seconds": 0.0388594169926364,
+    "images_per_second": 855.226772629189
+  }
+}

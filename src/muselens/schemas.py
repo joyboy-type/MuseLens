@@ -35,6 +35,17 @@ class ImportResponse(ImageRecordResponse):
     sha256: str
 
 
+class DuplicateMemberResponse(ImageRecordResponse):
+    distance_to_representative: int = Field(ge=0, le=64)
+    recommended_keep: bool
+
+
+class DuplicateGroupResponse(BaseModel):
+    group_id: str
+    members: list[DuplicateMemberResponse]
+    potential_savings_bytes: int = Field(ge=0)
+
+
 class TextSearchRequest(BaseModel):
     query: str = Field(default="", max_length=300)
     top_k: int = Field(default=12, ge=1, le=100)

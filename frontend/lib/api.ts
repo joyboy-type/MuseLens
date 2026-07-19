@@ -1,5 +1,6 @@
 import type {
   Health,
+  DuplicateGroup,
   ImageRecord,
   ImportJob,
   ImportResult,
@@ -40,6 +41,18 @@ export function getHealth(): Promise<Health> {
 
 export function listImages(): Promise<ImageRecord[]> {
   return request<ImageRecord[]>("/v1/images");
+}
+
+export function listDuplicateGroups(sessionId?: string): Promise<DuplicateGroup[]> {
+  return request<DuplicateGroup[]>(
+    sessionId
+      ? `/v1/demo/sessions/${sessionId}/duplicates`
+      : "/v1/duplicates",
+  );
+}
+
+export function deleteImage(imageId: string): Promise<void> {
+  return request<void>(`/v1/images/${imageId}`, { method: "DELETE" });
 }
 
 function searchPayload(query: string, filters: SearchFilters) {
