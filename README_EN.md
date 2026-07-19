@@ -2,10 +2,36 @@
 
 [中文](README.md) | [English](README_EN.md)
 
+![CI](https://github.com/joyboy-type/MuseLens/actions/workflows/ci.yml/badge.svg)
+[![ModelScope deployment](https://img.shields.io/badge/ModelScope-online-624AFF)](https://sinbaby-muselens.ms.show)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 MuseLens is a local-first multimodal image search system. Import a personal image
 library, then retrieve images with Chinese or English natural-language queries or with
 another image. Imported copies live in a dedicated directory; original files are never
-moved, overwritten, or deleted.
+moved, overwritten, or deleted. The browser talks only to MuseLens's FastAPI backend;
+results come from real SigLIP2 embeddings and a local vector index, not hard-coded
+keyword mappings or a third-party stock-photo API.
+
+**[Live demo](https://sinbaby-muselens.ms.show)** ·
+**[Architecture](docs/ARCHITECTURE.md)** ·
+**[Evaluation](docs/BASELINE_RESULTS.md)** ·
+**[Interview guide (Chinese)](docs/INTERVIEW_GUIDE.md)**
+
+## Verify it in 30 seconds
+
+1. Search the fixed demo library with English or Chinese natural language.
+2. Switch to the temporary gallery, upload a few of your own images, wait for indexing,
+   and search for their contents with arbitrary keywords.
+3. Uploaded data is isolated to the visitor session and can be deleted immediately; it
+   also expires automatically after 30 minutes.
+
+Deployment CI verifies more than page availability. It runs an eight-query bilingual
+contract and creates a real temporary gallery to test upload, indexing, retrieval,
+session isolation, and deletion. See the latest machine-readable
+[live evidence](artifacts/evaluations/modelscope-live-temporary-gallery-v1.json).
 
 ## Why this project is more than a UI demo
 
@@ -34,6 +60,7 @@ the complete public contract contains 44 positive and 10 absent-content queries.
 | Image search, 500 images / 2,500 transformed queries | Recall@1 99.36%, Recall@5 99.96% |
 | Public bilingual contract, SigLIP2 recall | Top-1 75.0%, Top-5 97.73% |
 | Public contract with Qwen3-VL reranking | Top-1 95.45%, Top-5 100% |
+| NumPy exact index, 5,000 images | 10.87x faster, 100% Top-10 rank agreement |
 
 The lightweight adapter was trained and evaluated, but it was not shipped because it
 did not beat the frozen SigLIP2 baseline. The decision and raw artifacts are kept in the
