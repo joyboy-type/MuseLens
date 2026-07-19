@@ -55,6 +55,17 @@ export type ImportResult = ImageRecord & {
   sha256: string;
 };
 
+export type DuplicateMember = ImageRecord & {
+  distance_to_representative: number;
+  recommended_keep: boolean;
+};
+
+export type DuplicateGroup = {
+  group_id: string;
+  members: DuplicateMember[];
+  potential_savings_bytes: number;
+};
+
 export type ImportJobStatus =
   | "queued"
   | "running"

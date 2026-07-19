@@ -13,6 +13,8 @@ def test_repository_persists_and_restores_embedding(tmp_path) -> None:
         sha256="abc123",
         size_bytes=42,
         model_id="test-model",
+        perceptual_hash="0123456789abcdef",
+        average_color="aabbcc",
     )
     repository.insert(stored, np.array([0.1, 0.2, 0.3], dtype=np.float32))
 
@@ -30,6 +32,49 @@ def test_repository_persists_and_restores_embedding(tmp_path) -> None:
         assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         assert connection.execute("PRAGMA busy_timeout").fetchone()[0] == 30000
+
+
+def test_repository_migrates_and_updates_visual_fingerprints(tmp_path) -> None:
+    database = tmp_path / "state" / "index.sqlite3"
+    database.parent.mkdir(parents=True)
+    import sqlite3
+
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """
+            CREATE TABLE images (
+                image_id TEXT PRIMARY KEY,
+                original_filename TEXT NOT NULL,
+                stored_filename TEXT NOT NULL UNIQUE,
+                content_type TEXT NOT NULL,
+                sha256 TEXT NOT NULL UNIQUE,
+                size_bytes INTEGER NOT NULL,
+                width INTEGER NOT NULL DEFAULT 0,
+                height INTEGER NOT NULL DEFAULT 0,
+                embedding BLOB NOT NULL,
+                embedding_dim INTEGER NOT NULL,
+                model_id TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+    repository = ImageRepository(database)
+    repository.initialize()
+    stored = StoredImage(
+        image=IndexedImage("id-1", "photo.jpg", "image/jpeg"),
+        stored_filename="id-1.jpg",
+        sha256="digest",
+        size_bytes=12,
+        model_id="model",
+    )
+    repository.insert(stored, np.asarray([1.0, 0.0], dtype=np.float32))
+
+    repository.update_visual_fingerprint("id-1", "fedcba9876543210", "112233")
+
+    restored = repository.find_by_id("id-1")
+    assert restored is not None
+    assert restored.perceptual_hash == "fedcba9876543210"
+    assert restored.average_color == "112233"
 
 
 def test_repository_atomically_replaces_embeddings(tmp_path) -> None:

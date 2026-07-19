@@ -88,7 +88,8 @@ flowchart LR
 - [x] 中英文检索基线、模型对比与安全向量迁移
 - [x] 冻结主干的双塔残差 Adapter 与对称 InfoNCE 训练骨架
 - [x] 5000/500/100 官方 split Adapter 训练、消融与最终测试
-- [ ] 重复图片检测与自动标签
+- [x] SHA-256 精确去重 + 感知哈希近似重复分组与安全清理
+- [ ] 自动标签
 - [x] Recall@K、MRR 与编码延迟评测
 - [x] React + TypeScript 响应式图片画廊前端
 - [x] 语义 + 格式/方向/时间/尺寸的后端组合检索与响应式筛选面板
@@ -215,6 +216,7 @@ python scripts/evaluate_retrieval.py --batch-size 16
 python scripts/evaluate_rejection.py
 python scripts/evaluate_gallery_smoke.py
 python scripts/evaluate_image_retrieval.py --count 500 --batch-size 16
+python scripts/evaluate_duplicates.py
 ```
 
 首个小样本结果：Recall@1 0.852、Recall@5 0.976、Recall@10 0.998、MRR 0.908。候选集只有100张图片，因此这只是工程基线，不代表最终系统效果。详见 `docs/BASELINE_RESULTS.md`。
@@ -251,10 +253,17 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 99.36%，Recall@5 为 99.96%。图片搜索相对分差据此从 0.035 独立校准为 0.05；完整
 协议、分扰动结果和适用边界见 `docs/IMAGE_RETRIEVAL_RESULTS.md`。
 
+近似重复检测使用 64 位感知哈希与归一化平均色彩约束。在同一批 500 张 COCO 原图和
+2,500 张扰动图上，JPEG 强压缩、模糊、曝光变暗和低分辨率四类直接召回均为 100%，
+跨原图误组为 0；68% 中心裁剪未命中并作为当前严格模式边界。详见
+`docs/DUPLICATE_DETECTION_RESULTS.md`。
+
 ## 接口
 
 - `GET /health`：服务、模型、索引、运行模式和图库写入能力
 - `GET /v1/images`：已索引图片
+- `GET /v1/duplicates`：按感知指纹读取近似重复图片组与预计可释放空间
+- `DELETE /v1/images/{image_id}`：仅在本地模式删除 MuseLens 导入副本
 - `GET /v1/images/{image_id}/content`：读取原图
 - `GET /v1/images/{image_id}/thumbnail`：读取或按需生成缓存缩略图
 - `POST /v1/images`：导入图片并生成向量
@@ -268,6 +277,7 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 - `POST /v1/demo/sessions`：上传图片并创建隔离的临时图库
 - `GET /v1/demo/sessions/{session_id}`：读取临时索引进度和到期时间
 - `GET /v1/demo/sessions/{session_id}/images`：读取本会话图片
+- `GET /v1/demo/sessions/{session_id}/duplicates`：检查本会话的近似重复图片组
 - `POST /v1/demo/sessions/{session_id}/search/text`：只搜索本会话图片
 - `POST /v1/demo/sessions/{session_id}/search/image`：在本会话内以图搜图
 - `DELETE /v1/demo/sessions/{session_id}`：立即清除临时图库

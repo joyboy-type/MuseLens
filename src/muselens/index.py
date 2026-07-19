@@ -24,6 +24,8 @@ class SearchIndex(Protocol):
 
     def add(self, image: IndexedImage, vector: np.ndarray) -> None: ...
 
+    def remove(self, image_id: str) -> bool: ...
+
     def clear(self) -> None: ...
 
     def search(self, query: np.ndarray, top_k: int) -> list[SearchHit]: ...
@@ -90,6 +92,18 @@ class VectorIndex:
             self._dimension = None
             self._matrix = None
             self._ordered_ids = ()
+
+    def remove(self, image_id: str) -> bool:
+        with self._lock:
+            existed = image_id in self._images
+            self._images.pop(image_id, None)
+            self._vectors.pop(image_id, None)
+            if existed:
+                self._matrix = None
+                self._ordered_ids = ()
+                if not self._images:
+                    self._dimension = None
+            return existed
 
     def search(self, query: np.ndarray, top_k: int) -> list[SearchHit]:
         normalized_query = normalize(query)
@@ -171,6 +185,18 @@ class FaissVectorIndex:
             self._dimension = None
             self._index = None
             self._ordered_ids = ()
+
+    def remove(self, image_id: str) -> bool:
+        with self._lock:
+            existed = image_id in self._images
+            self._images.pop(image_id, None)
+            self._vectors.pop(image_id, None)
+            if existed:
+                self._index = None
+                self._ordered_ids = ()
+                if not self._images:
+                    self._dimension = None
+            return existed
 
     def search(self, query: np.ndarray, top_k: int) -> list[SearchHit]:
         normalized_query = normalize(query)

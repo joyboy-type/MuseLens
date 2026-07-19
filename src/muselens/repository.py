@@ -25,6 +25,8 @@ class StoredImage:
     width: int = 0
     height: int = 0
     created_at: str = ""
+    perceptual_hash: str = ""
+    average_color: str = ""
 
 
 class ImageRepository:
@@ -53,7 +55,9 @@ class ImageRepository:
                     embedding BLOB NOT NULL,
                     embedding_dim INTEGER NOT NULL,
                     model_id TEXT NOT NULL,
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    perceptual_hash TEXT NOT NULL DEFAULT '',
+                    average_color TEXT NOT NULL DEFAULT ''
                 )
                 """
             )
@@ -64,6 +68,14 @@ class ImageRepository:
                 connection.execute("ALTER TABLE images ADD COLUMN width INTEGER NOT NULL DEFAULT 0")
             if "height" not in columns:
                 connection.execute("ALTER TABLE images ADD COLUMN height INTEGER NOT NULL DEFAULT 0")
+            if "perceptual_hash" not in columns:
+                connection.execute(
+                    "ALTER TABLE images ADD COLUMN perceptual_hash TEXT NOT NULL DEFAULT ''"
+                )
+            if "average_color" not in columns:
+                connection.execute(
+                    "ALTER TABLE images ADD COLUMN average_color TEXT NOT NULL DEFAULT ''"
+                )
 
     def insert(self, stored: StoredImage, vector: np.ndarray) -> None:
         embedding = np.asarray(vector, dtype=np.float32).reshape(-1)
@@ -72,8 +84,9 @@ class ImageRepository:
                 """
                 INSERT INTO images (
                     image_id, original_filename, stored_filename, content_type,
-                    sha256, size_bytes, width, height, embedding, embedding_dim, model_id, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    sha256, size_bytes, width, height, embedding, embedding_dim, model_id, created_at,
+                    perceptual_hash, average_color
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     stored.image.image_id,
@@ -88,6 +101,8 @@ class ImageRepository:
                     embedding.size,
                     stored.model_id,
                     stored.created_at,
+                    stored.perceptual_hash,
+                    stored.average_color,
                 ),
             )
 
@@ -97,6 +112,27 @@ class ImageRepository:
                 "UPDATE images SET width = ?, height = ? WHERE image_id = ?",
                 (width, height, image_id),
             )
+
+    def update_visual_fingerprint(
+        self,
+        image_id: str,
+        perceptual_hash: str,
+        average_color: str,
+    ) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                """
+                UPDATE images
+                SET perceptual_hash = ?, average_color = ?
+                WHERE image_id = ?
+                """,
+                (perceptual_hash, average_color, image_id),
+            )
+
+    def delete(self, image_id: str) -> bool:
+        with self.connect() as connection:
+            cursor = connection.execute("DELETE FROM images WHERE image_id = ?", (image_id,))
+        return cursor.rowcount == 1
 
     def list_stored(self) -> list[StoredImage]:
         with self.connect() as connection:
@@ -171,4 +207,6 @@ class ImageRepository:
             width=row["width"],
             height=row["height"],
             created_at=row["created_at"],
+            perceptual_hash=row["perceptual_hash"],
+            average_color=row["average_color"],
         )

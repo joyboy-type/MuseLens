@@ -43,6 +43,8 @@ session isolation, and deletion. See the latest machine-readable
 - NumPy matrix search by default and an optional FAISS backend.
 - Background folder imports, SHA-256 deduplication, restart recovery, cached WebP
   thumbnails, filters, and responsive React/TypeScript UI.
+- Perceptual-hash near-duplicate groups with color-aware false-positive protection and
+  local-copy-only cleanup that never touches the original source file.
 - Reproducible evaluation artifacts for retrieval, rejection, scale, latency, adapter
   training, and deployment acceptance.
 
@@ -61,6 +63,7 @@ the complete public contract contains 44 positive and 10 absent-content queries.
 | Public bilingual contract, SigLIP2 recall | Top-1 75.0%, Top-5 97.73% |
 | Public contract with Qwen3-VL reranking | Top-1 95.45%, Top-5 100% |
 | NumPy exact index, 5,000 images | 10.87x faster, 100% Top-10 rank agreement |
+| Near duplicates, 500 originals / 2,500 transformations | 100% recall on compression, blur, exposure, and downsampling; 0 mixed-source groups |
 
 The lightweight adapter was trained and evaluated, but it was not shipped because it
 did not beat the frozen SigLIP2 baseline. The decision and raw artifacts are kept in the

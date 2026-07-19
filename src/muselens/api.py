@@ -24,6 +24,8 @@ from .repository import ImageRepository, StoredImage
 from .reranker import QwenVLReranker, rerank_candidates
 from .schemas import (
     HealthResponse,
+    DuplicateGroupResponse,
+    DuplicateMemberResponse,
     ImageRecordResponse,
     ImportJobResponse,
     ImportResponse,
@@ -85,6 +87,7 @@ async def lifespan(app: FastAPI):
         thumbnail_quality=settings.thumbnail_quality,
     )
     library.backfill_dimensions()
+    library.backfill_visual_fingerprints()
     library.restore_index()
     job_repository = ImportJobRepository(settings.state_dir / "index.sqlite3")
     job_repository.initialize()
@@ -208,6 +211,21 @@ def image_record_response(stored) -> ImageRecordResponse:
     )
 
 
+def duplicate_group_response(group) -> DuplicateGroupResponse:
+    return DuplicateGroupResponse(
+        group_id=group.group_id,
+        potential_savings_bytes=group.potential_savings_bytes,
+        members=[
+            DuplicateMemberResponse(
+                **image_record_response(member.stored).model_dump(),
+                distance_to_representative=member.distance_to_representative,
+                recommended_keep=member.recommended_keep,
+            )
+            for member in group.members
+        ],
+    )
+
+
 def search_hit_response(stored, score: float | None = None) -> SearchHitResponse:
     return SearchHitResponse(
         **vars(stored.image),
@@ -262,6 +280,25 @@ def indexed_fallback(hit) -> StoredImage:
 @app.get("/v1/images", response_model=list[ImageRecordResponse])
 def list_images(request: Request) -> list[ImageRecordResponse]:
     return [image_record_response(stored) for stored in request.app.state.library.repository.list_stored()]
+
+
+@app.get("/v1/duplicates", response_model=list[DuplicateGroupResponse])
+def list_duplicate_groups(request: Request) -> list[DuplicateGroupResponse]:
+    groups = request.app.state.library.duplicate_groups(
+        max_hash_distance=settings.duplicate_hash_distance,
+        max_color_distance=settings.duplicate_color_distance,
+    )
+    return [duplicate_group_response(group) for group in groups]
+
+
+@app.delete("/v1/images/{image_id}", status_code=204)
+def delete_image(image_id: str, request: Request) -> Response:
+    require_library_writes(request)
+    try:
+        request.app.state.library.delete_imported_copy(image_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail="Image not found.") from error
+    return Response(status_code=204)
 
 
 @app.get("/v1/images/{image_id}/content")
@@ -729,6 +766,26 @@ def list_temporary_gallery_images(
     except KeyError as error:
         raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
     return [image_record_response(stored) for stored in gallery.library.repository.list_stored()]
+
+
+@app.get(
+    "/v1/demo/sessions/{session_id}/duplicates",
+    response_model=list[DuplicateGroupResponse],
+)
+def list_temporary_gallery_duplicate_groups(
+    session_id: str,
+    request: Request,
+) -> list[DuplicateGroupResponse]:
+    service = temporary_gallery_service(request)
+    try:
+        gallery = service.gallery(session_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+    groups = gallery.library.duplicate_groups(
+        max_hash_distance=settings.duplicate_hash_distance,
+        max_color_distance=settings.duplicate_color_distance,
+    )
+    return [duplicate_group_response(group) for group in groups]
 
 
 @app.get("/v1/demo/sessions/{session_id}/images/{image_id}/content")

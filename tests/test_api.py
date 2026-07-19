@@ -2,10 +2,12 @@ from io import BytesIO
 
 from fastapi.testclient import TestClient
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from muselens.api import app, seed_demo_library
 from muselens.index import IndexedImage, VectorIndex
+from muselens.library import ImageLibrary, prepare_image
+from muselens.repository import ImageRepository
 from muselens.sessions import TemporaryGalleryService
 
 
@@ -20,6 +22,18 @@ class TemporaryEncoder:
         # Deliberately tiny cosine score: a temporary gallery must still return
         # its best ranked match instead of applying a large-corpus absolute floor.
         return np.asarray([[0.01, np.sqrt(0.9999)] for _text in texts], dtype=np.float32)
+
+
+def patterned_jpeg(*, size: tuple[int, int] = (180, 120), quality: int = 90) -> bytes:
+    image = Image.new("RGB", (180, 120), (220, 190, 120))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((12, 15, 84, 105), fill=(32, 75, 135))
+    draw.ellipse((92, 20, 164, 92), fill=(210, 55, 60))
+    draw.line((0, 119, 179, 0), fill=(245, 245, 230), width=7)
+    image = image.resize(size, Image.Resampling.LANCZOS)
+    buffer = BytesIO()
+    image.save(buffer, format="JPEG", quality=quality)
+    return buffer.getvalue()
 
 
 def test_health_reports_service_status() -> None:
@@ -76,6 +90,55 @@ def test_demo_mode_rejects_library_mutation() -> None:
 
     assert response.status_code == 403
     assert "fixed image library" in response.json()["detail"]
+
+
+def test_duplicate_api_groups_transforms_and_deletes_only_imported_copy(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    index = VectorIndex()
+    library = ImageLibrary(tmp_path / "library", repository, index, TemporaryEncoder())
+    original = patterned_jpeg()
+    compressed = patterned_jpeg(size=(96, 64), quality=42)
+    source_file = tmp_path / "source-original.jpg"
+    source_file.write_bytes(original)
+    imported = library.import_candidates(
+        [
+            prepare_image("original.jpg", "image/jpeg", original, 1024 * 1024),
+            prepare_image("compressed.jpg", "image/jpeg", compressed, 1024 * 1024),
+        ]
+    )
+
+    with TestClient(app) as client:
+        app.state.library = library
+        app.state.index = index
+        app.state.library_writable = True
+        response = client.get("/v1/duplicates")
+        assert response.status_code == 200
+        groups = response.json()
+        assert len(groups) == 1
+        assert len(groups[0]["members"]) == 2
+        assert sum(member["recommended_keep"] for member in groups[0]["members"]) == 1
+        remove_id = next(
+            member["image_id"]
+            for member in groups[0]["members"]
+            if not member["recommended_keep"]
+        )
+
+        deleted = client.delete(f"/v1/images/{remove_id}")
+
+    assert deleted.status_code == 204
+    assert source_file.is_file()
+    assert repository.find_by_id(remove_id) is None
+    assert len(index) == 1
+    assert len(imported) == 2
+
+
+def test_demo_mode_rejects_deleting_an_image() -> None:
+    with TestClient(app) as client:
+        app.state.library_writable = False
+        response = client.delete("/v1/images/unknown")
+
+    assert response.status_code == 403
 
 
 def test_demo_seed_populates_precreated_runtime_directories(tmp_path) -> None:

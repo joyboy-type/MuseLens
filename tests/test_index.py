@@ -54,6 +54,22 @@ def test_matrix_cache_is_rebuilt_after_an_image_is_added() -> None:
     assert [hit.image.image_id for hit in hits] == ["second", "first"]
 
 
+def test_index_removal_invalidates_cache_and_resets_dimension_when_empty() -> None:
+    index = VectorIndex()
+    index.add(IndexedImage("first", "first.jpg", "image/jpeg"), np.array([1.0, 0.0]))
+    index.add(IndexedImage("second", "second.jpg", "image/jpeg"), np.array([0.0, 1.0]))
+    index.search(np.array([1.0, 0.0]), 10)
+
+    assert index.remove("first") is True
+    assert index.remove("missing") is False
+    assert [hit.image.image_id for hit in index.search(np.array([1.0, 0.0]), 10)] == [
+        "second"
+    ]
+    assert index.remove("second") is True
+    index.add(IndexedImage("new", "new.jpg", "image/jpeg"), np.ones(3))
+    assert len(index) == 1
+
+
 def test_faiss_exact_index_matches_numpy_rankings_and_scores() -> None:
     pytest.importorskip("faiss")
     if sys.platform == "darwin" and "torch" in sys.modules:

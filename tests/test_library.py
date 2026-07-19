@@ -1,7 +1,7 @@
 from io import BytesIO
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 import pytest
 
 from muselens.index import VectorIndex
@@ -27,6 +27,18 @@ class NewFakeEncoder:
 def jpeg_bytes(color: str) -> bytes:
     buffer = BytesIO()
     Image.new("RGB", (16, 16), color).save(buffer, format="JPEG")
+    return buffer.getvalue()
+
+
+def patterned_bytes(*, size: tuple[int, int] = (180, 120), quality: int = 90) -> bytes:
+    image = Image.new("RGB", (180, 120), (220, 190, 120))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((12, 15, 84, 105), fill=(32, 75, 135))
+    draw.ellipse((92, 20, 164, 92), fill=(210, 55, 60))
+    draw.line((0, 119, 179, 0), fill=(245, 245, 230), width=7)
+    image = image.resize(size, Image.Resampling.LANCZOS)
+    buffer = BytesIO()
+    image.save(buffer, format="JPEG", quality=quality)
     return buffer.getvalue()
 
 
@@ -78,6 +90,46 @@ def test_library_lazily_rebuilds_a_missing_thumbnail(tmp_path) -> None:
 
     assert rebuilt == thumbnail
     assert rebuilt.is_file()
+
+
+def test_library_groups_transformed_duplicates_and_deletes_only_its_copy(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    index = VectorIndex()
+    library = ImageLibrary(tmp_path / "images", repository, index, FakeEncoder())
+    candidates = [
+        prepare_image("original.jpg", "image/jpeg", patterned_bytes(), 1024 * 1024),
+        prepare_image(
+            "compressed.jpg",
+            "image/jpeg",
+            patterned_bytes(size=(96, 64), quality=42),
+            1024 * 1024,
+        ),
+        prepare_image("different.jpg", "image/jpeg", jpeg_bytes("blue"), 1024 * 1024),
+    ]
+    library.import_candidates(candidates)
+
+    groups = library.duplicate_groups()
+
+    assert len(groups) == 1
+    assert {member.stored.image.filename for member in groups[0].members} == {
+        "original.jpg",
+        "compressed.jpg",
+    }
+    assert sum(member.recommended_keep for member in groups[0].members) == 1
+    removable = next(member for member in groups[0].members if not member.recommended_keep)
+    original_path = library.original_path(removable.stored)
+    thumbnail_path = library.thumbnail_path(removable.stored.image.image_id)
+    assert original_path.is_file()
+    assert thumbnail_path.is_file()
+
+    deleted = library.delete_imported_copy(removable.stored.image.image_id)
+
+    assert deleted == removable.stored
+    assert repository.find_by_id(removable.stored.image.image_id) is None
+    assert not original_path.exists()
+    assert not thumbnail_path.exists()
+    assert len(index) == 2
 
 
 def test_library_rebuilds_embeddings_when_model_changes(tmp_path) -> None:

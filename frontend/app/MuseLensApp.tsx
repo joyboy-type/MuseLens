@@ -5,11 +5,13 @@ import {
   ImageSearchDialog,
   type ImageQueryCandidate,
 } from "@/components/ImageSearchDialog";
+import { DuplicateReviewDialog } from "@/components/DuplicateReviewDialog";
 import { activeFilterCount, EMPTY_FILTERS } from "@/lib/search-filters";
 import { filenameEvidence, relevanceFor } from "@/lib/relevance";
 import {
   createTemporaryGallery,
   createImportJob,
+  deleteImage,
   deleteTemporaryGallery,
   getHealth,
   getImportJob,
@@ -17,6 +19,7 @@ import {
   getTemporaryGallery,
   imageUrl,
   listImages,
+  listDuplicateGroups,
   listTemporaryGalleryImages,
   retryImportJob,
   searchImages,
@@ -26,6 +29,8 @@ import {
 } from "@/lib/api";
 import type {
   Health,
+  DuplicateGroup,
+  DuplicateMember,
   ImportJob,
   LibraryItem,
   SearchFilters,
@@ -36,6 +41,7 @@ import {
   ChevronRight,
   Clock3,
   CloudOff,
+  Copy,
   FolderOpen,
   Filter,
   Images,
@@ -74,6 +80,9 @@ export function MuseLensApp() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selected, setSelected] = useState<LibraryItem | null>(null);
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
+  const [duplicateLoading, setDuplicateLoading] = useState(false);
+  const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const searchRequestRef = useRef(0);
@@ -285,6 +294,7 @@ export function MuseLensApp() {
       if (event.key === "Escape") {
         setSelected(null);
         setFiltersOpen(false);
+        setDuplicateOpen(false);
       }
     }
     window.addEventListener("keydown", handleShortcut);
@@ -575,6 +585,45 @@ export function MuseLensApp() {
     }
   }
 
+  async function loadDuplicateGroups() {
+    setDuplicateOpen(true);
+    setDuplicateLoading(true);
+    setError("");
+    try {
+      setDuplicateGroups(
+        await listDuplicateGroups(
+          temporaryActive && temporaryGallery
+            ? temporaryGallery.session_id
+            : undefined,
+        ),
+      );
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "无法检查重复照片");
+      setDuplicateOpen(false);
+    } finally {
+      setDuplicateLoading(false);
+    }
+  }
+
+  async function removeDuplicate(member: DuplicateMember) {
+    const confirmed = window.confirm(
+      `删除 MuseLens 中的导入副本“${member.filename}”？你的原始照片不会被删除。`,
+    );
+    if (!confirmed) return;
+    setDuplicateLoading(true);
+    setError("");
+    try {
+      await deleteImage(member.image_id);
+      const [groups] = await Promise.all([listDuplicateGroups(), refreshLibrary()]);
+      setDuplicateGroups(groups);
+      setNotice(`已删除导入副本“${member.filename}”，原始照片未受影响`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "无法删除导入副本");
+    } finally {
+      setDuplicateLoading(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="主导航">
@@ -709,6 +758,11 @@ export function MuseLensApp() {
               </p>
             </div>
             <div className="status-cluster">
+              {!searchActive && items.length > 1 && (
+                <button className="duplicate-trigger" onClick={loadDuplicateGroups}>
+                  <Copy size={13} /> 重复照片
+                </button>
+              )}
               <span className="status-chip">
                 <span className={health ? "live-dot" : "live-dot offline"} />
                 {health ? (demoMode ? "公开演示在线" : "本地服务在线") : "正在连接"}
@@ -1072,6 +1126,15 @@ export function MuseLensApp() {
         onSearch={runImageSearch}
         onSelect={selectImageQuery}
         open={imageDialogOpen}
+      />
+      <DuplicateReviewDialog
+        groups={duplicateGroups}
+        loading={duplicateLoading}
+        onClose={() => setDuplicateOpen(false)}
+        onDelete={removeDuplicate}
+        open={duplicateOpen}
+        sessionId={temporaryActive ? temporaryGallery?.session_id : undefined}
+        writable={libraryWritable && !temporaryActive}
       />
     </main>
   );

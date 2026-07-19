@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .encoder import ClipEncoder
+from .duplicates import VisualFingerprint, duplicate_components, hash_distance, visual_fingerprint
 from .index import IndexedImage, SearchIndex
 from .repository import ImageRepository, StoredImage
 
@@ -37,6 +38,20 @@ class UploadCandidate:
 class ImportResult:
     stored: StoredImage
     duplicate: bool
+
+
+@dataclass(frozen=True)
+class DuplicateMember:
+    stored: StoredImage
+    distance_to_representative: int
+    recommended_keep: bool
+
+
+@dataclass(frozen=True)
+class DuplicateGroup:
+    group_id: str
+    members: list[DuplicateMember]
+    potential_savings_bytes: int
 
 
 def prepare_image(
@@ -110,6 +125,89 @@ class ImageLibrary:
             self.repository.update_dimensions(stored.image.image_id, width, height)
             updated += 1
         return updated
+
+    def backfill_visual_fingerprints(self) -> int:
+        updated = 0
+        for stored in self.repository.list_stored():
+            if stored.perceptual_hash and stored.average_color:
+                continue
+            original = self.original_path(stored)
+            if not original.is_file():
+                continue
+            try:
+                with Image.open(original) as opened:
+                    fingerprint = visual_fingerprint(ImageOps.exif_transpose(opened).convert("RGB"))
+            except (UnidentifiedImageError, OSError):
+                continue
+            self.repository.update_visual_fingerprint(
+                stored.image.image_id,
+                fingerprint.perceptual_hash,
+                fingerprint.average_color,
+            )
+            updated += 1
+        return updated
+
+    def duplicate_groups(
+        self,
+        *,
+        max_hash_distance: int = 8,
+        max_color_distance: float = 45,
+    ) -> list[DuplicateGroup]:
+        stored_images = self.repository.list_stored()
+        fingerprints = [
+            VisualFingerprint(stored.perceptual_hash, stored.average_color)
+            for stored in stored_images
+        ]
+        groups: list[DuplicateGroup] = []
+        for positions in duplicate_components(
+            fingerprints,
+            max_hash_distance=max_hash_distance,
+            max_color_distance=max_color_distance,
+        ):
+            candidates = [stored_images[position] for position in positions]
+            representative = max(
+                enumerate(candidates),
+                key=lambda item: (
+                    item[1].width * item[1].height,
+                    item[1].size_bytes,
+                    -item[0],
+                ),
+            )[1]
+            members = [
+                DuplicateMember(
+                    stored=stored,
+                    distance_to_representative=hash_distance(
+                        representative.perceptual_hash,
+                        stored.perceptual_hash,
+                    ),
+                    recommended_keep=stored.image.image_id == representative.image.image_id,
+                )
+                for stored in candidates
+            ]
+            members.sort(key=lambda member: (not member.recommended_keep, member.stored.created_at))
+            groups.append(
+                DuplicateGroup(
+                    group_id=min(stored.image.image_id for stored in candidates),
+                    members=members,
+                    potential_savings_bytes=sum(stored.size_bytes for stored in candidates)
+                    - representative.size_bytes,
+                )
+            )
+        groups.sort(key=lambda group: group.potential_savings_bytes, reverse=True)
+        return groups
+
+    def delete_imported_copy(self, image_id: str) -> StoredImage:
+        stored = self.repository.find_by_id(image_id)
+        if stored is None:
+            raise KeyError(image_id)
+        original = self.original_path(stored)
+        thumbnail = self.thumbnail_path(image_id)
+        if not self.repository.delete(image_id):
+            raise KeyError(image_id)
+        self.index.remove(image_id)
+        original.unlink(missing_ok=True)
+        thumbnail.unlink(missing_ok=True)
+        return stored
 
     def rebuild_embeddings(self, batch_size: int = 16) -> int:
         """Re-encode stored originals, then atomically switch the persisted model."""
@@ -185,6 +283,7 @@ class ImageLibrary:
             temporary.replace(destination)
         finally:
             temporary.unlink(missing_ok=True)
+        fingerprint = visual_fingerprint(candidate.image)
         stored = StoredImage(
             image=IndexedImage(
                 image_id=image_id,
@@ -198,6 +297,8 @@ class ImageLibrary:
             width=candidate.image.width,
             height=candidate.image.height,
             created_at=datetime.now(timezone.utc).isoformat(),
+            perceptual_hash=fingerprint.perceptual_hash,
+            average_color=fingerprint.average_color,
         )
         try:
             self._write_thumbnail(candidate.image, self.thumbnail_path(image_id))
