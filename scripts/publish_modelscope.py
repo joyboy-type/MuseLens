@@ -29,7 +29,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-id", help="ModelScope Studio owner/name.")
     parser.add_argument("--repo-url", help="Override the Git remote URL (primarily for testing).")
     parser.add_argument("--branch", default="master")
-    parser.add_argument("--deploy", action="store_true", help="Trigger Studio deployment via OpenAPI.")
+    deployment = parser.add_mutually_exclusive_group()
+    deployment.add_argument(
+        "--deploy",
+        action="store_true",
+        help="Always trigger Studio deployment via OpenAPI.",
+    )
+    deployment.add_argument(
+        "--deploy-if-changed",
+        action="store_true",
+        help="Trigger Studio deployment only when the packaged Git tree changed.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Validate without pushing or deploying.")
     return parser.parse_args()
 
@@ -170,8 +180,8 @@ def main() -> None:
             raise ValueError("Provide --repo-id or --repo-url")
         if args.repo_id and not REPO_ID_PATTERN.fullmatch(args.repo_id):
             raise ValueError("--repo-id must use the owner/name format")
-        if args.deploy and not args.repo_id:
-            raise ValueError("--deploy requires --repo-id")
+        if (args.deploy or args.deploy_if_changed) and not args.repo_id:
+            raise ValueError("--deploy and --deploy-if-changed require --repo-id")
         remote_url = args.repo_url or repository_url(args.repo_id)
     except (OSError, ValueError, json.JSONDecodeError) as error:
         raise SystemExit(f"ModelScope release validation failed: {error}") from error
@@ -180,7 +190,7 @@ def main() -> None:
     is_official_remote = remote_url.startswith("https://www.modelscope.cn/")
     if not args.dry_run and is_official_remote and not token:
         raise SystemExit("MODELSCOPE_API_TOKEN is required for a ModelScope push.")
-    if args.deploy and not token:
+    if (args.deploy or args.deploy_if_changed) and not token:
         raise SystemExit("MODELSCOPE_API_TOKEN is required to trigger deployment.")
 
     if args.dry_run:
@@ -190,12 +200,13 @@ def main() -> None:
 
     try:
         changed = publish_git(source, remote_url, args.branch, token)
-        deployment = trigger_deployment(args.repo_id, token) if args.deploy else None
+        should_deploy = args.deploy or (args.deploy_if_changed and changed)
+        deployment = trigger_deployment(args.repo_id, token) if should_deploy else None
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         raise SystemExit(f"ModelScope publish failed: {error}") from error
     print(f"modelscope_push_changed={str(changed).lower()}")
-    if args.deploy:
-        print("modelscope_deploy_triggered=true")
+    if args.deploy or args.deploy_if_changed:
+        print(f"modelscope_deploy_triggered={str(should_deploy).lower()}")
         if deployment is not None:
             print(json.dumps(deployment, ensure_ascii=False))
 

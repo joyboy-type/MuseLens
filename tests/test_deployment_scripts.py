@@ -168,3 +168,26 @@ def test_modelscope_publisher_pushes_to_a_git_remote(tmp_path) -> None:
     )
     assert second_result.returncode == 0, second_result.stderr
     assert "modelscope_push_changed=false" in second_result.stdout
+
+    environment = os.environ.copy()
+    environment["MODELSCOPE_API_TOKEN"] = "test-token-never-transmitted"
+    unchanged_deploy = subprocess.run(
+        [
+            sys.executable,
+            str(PROJECT_ROOT / "scripts" / "publish_modelscope.py"),
+            str(output),
+            "--repo-id",
+            "owner/MuseLens",
+            "--repo-url",
+            str(remote),
+            "--deploy-if-changed",
+        ],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert unchanged_deploy.returncode == 0, unchanged_deploy.stderr
+    assert "modelscope_push_changed=false" in unchanged_deploy.stdout
+    assert "modelscope_deploy_triggered=false" in unchanged_deploy.stdout
