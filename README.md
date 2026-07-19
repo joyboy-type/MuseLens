@@ -2,9 +2,73 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。
+![CI](https://github.com/joyboy-type/MuseLens/actions/workflows/ci.yml/badge.svg)
+[![ModelScope deployment](https://img.shields.io/badge/ModelScope-online-624AFF)](https://sinbaby-muselens.ms.show)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。浏览器只调用 MuseLens 自己的 FastAPI 服务，检索结果来自真实的 SigLIP2 向量编码和本地索引，并非关键词映射或第三方图库搜索。
+
+**[在线体验](https://sinbaby-muselens.ms.show)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
 
 导入图片的副本默认保存在 `~/Pictures/MuseLensLibrary/` 专用目录，不移动、覆盖或删除用户原始照片。
+
+## 30 秒验证
+
+1. 打开在线体验，直接用 `dog`、`狗`、`a red car` 等中英文自然语言搜索固定演示图库。
+2. 切换到临时图库，上传自己的几张图片，等待索引完成后输入与图片内容相关的任意关键词。
+3. 搜索只发生在当前访客会话中；点击“立即清除”后，图片与索引都会删除，最长也只保留 30 分钟。
+
+公开服务的 CI 不只检查页面能否打开：它会验证 8 条跨类别中英文查询，并创建真实临时图库完成上传、索引、检索、会话隔离和删除测试。最新一次线上证据见 [`modelscope-live-temporary-gallery-v1.json`](artifacts/evaluations/modelscope-live-temporary-gallery-v1.json)。
+
+## 核心结果
+
+| 场景 | 数据规模 | 结果 | 可复现证据 |
+| --- | ---: | ---: | --- |
+| 本地文本搜图 | 100 图 / 500 条英文查询 | Recall@1 **91.6%**，P95 **20.51 ms** | [本地端到端报告](docs/LOCAL_LIBRARY_E2E.md) |
+| 中英文配对检索 | 100 图 / 各 30 条查询 | 英文 R@1 **100%**，中文 R@1 **96.67%** | [多语言报告](docs/MULTILINGUAL_RESULTS.md) |
+| COCO 规模测试 | 5,000 图 / 5,000 次 HTTP 查询 | R@10 **77.82%**，平均 **18.31 ms** | [规模报告](docs/COCO_SCALE_RESULTS.md) |
+| 以图搜图鲁棒性 | 500 图 / 2,500 张扰动图 | R@1 **99.36%**，R@5 **99.96%** | [以图搜图报告](docs/IMAGE_RETRIEVAL_RESULTS.md) |
+| 公开图库 + VL 精排 | 44 条双语正例 / 10 条负例 | Top-1 **95.45%**，负例拒绝 **100%** | [精排报告](docs/PRECISION_RERANKING_RESULTS.md) |
+| 5,000 图索引优化 | 1,000 查询 × 5 轮 | 纯索引加速 **10.87×**，排名一致率 **100%** | [索引基准](docs/INDEX_BENCHMARK.md) |
+
+轻量 Adapter 确实完成了训练和消融，但没有超过冻结的 SigLIP2 基线，因此没有为了展示“训练成功”而上线。这个负结果、原始权重和决策过程同样保留在仓库中，详见[训练结果](docs/TRAINING_RESULTS.md)。
+
+## 架构概览
+
+```mermaid
+flowchart LR
+    UI["React + TypeScript\n响应式图库"] --> API["FastAPI\n校验、任务与同源托管"]
+    API --> MODE{"运行模式"}
+    MODE -->|local| LIB["持久化个人图库\nSQLite + WebP 缩略图"]
+    MODE -->|demo| FIXED["只读演示图库"]
+    MODE -->|demo| TEMP["隔离临时图库\n配额 + TTL + 主动清除"]
+    LIB --> ENCODER["SigLIP2 双塔编码器"]
+    FIXED --> ENCODER
+    TEMP --> ENCODER
+    ENCODER --> INDEX["NumPy 精确向量索引\n可选 FAISS"]
+    INDEX --> RERANK["可选 Qwen3-VL 精排与拒答"]
+    RERANK --> API
+```
+
+### 工程亮点
+
+- **完整数据闭环**：文件导入、SHA-256 去重、批量编码、SQLite 持久化、重启恢复、组合筛选和缩略图缓存。
+- **可量化的模型决策**：比较 CLIP、SigLIP2 和轻量 Adapter；以独立测试集决定是否上线，而不是只展示训练 loss。
+- **可解释的性能取舍**：5,000 图规模选择 NumPy 精确检索；FAISS 虽更快，但没有掩盖其在 M4/PyTorch 同进程中的 OpenMP 冲突。
+- **安全的公开演示**：服务端强制只读固定图库；访客图库按会话隔离，限制文件数量、像素和容量，并自动过期。
+- **可验证的交付**：React/Vite 与 FastAPI 单容器部署；GitHub Actions 发布到 ModelScope 后运行双语和真实上传质量门，未变更运行包时跳过昂贵重建。
+
+## 技术栈
+
+| 层 | 技术 |
+| --- | --- |
+| 前端 | React、TypeScript、Vite、响应式 CSS |
+| API / 业务 | FastAPI、Pydantic、后台任务、同源静态托管 |
+| 多模态检索 | PyTorch、Transformers、SigLIP2、可选 Qwen3-VL Reranker |
+| 数据与索引 | SQLite WAL、NumPy、可选 FAISS、Pillow/WebP |
+| 工程化 | Pytest、Ruff、ESLint、Docker、GitHub Actions、ModelScope Studio |
 
 ## 当前进度
 
@@ -45,7 +109,8 @@
 - [x] ModelScope Studio Docker 部署配置（国内公开演示候选）
 - [x] ModelScope 强制只读配置与跨类别中英文线上验收合同
 - [x] GitHub → ModelScope 最小发布包、令牌推送、OpenAPI 部署与自动验收工作流
-- [ ] 公开 ModelScope Studio 地址与演示视频
+- [x] 公开 ModelScope Studio 地址与自动化线上验收
+- [ ] 录制 60 秒产品演示视频
 
 ## 快速开始
 
