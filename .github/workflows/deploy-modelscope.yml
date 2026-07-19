@@ -62,6 +62,12 @@ jobs:
           python scripts/smoke_deployment.py "${{ inputs.public_url }}"
           --contract quick --min-hit-at-5 0.9 --timeout 300
 
+      - name: Run the temporary gallery deployment gate
+        if: inputs.public_url != ''
+        run: >-
+          python scripts/smoke_temporary_gallery.py "${{ inputs.public_url }}"
+          --timeout 300
+
       - name: Publish deployment summary
         run: |
           {
