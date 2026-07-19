@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from muselens.deployment import (
@@ -5,6 +7,10 @@ from muselens.deployment import (
     validate_deployment_health,
     validate_deployment_search,
 )
+from muselens.deployment_smoke import multipart_files, select_upload_assets
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_validate_health_accepts_read_only_demo() -> None:
@@ -86,3 +92,22 @@ def test_validate_contract_requires_bilingual_quality_floor() -> None:
                 "language_metrics": {"en": {}},
             }
         )
+
+
+def test_temporary_gallery_smoke_assets_and_multipart_are_deterministic() -> None:
+    assets = select_upload_assets(PROJECT_ROOT / "demo_assets" / "manifest.json")
+
+    assert [asset.category for asset in assets] == ["dog", "car", "pizza"]
+    assert all(asset.path.is_file() for asset in assets)
+    assert [asset.upload_name for asset in assets] == [
+        "deployment-dog.jpg",
+        "deployment-car.jpg",
+        "deployment-pizza.jpg",
+    ]
+
+    body, content_type = multipart_files(assets)
+
+    assert content_type.startswith("multipart/form-data; boundary=muselens-")
+    assert body.count(b'name="files"') == 3
+    for asset in assets:
+        assert asset.upload_name.encode() in body
