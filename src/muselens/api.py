@@ -23,6 +23,9 @@ from .library import (
 from .repository import ImageRepository, StoredImage
 from .reranker import QwenVLReranker, rerank_candidates
 from .schemas import (
+    AlbumMembershipRequest,
+    AlbumNameRequest,
+    AlbumResponse,
     HealthResponse,
     DuplicateGroupResponse,
     DuplicateMemberResponse,
@@ -295,6 +298,68 @@ def tag_catalog() -> list[TagCatalogItemResponse]:
         )
         for definition in DEFAULT_TAGS
     ]
+
+
+def normalized_album_name(name: str) -> str:
+    normalized = " ".join(name.split())
+    if not normalized:
+        raise HTTPException(status_code=400, detail="Album name cannot be blank.")
+    return normalized
+
+
+@app.get("/v1/albums", response_model=list[AlbumResponse])
+def list_albums(request: Request) -> list[AlbumResponse]:
+    if not request.app.state.library_writable:
+        return []
+    return [
+        AlbumResponse(**vars(album))
+        for album in request.app.state.library.repository.list_albums()
+    ]
+
+
+@app.post("/v1/albums", response_model=AlbumResponse, status_code=201)
+def create_album(payload: AlbumNameRequest, request: Request) -> AlbumResponse:
+    require_library_writes(request)
+    album = request.app.state.library.repository.create_album(
+        normalized_album_name(payload.name)
+    )
+    return AlbumResponse(**vars(album))
+
+
+@app.put("/v1/albums/{album_id}", response_model=AlbumResponse)
+def rename_album(
+    album_id: str, payload: AlbumNameRequest, request: Request
+) -> AlbumResponse:
+    require_library_writes(request)
+    album = request.app.state.library.repository.rename_album(
+        album_id, normalized_album_name(payload.name)
+    )
+    if album is None:
+        raise HTTPException(status_code=404, detail="Album not found.")
+    return AlbumResponse(**vars(album))
+
+
+@app.put("/v1/albums/{album_id}/images", response_model=AlbumResponse)
+def update_album_membership(
+    album_id: str, payload: AlbumMembershipRequest, request: Request
+) -> AlbumResponse:
+    require_library_writes(request)
+    try:
+        album = request.app.state.library.repository.set_album_membership(
+            album_id, payload.image_id, payload.present
+        )
+    except KeyError as error:
+        detail = "Album not found." if error.args == ("album",) else "Image not found."
+        raise HTTPException(status_code=404, detail=detail) from error
+    return AlbumResponse(**vars(album))
+
+
+@app.delete("/v1/albums/{album_id}", status_code=204)
+def delete_album(album_id: str, request: Request) -> Response:
+    require_library_writes(request)
+    if not request.app.state.library.repository.delete_album(album_id):
+        raise HTTPException(status_code=404, detail="Album not found.")
+    return Response(status_code=204)
 
 
 @app.put("/v1/images/{image_id}/tags", response_model=ImageRecordResponse)

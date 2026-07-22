@@ -11,6 +11,13 @@ export type TagCatalogItem = {
   group: string;
 };
 
+export type CustomAlbum = {
+  album_id: string;
+  name: string;
+  image_ids: string[];
+  created_at: string;
+};
+
 export type ImageRecord = {
   image_id: string;
   filename: string;

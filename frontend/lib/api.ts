@@ -1,5 +1,6 @@
 import type {
   Health,
+  CustomAlbum,
   DuplicateGroup,
   ImageRecord,
   ImportJob,
@@ -70,6 +71,42 @@ export function updateImageTags(imageId: string, tags: string[]): Promise<ImageR
 
 export function restoreImageAutoTags(imageId: string): Promise<ImageRecord> {
   return request<ImageRecord>(`/v1/images/${imageId}/tags/auto`, { method: "POST" });
+}
+
+export function listAlbums(): Promise<CustomAlbum[]> {
+  return request<CustomAlbum[]>("/v1/albums");
+}
+
+export function createAlbum(name: string): Promise<CustomAlbum> {
+  return request<CustomAlbum>("/v1/albums", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function renameAlbum(albumId: string, name: string): Promise<CustomAlbum> {
+  return request<CustomAlbum>(`/v1/albums/${albumId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function updateAlbumMembership(
+  albumId: string,
+  imageId: string,
+  present: boolean,
+): Promise<CustomAlbum> {
+  return request<CustomAlbum>(`/v1/albums/${albumId}/images`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image_id: imageId, present }),
+  });
+}
+
+export function deleteAlbum(albumId: string): Promise<void> {
+  return request<void>(`/v1/albums/${albumId}`, { method: "DELETE" });
 }
 
 function searchPayload(query: string, filters: SearchFilters) {

@@ -13,6 +13,8 @@ import { monotonicNow } from "@/lib/timing";
 import {
   createTemporaryGallery,
   createImportJob,
+  createAlbum,
+  deleteAlbum as deleteAlbumRequest,
   deleteImage,
   deleteTemporaryGallery,
   getHealth,
@@ -21,20 +23,24 @@ import {
   getTemporaryGallery,
   imageUrl,
   listImages,
+  listAlbums,
   listTagCatalog,
   listDuplicateGroups,
   listTemporaryGalleryImages,
   retryImportJob,
   restoreImageAutoTags,
+  renameAlbum,
   searchImages,
   searchImagesByImage,
   searchTemporaryGallery,
   searchTemporaryGalleryByImage,
   thumbnailUrl,
   updateImageTags,
+  updateAlbumMembership,
 } from "@/lib/api";
 import type {
   Health,
+  CustomAlbum,
   DuplicateGroup,
   DuplicateMember,
   ImportJob,
@@ -49,12 +55,15 @@ import {
   Clock3,
   CloudOff,
   Copy,
+  Heart,
   FolderOpen,
   Filter,
   Images,
   ImagePlus,
   LoaderCircle,
   LockKeyhole,
+  Pencil,
+  Plus,
   RotateCcw,
   Save,
   Search,
@@ -93,6 +102,12 @@ export function MuseLensApp() {
   const [editingTags, setEditingTags] = useState(false);
   const [tagDraft, setTagDraft] = useState<string[]>([]);
   const [tagSaving, setTagSaving] = useState(false);
+  const [albums, setAlbums] = useState<CustomAlbum[]>([]);
+  const [albumEditorOpen, setAlbumEditorOpen] = useState(false);
+  const [albumName, setAlbumName] = useState("");
+  const [editingAlbum, setEditingAlbum] = useState<CustomAlbum | null>(null);
+  const [albumSaving, setAlbumSaving] = useState(false);
+  const [activeAlbum, setActiveAlbum] = useState<CustomAlbum | null>(null);
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
@@ -115,7 +130,7 @@ export function MuseLensApp() {
   const temporarySessionId = temporaryGallery?.session_id;
   const temporaryStatus = temporaryGallery?.status;
   const filterCount = activeFilterCount(filters);
-  const searchActive = Boolean(activeQuery || activeImageQuery || filterCount);
+  const searchActive = Boolean(activeQuery || activeImageQuery || filterCount || activeAlbum);
   const retrievalEvidence = activeQuery ? filenameEvidence(activeQuery, items) : null;
   const availableTags = Array.from(
     new Map(items.flatMap((item) => item.tags).map((tag) => [tag.slug, tag])).values(),
@@ -144,9 +159,14 @@ export function MuseLensApp() {
   }, []);
 
   const refreshLibrary = useCallback(async () => {
-    const [library, status] = await Promise.all([listImages(), getHealth()]);
+    const [library, status, savedAlbums] = await Promise.all([
+      listImages(),
+      getHealth(),
+      listAlbums(),
+    ]);
     setItems(library);
     setHealth(status);
+    setAlbums(savedAlbums);
   }, []);
 
   useEffect(() => {
@@ -323,6 +343,7 @@ export function MuseLensApp() {
   }, []);
 
   async function runSearch(nextQuery = query, nextFilters = filters) {
+    setActiveAlbum(null);
     const normalized = nextQuery.trim();
     if (!normalized && activeFilterCount(nextFilters) === 0) {
       searchRequestRef.current += 1;
@@ -384,6 +405,7 @@ export function MuseLensApp() {
     setSearchMs(null);
     releasePreviewUrl(activeImageQuery);
     setActiveImageQuery(null);
+    setActiveAlbum(null);
     setBusy(true);
     try {
       if (temporaryActive && temporaryGallery) {
@@ -403,6 +425,70 @@ export function MuseLensApp() {
     setQuery("");
     setFilters(nextFilters);
     runSearch("", nextFilters);
+  }
+
+  function openCustomAlbum(album: CustomAlbum) {
+    setQuery("");
+    setActiveQuery("");
+    setFilters(EMPTY_FILTERS);
+    setActiveAlbum(album);
+    setItems((current) => current.filter((item) => album.image_ids.includes(item.image_id)));
+  }
+
+  function showAlbumEditor(album: CustomAlbum | null = null) {
+    setEditingAlbum(album);
+    setAlbumName(album?.name ?? "");
+    setAlbumEditorOpen(true);
+  }
+
+  async function saveAlbum() {
+    if (!albumName.trim()) return;
+    setAlbumSaving(true);
+    setError("");
+    try {
+      const saved = editingAlbum
+        ? await renameAlbum(editingAlbum.album_id, albumName)
+        : await createAlbum(albumName);
+      setAlbums((current) => editingAlbum
+        ? current.map((album) => album.album_id === saved.album_id ? saved : album)
+        : [...current, saved]);
+      setAlbumEditorOpen(false);
+      setNotice(editingAlbum ? "相册名称已更新" : "相册已创建，可从图片预览中添加照片");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "保存相册失败");
+    } finally {
+      setAlbumSaving(false);
+    }
+  }
+
+  async function removeAlbum(album: CustomAlbum) {
+    setError("");
+    try {
+      await deleteAlbumRequest(album.album_id);
+      setAlbums((current) => current.filter((item) => item.album_id !== album.album_id));
+      if (activeAlbum?.album_id === album.album_id) await clearSearch();
+      setNotice(`已删除相册“${album.name}”，原照片不受影响`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "删除相册失败");
+    }
+  }
+
+  async function toggleAlbumMembership(album: CustomAlbum, imageId: string) {
+    setAlbumSaving(true);
+    setError("");
+    try {
+      const updated = await updateAlbumMembership(
+        album.album_id,
+        imageId,
+        !album.image_ids.includes(imageId),
+      );
+      setAlbums((current) => current.map((item) =>
+        item.album_id === updated.album_id ? updated : item));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "更新相册失败");
+    } finally {
+      setAlbumSaving(false);
+    }
   }
 
   function selectImageQuery(file: File) {
@@ -619,6 +705,7 @@ export function MuseLensApp() {
     setActiveQuery("");
     releasePreviewUrl(activeImageQuery);
     setActiveImageQuery(null);
+    setActiveAlbum(null);
     setSearchMs(null);
     setBusy(true);
     setError("");
@@ -638,6 +725,7 @@ export function MuseLensApp() {
     setActiveQuery("");
     releasePreviewUrl(activeImageQuery);
     setActiveImageQuery(null);
+    setActiveAlbum(null);
     setSearchMs(null);
     setBusy(true);
     setError("");
@@ -819,7 +907,9 @@ export function MuseLensApp() {
           <section className="hero-row">
             <div>
               <div className="eyebrow">
-                {activeImageQuery
+                {activeAlbum
+                  ? "PERSONAL ALBUM"
+                  : activeImageQuery
                   ? "VISUAL SIMILARITY RESULTS"
                   : searchActive
                   ? "SEMANTIC RESULTS"
@@ -830,7 +920,9 @@ export function MuseLensApp() {
                     : "YOUR PRIVATE LIBRARY"}
               </div>
               <h1>
-                {activeImageQuery
+                {activeAlbum
+                  ? activeAlbum.name
+                  : activeImageQuery
                   ? "找到相似的画面"
                   : activeQuery
                   ? `“${activeQuery}”`
@@ -839,7 +931,9 @@ export function MuseLensApp() {
                     : "用语言，重新发现照片"}
               </h1>
               <p>
-                {activeImageQuery
+                {activeAlbum
+                  ? `你收藏到此相册的 ${items.length} 张照片，删除相册不会删除原图。`
+                  : activeImageQuery
                   ? `根据构图、主体和视觉语义展示 ${items.length} 个相似结果`
                   : searchActive
                   ? `${activeQuery ? "语义与图片属性共同检索" : "按图片属性筛选"}，展示 ${items.length} 个结果`
@@ -901,6 +995,52 @@ export function MuseLensApp() {
                 </button>
               ))}
             </div>
+          )}
+
+          {!searchActive && libraryWritable && (
+            <section className="custom-albums" aria-labelledby="custom-albums-title">
+              <div className="smart-albums-heading">
+                <div>
+                  <span><Heart size={13} /> 我的收藏</span>
+                  <h2 id="custom-albums-title">自定义相册</h2>
+                </div>
+                <button className="new-album" onClick={() => showAlbumEditor()}>
+                  <Plus size={13} /> 新建相册
+                </button>
+              </div>
+              {albums.length === 0 ? (
+                <button className="album-empty" onClick={() => showAlbumEditor()}>
+                  <Plus size={17} />
+                  <span><strong>建立第一个相册</strong><small>照片仍保留在原图库中</small></span>
+                </button>
+              ) : (
+                <div className="custom-album-grid">
+                  {albums.map((album) => {
+                    const cover = items.find((item) => album.image_ids.includes(item.image_id));
+                    return (
+                      <article key={album.album_id} className="custom-album-card">
+                        <button className="custom-album-open" onClick={() => openCustomAlbum(album)}>
+                          {cover ? (
+                            <img src={thumbnailUrl(cover.image_id)} alt="" loading="lazy" />
+                          ) : (
+                            <span className="custom-album-placeholder"><Images size={25} /></span>
+                          )}
+                          <span><strong>{album.name}</strong><small>{album.image_ids.length} 张照片</small></span>
+                        </button>
+                        <div>
+                          <button onClick={() => showAlbumEditor(album)} aria-label={`重命名${album.name}`}>
+                            <Pencil size={12} />
+                          </button>
+                          <button onClick={() => removeAlbum(album)} aria-label={`删除${album.name}`}>
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           )}
 
           {smartAlbums.length > 0 && (
@@ -1269,6 +1409,25 @@ export function MuseLensApp() {
                 </button>
               )}
             </div>
+            {libraryWritable && !selected.session_id && (
+              <section className="album-membership" aria-label="收藏到相册">
+                <div><Heart size={13} /><strong>收藏到相册</strong></div>
+                {albums.map((album) => (
+                  <button
+                    className={album.image_ids.includes(selected.image_id) ? "selected" : ""}
+                    disabled={albumSaving}
+                    key={album.album_id}
+                    onClick={() => toggleAlbumMembership(album, selected.image_id)}
+                  >
+                    {album.image_ids.includes(selected.image_id) && <Check size={11} />}
+                    {album.name}
+                  </button>
+                ))}
+                <button className="create-inline" onClick={() => showAlbumEditor()}>
+                  <Plus size={11} /> 新建
+                </button>
+              </section>
+            )}
             {editingTags && libraryWritable && !selected.session_id && (
               <section className="tag-editor" aria-label="修正图片标签">
                 <div className="tag-editor-heading">
@@ -1299,6 +1458,40 @@ export function MuseLensApp() {
               </section>
             )}
           </div>
+        </div>
+      )}
+
+      {albumEditorOpen && (
+        <div className="album-editor-scrim" role="dialog" aria-modal="true" aria-labelledby="album-editor-title">
+          <form className="album-editor-dialog" onSubmit={(event) => {
+            event.preventDefault();
+            saveAlbum();
+          }}>
+            <div>
+              <span><Heart size={14} /></span>
+              <div>
+                <h2 id="album-editor-title">{editingAlbum ? "重命名相册" : "新建相册"}</h2>
+                <p>相册只保存引用，不会复制或移动原照片。</p>
+              </div>
+            </div>
+            <label>
+              相册名称
+              <input
+                autoFocus
+                maxLength={60}
+                onChange={(event) => setAlbumName(event.target.value)}
+                placeholder="例如：暑假旅行"
+                value={albumName}
+              />
+            </label>
+            <footer>
+              <button type="button" onClick={() => setAlbumEditorOpen(false)}>取消</button>
+              <button className="primary" disabled={!albumName.trim() || albumSaving} type="submit">
+                {albumSaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}
+                保存
+              </button>
+            </footer>
+          </form>
         </div>
       )}
 

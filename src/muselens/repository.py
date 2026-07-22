@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
 from collections.abc import Iterator
+from uuid import uuid4
 
 import numpy as np
 
@@ -30,6 +32,14 @@ class StoredImage:
     perceptual_hash: str = ""
     average_color: str = ""
     tags: tuple[ImageTag, ...] = ()
+
+
+@dataclass(frozen=True)
+class CustomAlbum:
+    album_id: str
+    name: str
+    image_ids: tuple[str, ...]
+    created_at: str
 
 
 class ImageRepository:
@@ -90,6 +100,27 @@ class ImageRepository:
                 """
                 CREATE INDEX IF NOT EXISTS image_tags_tag_idx
                 ON image_tags(tag, image_id)
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS albums (
+                    album_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS album_images (
+                    album_id TEXT NOT NULL,
+                    image_id TEXT NOT NULL,
+                    added_at TEXT NOT NULL,
+                    PRIMARY KEY (album_id, image_id),
+                    FOREIGN KEY (album_id) REFERENCES albums(album_id) ON DELETE CASCADE,
+                    FOREIGN KEY (image_id) REFERENCES images(image_id) ON DELETE CASCADE
+                )
                 """
             )
             columns = {
@@ -165,6 +196,80 @@ class ImageRepository:
                 (image_id,),
             ).fetchone()
         return row is not None
+
+    def list_albums(self) -> list[CustomAlbum]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT album_id, name, created_at FROM albums ORDER BY created_at"
+            ).fetchall()
+            members = connection.execute(
+                "SELECT album_id, image_id FROM album_images ORDER BY added_at"
+            ).fetchall()
+        image_ids: dict[str, list[str]] = {row["album_id"]: [] for row in rows}
+        for member in members:
+            image_ids[member["album_id"]].append(member["image_id"])
+        return [
+            CustomAlbum(
+                album_id=row["album_id"],
+                name=row["name"],
+                image_ids=tuple(image_ids[row["album_id"]]),
+                created_at=row["created_at"],
+            )
+            for row in rows
+        ]
+
+    def create_album(self, name: str) -> CustomAlbum:
+        album = CustomAlbum(
+            album_id=uuid4().hex,
+            name=name,
+            image_ids=(),
+            created_at=datetime.now(timezone.utc).isoformat(),
+        )
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO albums (album_id, name, created_at) VALUES (?, ?, ?)",
+                (album.album_id, album.name, album.created_at),
+            )
+        return album
+
+    def rename_album(self, album_id: str, name: str) -> CustomAlbum | None:
+        with self.connect() as connection:
+            cursor = connection.execute(
+                "UPDATE albums SET name = ? WHERE album_id = ?", (name, album_id)
+            )
+        if cursor.rowcount != 1:
+            return None
+        return next((album for album in self.list_albums() if album.album_id == album_id), None)
+
+    def delete_album(self, album_id: str) -> bool:
+        with self.connect() as connection:
+            cursor = connection.execute("DELETE FROM albums WHERE album_id = ?", (album_id,))
+        return cursor.rowcount == 1
+
+    def set_album_membership(self, album_id: str, image_id: str, present: bool) -> CustomAlbum:
+        with self.connect() as connection:
+            if connection.execute(
+                "SELECT 1 FROM albums WHERE album_id = ?", (album_id,)
+            ).fetchone() is None:
+                raise KeyError("album")
+            if connection.execute(
+                "SELECT 1 FROM images WHERE image_id = ?", (image_id,)
+            ).fetchone() is None:
+                raise KeyError("image")
+            if present:
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO album_images (album_id, image_id, added_at)
+                    VALUES (?, ?, ?)
+                    """,
+                    (album_id, image_id, datetime.now(timezone.utc).isoformat()),
+                )
+            else:
+                connection.execute(
+                    "DELETE FROM album_images WHERE album_id = ? AND image_id = ?",
+                    (album_id, image_id),
+                )
+        return next(album for album in self.list_albums() if album.album_id == album_id)
 
     def load_vector(self, image_id: str) -> tuple[np.ndarray, str] | None:
         with self.connect() as connection:

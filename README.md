@@ -93,6 +93,7 @@ flowchart LR
 - [x] 受控词表零样本自动标签、持久化、重建与组合筛选
 - [x] 本地人工标签纠正、来源标识、恢复自动与重建保护
 - [x] 基于真实标签和封面动态生成的人物、萌宠、旅行、美食与自然智能相册
+- [x] SQLite 持久化自定义相册、重命名、多相册收藏与不删除原图的安全移除
 - [x] Recall@K、MRR 与编码延迟评测
 - [x] React + TypeScript 响应式图片画廊前端
 - [x] 语义 + 格式/方向/时间/尺寸的后端组合检索与响应式筛选面板
@@ -282,6 +283,9 @@ RSS 从 NumPy 的约 680 MB 降到 mmap 的约 75 MB；连续向量存入约 293
 - `GET /v1/images`：已索引图片
 - `GET /v1/duplicates`：按感知指纹读取近似重复图片组与预计可释放空间
 - `GET /v1/tags/catalog`：读取可供筛选和人工修正的受控标签目录
+- `GET/POST /v1/albums`：读取或创建本地自定义相册
+- `PUT/DELETE /v1/albums/{album_id}`：重命名或安全删除相册（不删除原图）
+- `PUT /v1/albums/{album_id}/images`：添加或移除相册中的图片引用
 - `PUT /v1/images/{image_id}/tags`：保存人工标签（仅本地模式）
 - `POST /v1/images/{image_id}/tags/auto`：恢复单张图片的自动标签（仅本地模式）
 - `POST /v1/tags/rebuild`：使用已持久化图片向量重建非人工标签（仅本地模式）

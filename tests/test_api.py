@@ -199,6 +199,48 @@ def test_demo_mode_rejects_manual_tag_correction() -> None:
     assert response.status_code == 403
 
 
+def test_custom_album_lifecycle_is_persisted_and_local_only(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    index = VectorIndex()
+    library = ImageLibrary(tmp_path / "images", repository, index, TemporaryEncoder())
+    stored = library.import_candidates(
+        [prepare_image("memory.jpg", "image/jpeg", patterned_jpeg(), 1024 * 1024)]
+    )[0].stored
+
+    with TestClient(app) as client:
+        app.state.library = library
+        app.state.index = index
+        app.state.library_writable = True
+        created = client.post("/v1/albums", json={"name": "  暑假   旅行  "})
+        album_id = created.json()["album_id"]
+        added = client.put(
+            f"/v1/albums/{album_id}/images",
+            json={"image_id": stored.image.image_id, "present": True},
+        )
+        renamed = client.put(f"/v1/albums/{album_id}", json={"name": "毕业旅行"})
+        listed = client.get("/v1/albums")
+        deleted = client.delete(f"/v1/albums/{album_id}")
+
+    assert created.status_code == 201
+    assert created.json()["name"] == "暑假 旅行"
+    assert added.json()["image_ids"] == [stored.image.image_id]
+    assert renamed.json()["name"] == "毕业旅行"
+    assert listed.json() == [renamed.json() | {"image_ids": [stored.image.image_id]}]
+    assert deleted.status_code == 204
+    assert repository.list_albums() == []
+
+
+def test_demo_mode_hides_and_rejects_custom_albums() -> None:
+    with TestClient(app) as client:
+        app.state.library_writable = False
+        listed = client.get("/v1/albums")
+        created = client.post("/v1/albums", json={"name": "不可写"})
+
+    assert listed.json() == []
+    assert created.status_code == 403
+
+
 def test_demo_seed_populates_precreated_runtime_directories(tmp_path) -> None:
     seed = tmp_path / "seed"
     (seed / "images").mkdir(parents=True)

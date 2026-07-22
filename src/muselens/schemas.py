@@ -37,6 +37,22 @@ class UpdateImageTagsRequest(BaseModel):
     tags: list[str] = Field(default=[], max_length=40)
 
 
+class AlbumNameRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+
+
+class AlbumMembershipRequest(BaseModel):
+    image_id: str = Field(min_length=1, max_length=100)
+    present: bool = True
+
+
+class AlbumResponse(BaseModel):
+    album_id: str
+    name: str
+    image_ids: list[str]
+    created_at: str
+
+
 class ImageRecordResponse(BaseModel):
     image_id: str
     filename: str
