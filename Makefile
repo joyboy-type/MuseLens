@@ -1,4 +1,4 @@
-.PHONY: install test lint build dev-api dev-web package-modelscope smoke-deployment
+.PHONY: install test lint build dev-api dev-web package-modelscope smoke-deployment storage clean-generated clean-feature-cache
 
 install:
 	python3 -m venv .venv
@@ -30,3 +30,12 @@ package-modelscope:
 smoke-deployment:
 	test -n "$(URL)"
 	.venv/bin/python scripts/smoke_deployment.py "$(URL)" --contract quick
+
+storage:
+	.venv/bin/python scripts/cleanup_workspace.py --include-feature-cache
+
+clean-generated:
+	.venv/bin/python scripts/cleanup_workspace.py --apply
+
+clean-feature-cache:
+	.venv/bin/python scripts/cleanup_workspace.py --apply --include-feature-cache

@@ -162,6 +162,10 @@ make lint
 make test
 ```
 
+实验结束后可运行 `make storage` 预览可释放空间；确认后使用 `make clean-generated`。需要连同
+可重建的特征向量缓存一起清理时，使用 `make clean-feature-cache`。删除范围限定在 MuseLens
+项目内，评测报告、训练权重、模型、虚拟环境和前端依赖都会保留。
+
 Vite 会在开发环境把 `/health` 和 `/v1` 转发到本地 API。生产构建由 FastAPI
 同源托管，不再需要额外配置 CORS 或前端 API 地址。
 
