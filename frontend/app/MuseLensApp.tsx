@@ -7,7 +7,9 @@ import {
 } from "@/components/ImageSearchDialog";
 import { DuplicateReviewDialog } from "@/components/DuplicateReviewDialog";
 import { activeFilterCount, EMPTY_FILTERS } from "@/lib/search-filters";
+import { buildSmartAlbums, type SmartAlbum } from "@/lib/smart-albums";
 import { filenameEvidence, relevanceFor } from "@/lib/relevance";
+import { monotonicNow } from "@/lib/timing";
 import {
   createTemporaryGallery,
   createImportJob,
@@ -28,6 +30,7 @@ import {
   searchImagesByImage,
   searchTemporaryGallery,
   searchTemporaryGalleryByImage,
+  thumbnailUrl,
   updateImageTags,
 } from "@/lib/api";
 import type {
@@ -117,6 +120,7 @@ export function MuseLensApp() {
   const availableTags = Array.from(
     new Map(items.flatMap((item) => item.tags).map((tag) => [tag.slug, tag])).values(),
   ).sort((left, right) => left.label.localeCompare(right.label, "zh-CN"));
+  const smartAlbums = !searchActive ? buildSmartAlbums(items) : [];
 
   function createPreviewUrl(file: File): string {
     const url = URL.createObjectURL(file);
@@ -352,7 +356,7 @@ export function MuseLensApp() {
     setActiveQuery(normalized);
     releasePreviewUrl(activeImageQuery);
     setActiveImageQuery(null);
-    const startedAt = performance.now();
+    const startedAt = monotonicNow();
     try {
       const searchRequest = temporaryActive && temporaryGallery
         ? searchTemporaryGallery(temporaryGallery.session_id, normalized, nextFilters)
@@ -361,7 +365,7 @@ export function MuseLensApp() {
       if (requestId !== searchRequestRef.current) return;
       setItems(results);
       setHealth(status);
-      setSearchMs(Math.round(performance.now() - startedAt));
+      setSearchMs(Math.round(monotonicNow() - startedAt));
     } catch (reason) {
       if (requestId === searchRequestRef.current) {
         setError(reason instanceof Error ? reason.message : "搜索失败");
@@ -392,6 +396,13 @@ export function MuseLensApp() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function openSmartAlbum(album: SmartAlbum) {
+    const nextFilters = { ...EMPTY_FILTERS, tags: album.tags };
+    setQuery("");
+    setFilters(nextFilters);
+    runSearch("", nextFilters);
   }
 
   function selectImageQuery(file: File) {
@@ -429,7 +440,7 @@ export function MuseLensApp() {
       return;
     }
     const candidate = pendingImageQuery;
-    const startedAt = performance.now();
+    const startedAt = monotonicNow();
     const requestId = ++searchRequestRef.current;
     setBusy(true);
     setError("");
@@ -451,7 +462,7 @@ export function MuseLensApp() {
       setActiveQuery("");
       setFilters(EMPTY_FILTERS);
       setFiltersOpen(false);
-      setSearchMs(Math.round(performance.now() - startedAt));
+      setSearchMs(Math.round(monotonicNow() - startedAt));
     } catch (reason) {
       if (requestId === searchRequestRef.current) {
         setError(reason instanceof Error ? reason.message : "以图搜图失败");
@@ -890,6 +901,35 @@ export function MuseLensApp() {
                 </button>
               ))}
             </div>
+          )}
+
+          {smartAlbums.length > 0 && (
+            <section className="smart-albums" aria-labelledby="smart-albums-title">
+              <div className="smart-albums-heading">
+                <div>
+                  <span><Sparkles size={13} /> 自动整理</span>
+                  <h2 id="smart-albums-title">智能相册</h2>
+                </div>
+                <small>随标签自动更新，无需移动原文件</small>
+              </div>
+              <div className="smart-album-grid">
+                {smartAlbums.map((album) => (
+                  <button key={album.id} onClick={() => openSmartAlbum(album)}>
+                    <img
+                      src={thumbnailUrl(album.cover.image_id, album.cover.session_id)}
+                      alt=""
+                      loading="lazy"
+                    />
+                    <span className="smart-album-shade" />
+                    <span className="smart-album-copy">
+                      <strong>{album.title}</strong>
+                      <small>{album.description}</small>
+                      <em>{album.count} 张照片 <ChevronRight size={13} /></em>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
           )}
 
           {filterCount > 0 && (
