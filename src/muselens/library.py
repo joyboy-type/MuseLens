@@ -12,6 +12,7 @@ from .encoder import ClipEncoder
 from .duplicates import VisualFingerprint, duplicate_components, hash_distance, visual_fingerprint
 from .index import IndexedImage, SearchIndex
 from .repository import ImageRepository, StoredImage
+from .tags import ZeroShotTagger
 
 
 SUPPORTED_CONTENT_TYPES = {
@@ -93,6 +94,7 @@ class ImageLibrary:
         thumbnail_dir: Path | None = None,
         thumbnail_max_size: int = 640,
         thumbnail_quality: int = 82,
+        tagger: ZeroShotTagger | None = None,
     ) -> None:
         self.image_dir = image_dir
         self.repository = repository
@@ -101,12 +103,14 @@ class ImageLibrary:
         self.thumbnail_dir = thumbnail_dir or image_dir / ".muselens" / "thumbnails" / "v1"
         self.thumbnail_max_size = thumbnail_max_size
         self.thumbnail_quality = thumbnail_quality
+        self.tagger = tagger
 
     def restore_index(self) -> int:
-        entries = self.repository.load_index(model_id=self.encoder.model_id)
-        for stored, vector in entries:
+        restored = 0
+        for stored, vector in self.repository.iter_index(model_id=self.encoder.model_id):
             self.index.add(stored.image, vector)
-        return len(entries)
+            restored += 1
+        return restored
 
     def backfill_dimensions(self) -> int:
         """Populate dimensions for libraries created before metadata filtering existed."""
@@ -234,10 +238,30 @@ class ImageLibrary:
             )
 
         self.repository.replace_embeddings(embeddings, self.encoder.model_id)
+        if self.tagger:
+            for image_id, vector in embeddings:
+                self.repository.replace_tags(
+                    image_id,
+                    self.tagger.predict(vector),
+                    self.tagger.model_id,
+                )
         self.index.clear()
         for (stored, _), (_, vector) in zip(entries, embeddings, strict=True):
             self.index.add(stored.image, vector)
         return len(embeddings)
+
+    def rebuild_tags(self) -> int:
+        if self.tagger is None:
+            raise RuntimeError("Automatic tagging is not configured.")
+        tagged = 0
+        for stored, vector in self.repository.iter_index(model_id=self.encoder.model_id):
+            self.repository.replace_tags(
+                stored.image.image_id,
+                self.tagger.predict(vector),
+                self.tagger.model_id,
+            )
+            tagged += 1
+        return tagged
 
     def import_candidates(self, candidates: list[UploadCandidate]) -> list[ImportResult]:
         results: list[ImportResult | None] = [None] * len(candidates)
@@ -284,6 +308,7 @@ class ImageLibrary:
         finally:
             temporary.unlink(missing_ok=True)
         fingerprint = visual_fingerprint(candidate.image)
+        tags = self.tagger.predict(vector) if self.tagger else ()
         stored = StoredImage(
             image=IndexedImage(
                 image_id=image_id,
@@ -299,10 +324,15 @@ class ImageLibrary:
             created_at=datetime.now(timezone.utc).isoformat(),
             perceptual_hash=fingerprint.perceptual_hash,
             average_color=fingerprint.average_color,
+            tags=tags,
         )
         try:
             self._write_thumbnail(candidate.image, self.thumbnail_path(image_id))
-            self.repository.insert(stored, vector)
+            self.repository.insert(
+                stored,
+                vector,
+                self.tagger.model_id if self.tagger else "",
+            )
         except Exception:
             destination.unlink(missing_ok=True)
             self.thumbnail_path(image_id).unlink(missing_ok=True)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { filenameEvidence, relevanceFor } from "../lib/relevance";
+import { activeFilterCount, EMPTY_FILTERS } from "../lib/search-filters";
 import type { LibraryItem } from "../lib/types";
 
 function item(imageId: string, filename: string, score: number): LibraryItem {
@@ -11,6 +12,7 @@ function item(imageId: string, filename: string, score: number): LibraryItem {
     height: 320,
     size_bytes: 1000,
     created_at: "2026-07-01T00:00:00Z",
+    tags: [],
     score,
   };
 }
@@ -31,5 +33,9 @@ describe("relevance presentation", () => {
       semanticOnly: 1,
       total: 2,
     });
+  });
+
+  it("counts AI tag filters as active search constraints", () => {
+    expect(activeFilterCount({ ...EMPTY_FILTERS, tags: ["dog", "city"] })).toBe(2);
   });
 });

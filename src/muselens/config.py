@@ -30,22 +30,18 @@ def cors_origins() -> tuple[str, ...]:
     return tuple(origin.strip() for origin in value.split(",") if origin.strip())
 
 
-def vector_index_backend() -> Literal["numpy", "faiss"]:
-    value = os.getenv("MUSELENS_INDEX_BACKEND", "numpy").strip().lower()
-    if value not in {"numpy", "faiss"}:
-        raise ValueError("MUSELENS_INDEX_BACKEND must be either 'numpy' or 'faiss'.")
-    return cast(Literal["numpy", "faiss"], value)
+def vector_index_backend() -> Literal["numpy", "mmap", "faiss"]:
+    value = os.getenv("MUSELENS_INDEX_BACKEND", "mmap").strip().lower()
+    if value not in {"numpy", "mmap", "faiss"}:
+        raise ValueError("MUSELENS_INDEX_BACKEND must be 'numpy', 'mmap' or 'faiss'.")
+    return cast(Literal["numpy", "mmap", "faiss"], value)
 
 
 @dataclass(frozen=True)
 class Settings:
     mode: Literal["local", "demo"] = runtime_mode()
-    image_dir: Path = Path(
-        os.getenv("MUSELENS_IMAGE_DIR", DEFAULT_LIBRARY_DIR)
-    )
-    state_dir: Path = Path(
-        os.getenv("MUSELENS_STATE_DIR", DEFAULT_LIBRARY_DIR / ".muselens")
-    )
+    image_dir: Path = Path(os.getenv("MUSELENS_IMAGE_DIR", DEFAULT_LIBRARY_DIR))
+    state_dir: Path = Path(os.getenv("MUSELENS_STATE_DIR", DEFAULT_LIBRARY_DIR / ".muselens"))
     thumbnail_dir: Path = Path(
         os.getenv(
             "MUSELENS_THUMBNAIL_DIR",
@@ -58,14 +54,15 @@ class Settings:
         "MUSELENS_CLIP_MODEL",
         "google/siglip2-base-patch16-224",
     )
-    index_backend: Literal["numpy", "faiss"] = vector_index_backend()
+    index_backend: Literal["numpy", "mmap", "faiss"] = vector_index_backend()
     max_upload_mb: int = int(os.getenv("MUSELENS_MAX_UPLOAD_MB", "12"))
     max_image_pixels: int = int(os.getenv("MUSELENS_MAX_IMAGE_PIXELS", "40000000"))
     default_top_k: int = int(os.getenv("MUSELENS_TOP_K", "12"))
     search_min_score: float = float(os.getenv("MUSELENS_SEARCH_MIN_SCORE", "0.12"))
-    search_relative_margin: float = float(
-        os.getenv("MUSELENS_SEARCH_RELATIVE_MARGIN", "0.035")
-    )
+    search_relative_margin: float = float(os.getenv("MUSELENS_SEARCH_RELATIVE_MARGIN", "0.035"))
+    tag_min_score: float = float(os.getenv("MUSELENS_TAG_MIN_SCORE", "0.05"))
+    tag_relative_margin: float = float(os.getenv("MUSELENS_TAG_RELATIVE_MARGIN", "0.04"))
+    tag_max_per_image: int = int(os.getenv("MUSELENS_TAG_MAX_PER_IMAGE", "3"))
     reranker_model_id: str | None = os.getenv("MUSELENS_RERANKER_MODEL") or None
     reranker_min_score: float = float(os.getenv("MUSELENS_RERANKER_MIN_SCORE", "0.40"))
     reranker_recall_k: int = int(os.getenv("MUSELENS_RERANKER_RECALL_K", "5"))
@@ -77,9 +74,7 @@ class Settings:
         os.getenv("MUSELENS_IMAGE_SEARCH_RELATIVE_MARGIN", "0.05")
     )
     duplicate_hash_distance: int = int(os.getenv("MUSELENS_DUPLICATE_HASH_DISTANCE", "8"))
-    duplicate_color_distance: float = float(
-        os.getenv("MUSELENS_DUPLICATE_COLOR_DISTANCE", "45")
-    )
+    duplicate_color_distance: float = float(os.getenv("MUSELENS_DUPLICATE_COLOR_DISTANCE", "45"))
     max_batch_files: int = int(os.getenv("MUSELENS_MAX_BATCH_FILES", "100"))
     max_job_files: int = int(os.getenv("MUSELENS_MAX_JOB_FILES", "500"))
     max_job_total_mb: int = int(os.getenv("MUSELENS_MAX_JOB_TOTAL_MB", "512"))
@@ -95,21 +90,15 @@ class Settings:
             Path(tempfile.gettempdir()) / "muselens-temporary-galleries",
         )
     )
-    temporary_gallery_max_files: int = int(
-        os.getenv("MUSELENS_TEMP_GALLERY_MAX_FILES", "30")
-    )
+    temporary_gallery_max_files: int = int(os.getenv("MUSELENS_TEMP_GALLERY_MAX_FILES", "30"))
     temporary_gallery_max_upload_mb: int = int(
         os.getenv("MUSELENS_TEMP_GALLERY_MAX_UPLOAD_MB", "8")
     )
     temporary_gallery_max_total_mb: int = int(
         os.getenv("MUSELENS_TEMP_GALLERY_MAX_TOTAL_MB", "120")
     )
-    temporary_gallery_ttl_seconds: int = int(
-        os.getenv("MUSELENS_TEMP_GALLERY_TTL_SECONDS", "1800")
-    )
-    temporary_gallery_max_sessions: int = int(
-        os.getenv("MUSELENS_TEMP_GALLERY_MAX_SESSIONS", "8")
-    )
+    temporary_gallery_ttl_seconds: int = int(os.getenv("MUSELENS_TEMP_GALLERY_TTL_SECONDS", "1800"))
+    temporary_gallery_max_sessions: int = int(os.getenv("MUSELENS_TEMP_GALLERY_MAX_SESSIONS", "8"))
     temporary_gallery_search_relative_margin: float = float(
         os.getenv("MUSELENS_TEMP_GALLERY_SEARCH_RELATIVE_MARGIN", "0.035")
     )

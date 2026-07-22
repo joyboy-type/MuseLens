@@ -1,0 +1,36 @@
+{
+  "experiment": "exact-vector-index-memory-comparison",
+  "date": "2026-07-19",
+  "environment": {
+    "cpu": "Apple M4",
+    "memory_bytes": 17179869184,
+    "macos": "26.5.1"
+  },
+  "protocol": {
+    "vectors": 100000,
+    "embedding_dimension": 768,
+    "dtype": "float32",
+    "query_count": 1,
+    "top_k": 10,
+    "seed": 2026
+  },
+  "results": {
+    "numpy": {
+      "baseline_rss_mb": 37.9,
+      "built_rss_mb": 377.0,
+      "searched_rss_mb": 679.8,
+      "build_seconds": 0.233,
+      "first_search_ms": 63.945,
+      "cache_file_mb": 0.0
+    },
+    "mmap": {
+      "baseline_rss_mb": 37.3,
+      "built_rss_mb": 74.4,
+      "searched_rss_mb": 74.7,
+      "build_seconds": 0.678,
+      "first_search_ms": 36.013,
+      "cache_file_mb": 293.0
+    }
+  },
+  "searched_rss_reduction_percent": 89.0
+}

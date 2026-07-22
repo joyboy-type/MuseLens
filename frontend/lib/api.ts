@@ -67,6 +67,7 @@ function searchPayload(query: string, filters: SearchFilters) {
     top_k: 60,
     content_types: filters.contentTypes,
     orientations: filters.orientations,
+    tags: filters.tags,
     min_width: filters.minWidth ?? undefined,
     max_size_bytes: filters.maxSizeMB ? filters.maxSizeMB * 1024 * 1024 : undefined,
     imported_after: importedAfter,

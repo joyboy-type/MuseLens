@@ -46,7 +46,7 @@ def test_health_reports_service_status() -> None:
     assert isinstance(response.json()["model_loaded"], bool)
     assert response.json()["reranker_enabled"] is False
     assert response.json()["reranker_loaded"] is False
-    assert response.json()["index_backend"] == "numpy"
+    assert response.json()["index_backend"] == "mmap"
     assert response.json()["mode"] == "local"
     assert response.json()["library_writable"] is True
     assert response.json()["temporary_galleries_enabled"] is False
@@ -119,9 +119,7 @@ def test_duplicate_api_groups_transforms_and_deletes_only_imported_copy(tmp_path
         assert len(groups[0]["members"]) == 2
         assert sum(member["recommended_keep"] for member in groups[0]["members"]) == 1
         remove_id = next(
-            member["image_id"]
-            for member in groups[0]["members"]
-            if not member["recommended_keep"]
+            member["image_id"] for member in groups[0]["members"] if not member["recommended_keep"]
         )
 
         deleted = client.delete(f"/v1/images/{remove_id}")
@@ -189,9 +187,7 @@ def test_temporary_gallery_api_indexes_and_isolates_uploads(tmp_path) -> None:
         images = client.get(f"/v1/demo/sessions/{session_id}/images")
         assert [item["filename"] for item in images.json()] == ["private.png"]
         image_id = images.json()[0]["image_id"]
-        content = client.get(
-            f"/v1/demo/sessions/{session_id}/images/{image_id}/content"
-        )
+        content = client.get(f"/v1/demo/sessions/{session_id}/images/{image_id}/content")
         assert content.status_code == 200
         assert content.headers["cache-control"] == "private, no-store"
 

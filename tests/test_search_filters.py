@@ -2,6 +2,7 @@ from muselens.api import matches_search_filters, sort_filtered_results
 from muselens.index import IndexedImage
 from muselens.repository import StoredImage
 from muselens.schemas import TextSearchRequest
+from muselens.tags import ImageTag
 
 
 def stored_image(
@@ -38,9 +39,7 @@ def test_combined_metadata_filters_are_all_enforced() -> None:
 
     assert matches_search_filters(landscape, payload)
     assert not matches_search_filters(
-        stored_image(
-            "portrait", "image/jpeg", 1200, 2400, 2_000_000, "2026-07-10T00:00:00+00:00"
-        ),
+        stored_image("portrait", "image/jpeg", 1200, 2400, 2_000_000, "2026-07-10T00:00:00+00:00"),
         payload,
     )
 
@@ -56,3 +55,11 @@ def test_metadata_results_support_newest_and_size_sorting() -> None:
 
     assert sort_filtered_results(results, "newest")[0][1].image.image_id == "newer"
     assert sort_filtered_results(results, "size_desc")[0][1].image.image_id == "older"
+
+
+def test_tag_filter_matches_any_selected_semantic_tag() -> None:
+    tagged = stored_image("pet", "image/jpeg", 1000, 800, 1_000_000, "2026-07-01T00:00:00+00:00")
+    tagged = StoredImage(**{**vars(tagged), "tags": (ImageTag("dog", "狗", 0.8),)})
+
+    assert matches_search_filters(tagged, TextSearchRequest(tags=["dog", "cat"]))
+    assert not matches_search_filters(tagged, TextSearchRequest(tags=["city"]))

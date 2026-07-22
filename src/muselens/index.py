@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 import sys
 from threading import RLock
 from typing import Any, Protocol
@@ -135,6 +136,129 @@ class VectorIndex:
             return list(self._images.values())
 
 
+class MmapVectorIndex:
+    """Exact cosine index whose contiguous vector matrix is backed by a file.
+
+    SQLite remains the source of truth. The mmap file is a disposable search
+    cache rebuilt at process startup, so a partial cache can never corrupt the
+    user's image library.
+    """
+
+    def __init__(
+        self,
+        storage_path: Path,
+        search_chunk_rows: int = 8192,
+        remove_on_close: bool = True,
+    ) -> None:
+        if search_chunk_rows < 1:
+            raise ValueError("search_chunk_rows must be positive.")
+        self.storage_path = storage_path
+        self.search_chunk_rows = search_chunk_rows
+        self.remove_on_close = remove_on_close
+        self._images: dict[str, IndexedImage] = {}
+        self._positions: dict[str, int] = {}
+        self._row_ids: list[str | None] = []
+        self._dimension: int | None = None
+        self._lock = RLock()
+        self.storage_path.parent.mkdir(parents=True, exist_ok=True)
+        self._file = self.storage_path.open("w+b")
+
+    def __len__(self) -> int:
+        with self._lock:
+            return len(self._images)
+
+    def add(self, image: IndexedImage, vector: np.ndarray) -> None:
+        embedding = normalize(vector)
+        with self._lock:
+            if self._dimension is None:
+                self._dimension = embedding.size
+            if embedding.size != self._dimension:
+                raise ValueError(
+                    f"Embedding dimension {embedding.size} does not match {self._dimension}."
+                )
+            existing_position = self._positions.get(image.image_id)
+            if existing_position is None:
+                position = len(self._row_ids)
+                self._file.seek(0, 2)
+                self._file.write(embedding.tobytes())
+                self._row_ids.append(image.image_id)
+                self._positions[image.image_id] = position
+            else:
+                offset = existing_position * self._dimension * np.dtype(np.float32).itemsize
+                self._file.seek(offset)
+                self._file.write(embedding.tobytes())
+            self._images[image.image_id] = image
+
+    def clear(self) -> None:
+        with self._lock:
+            self._file.close()
+            self._file = self.storage_path.open("w+b")
+            self._images.clear()
+            self._positions.clear()
+            self._row_ids.clear()
+            self._dimension = None
+
+    def close(self) -> None:
+        with self._lock:
+            if not self._file.closed:
+                self._file.close()
+            if self.remove_on_close:
+                self.storage_path.unlink(missing_ok=True)
+
+    def remove(self, image_id: str) -> bool:
+        with self._lock:
+            position = self._positions.pop(image_id, None)
+            if position is None:
+                return False
+            self._row_ids[position] = None
+            self._images.pop(image_id, None)
+            if not self._images:
+                self.clear()
+            return True
+
+    def search(self, query: np.ndarray, top_k: int) -> list[SearchHit]:
+        normalized_query = normalize(query)
+        with self._lock:
+            if not self._images:
+                return []
+            if normalized_query.size != self._dimension:
+                raise ValueError("Query embedding dimension does not match the index.")
+            self._file.flush()
+            matrix = np.memmap(
+                self.storage_path,
+                dtype=np.float32,
+                mode="r",
+                shape=(len(self._row_ids), self._dimension),
+            )
+            scores = np.full(len(self._row_ids), -np.inf, dtype=np.float32)
+            try:
+                for start in range(0, len(self._row_ids), self.search_chunk_rows):
+                    end = min(start + self.search_chunk_rows, len(self._row_ids))
+                    block_scores = matrix[start:end] @ normalized_query
+                    active = np.fromiter(
+                        (image_id is not None for image_id in self._row_ids[start:end]),
+                        dtype=np.bool_,
+                        count=end - start,
+                    )
+                    scores[start:end][active] = block_scores[active]
+            finally:
+                del matrix
+
+            positions = np.argsort(-scores, kind="stable")[: min(top_k, len(self._images))]
+            return [
+                SearchHit(
+                    image=self._images[image_id],
+                    score=float(scores[position]),
+                )
+                for position in positions
+                if (image_id := self._row_ids[int(position)]) is not None
+            ]
+
+    def list_images(self) -> list[IndexedImage]:
+        with self._lock:
+            return list(self._images.values())
+
+
 class FaissVectorIndex:
     """Optional exact cosine index using Faiss IndexFlatIP."""
 
@@ -229,9 +353,13 @@ class FaissVectorIndex:
             return list(self._images.values())
 
 
-def create_vector_index(backend: str) -> SearchIndex:
+def create_vector_index(backend: str, storage_path: Path | None = None) -> SearchIndex:
     if backend == "numpy":
         return VectorIndex()
+    if backend == "mmap":
+        if storage_path is None:
+            raise ValueError("The mmap backend requires a storage path.")
+        return MmapVectorIndex(storage_path)
     if backend == "faiss":
         return FaissVectorIndex()
     raise ValueError(f"Unsupported vector index backend: {backend}")

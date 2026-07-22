@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -6,6 +7,7 @@ import pytest
 from muselens.index import (
     FaissVectorIndex,
     IndexedImage,
+    MmapVectorIndex,
     SearchHit,
     VectorIndex,
     create_vector_index,
@@ -44,9 +46,7 @@ def test_matrix_index_preserves_insertion_order_for_equal_scores() -> None:
 def test_matrix_cache_is_rebuilt_after_an_image_is_added() -> None:
     index = VectorIndex()
     index.add(IndexedImage("first", "first.jpg", "image/jpeg"), np.array([1.0, 0.0]))
-    assert [hit.image.image_id for hit in index.search(np.array([0.0, 1.0]), 10)] == [
-        "first"
-    ]
+    assert [hit.image.image_id for hit in index.search(np.array([0.0, 1.0]), 10)] == ["first"]
 
     index.add(IndexedImage("second", "second.jpg", "image/jpeg"), np.array([0.0, 1.0]))
     hits = index.search(np.array([0.0, 1.0]), top_k=10)
@@ -62,9 +62,7 @@ def test_index_removal_invalidates_cache_and_resets_dimension_when_empty() -> No
 
     assert index.remove("first") is True
     assert index.remove("missing") is False
-    assert [hit.image.image_id for hit in index.search(np.array([1.0, 0.0]), 10)] == [
-        "second"
-    ]
+    assert [hit.image.image_id for hit in index.search(np.array([1.0, 0.0]), 10)] == ["second"]
     assert index.remove("second") is True
     index.add(IndexedImage("new", "new.jpg", "image/jpeg"), np.ones(3))
     assert len(index) == 1
@@ -86,9 +84,7 @@ def test_faiss_exact_index_matches_numpy_rankings_and_scores() -> None:
     numpy_hits = numpy_index.search(query, 10)
     faiss_hits = faiss_index.search(query, 10)
 
-    assert [hit.image.image_id for hit in faiss_hits] == [
-        hit.image.image_id for hit in numpy_hits
-    ]
+    assert [hit.image.image_id for hit in faiss_hits] == [hit.image.image_id for hit in numpy_hits]
     np.testing.assert_allclose(
         [hit.score for hit in faiss_hits],
         [hit.score for hit in numpy_hits],
@@ -96,8 +92,50 @@ def test_faiss_exact_index_matches_numpy_rankings_and_scores() -> None:
     )
 
 
+def test_mmap_exact_index_matches_numpy_and_handles_updates(tmp_path: Path) -> None:
+    numpy_index = VectorIndex()
+    mmap_index = MmapVectorIndex(tmp_path / "vectors.f32", search_chunk_rows=7)
+    rng = np.random.default_rng(11)
+    for position, vector in enumerate(rng.normal(size=(31, 16))):
+        image = IndexedImage(str(position), f"{position}.jpg", "image/jpeg")
+        numpy_index.add(image, vector)
+        mmap_index.add(image, vector)
+
+    replacement = rng.normal(size=16)
+    replacement_image = IndexedImage("4", "updated.jpg", "image/jpeg")
+    numpy_index.add(replacement_image, replacement)
+    mmap_index.add(replacement_image, replacement)
+    assert numpy_index.remove("8") is True
+    assert mmap_index.remove("8") is True
+
+    query = rng.normal(size=16)
+    numpy_hits = numpy_index.search(query, 12)
+    mmap_hits = mmap_index.search(query, 12)
+
+    assert [hit.image.image_id for hit in mmap_hits] == [hit.image.image_id for hit in numpy_hits]
+    np.testing.assert_allclose(
+        [hit.score for hit in mmap_hits],
+        [hit.score for hit in numpy_hits],
+        atol=1e-6,
+    )
+    assert mmap_index.list_images()[4].filename == "updated.jpg"
+    mmap_index.close()
+    assert not mmap_index.storage_path.exists()
+
+
+def test_mmap_index_resets_dimension_after_last_removal(tmp_path: Path) -> None:
+    index = MmapVectorIndex(tmp_path / "vectors.f32")
+    index.add(IndexedImage("one", "one.jpg", "image/jpeg"), np.ones(2))
+    assert index.remove("one") is True
+    index.add(IndexedImage("new", "new.jpg", "image/jpeg"), np.ones(3))
+    assert len(index) == 1
+    index.close()
+
+
 def test_index_factory_rejects_unknown_backends() -> None:
     assert isinstance(create_vector_index("numpy"), VectorIndex)
+    with pytest.raises(ValueError, match="storage path"):
+        create_vector_index("mmap")
     with pytest.raises(ValueError, match="Unsupported"):
         create_vector_index("unknown")
 

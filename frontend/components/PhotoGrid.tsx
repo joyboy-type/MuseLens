@@ -59,6 +59,13 @@ export function PhotoGrid({ items, onOpen }: PhotoGridProps) {
                   </span>
                 );
               })()}
+              {item.tags.length > 0 && (
+                <span className="photo-tags" aria-label="AI 自动标签">
+                  {item.tags.slice(0, 2).map((tag) => (
+                    <i key={tag.slug}>{tag.label}</i>
+                  ))}
+                </span>
+              )}
             </span>
           </button>
         );

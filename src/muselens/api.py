@@ -27,12 +27,15 @@ from .schemas import (
     DuplicateGroupResponse,
     DuplicateMemberResponse,
     ImageRecordResponse,
+    ImageTagResponse,
     ImportJobResponse,
     ImportResponse,
     SearchHitResponse,
+    TagRebuildResponse,
     TemporaryGalleryResponse,
     TextSearchRequest,
 )
+from .tags import ZeroShotTagger
 from .sessions import (
     StagedSessionFile,
     TemporaryGalleryCapacityError,
@@ -73,8 +76,17 @@ async def lifespan(app: FastAPI):
         )
     settings.image_dir.mkdir(parents=True, exist_ok=True)
     settings.state_dir.mkdir(parents=True, exist_ok=True)
-    index = create_vector_index(settings.index_backend)
+    index = create_vector_index(
+        settings.index_backend,
+        settings.state_dir / "vector-cache-v1.f32",
+    )
     encoder = ClipEncoder(settings.clip_model_id)
+    tagger = ZeroShotTagger(
+        encoder,
+        min_score=settings.tag_min_score,
+        relative_margin=settings.tag_relative_margin,
+        max_tags=settings.tag_max_per_image,
+    )
     repository = ImageRepository(settings.state_dir / "index.sqlite3")
     repository.initialize()
     library = ImageLibrary(
@@ -85,6 +97,7 @@ async def lifespan(app: FastAPI):
         thumbnail_dir=settings.thumbnail_dir,
         thumbnail_max_size=settings.thumbnail_max_size,
         thumbnail_quality=settings.thumbnail_quality,
+        tagger=tagger,
     )
     library.backfill_dimensions()
     library.backfill_visual_fingerprints()
@@ -103,9 +116,7 @@ async def lifespan(app: FastAPI):
     app.state.index_backend = settings.index_backend
     app.state.encoder = encoder
     app.state.reranker = (
-        QwenVLReranker(settings.reranker_model_id)
-        if settings.reranker_model_id
-        else None
+        QwenVLReranker(settings.reranker_model_id) if settings.reranker_model_id else None
     )
     app.state.library = library
     app.state.job_repository = job_repository
@@ -126,6 +137,7 @@ async def lifespan(app: FastAPI):
             thumbnail_max_size=settings.thumbnail_max_size,
             thumbnail_quality=settings.thumbnail_quality,
             max_sessions=settings.temporary_gallery_max_sessions,
+            tagger=tagger,
         )
         temporary_gallery_service.initialize()
         app.state.temporary_gallery_service = temporary_gallery_service
@@ -146,6 +158,9 @@ async def lifespan(app: FastAPI):
             await cleanup_task
         if app.state.temporary_gallery_service:
             app.state.temporary_gallery_service.close()
+        close_index = getattr(index, "close", None)
+        if close_index:
+            close_index()
 
 
 app = FastAPI(
@@ -193,7 +208,9 @@ def require_library_writes(request: Request) -> None:
 def temporary_gallery_service(request: Request) -> TemporaryGalleryService:
     service = request.app.state.temporary_gallery_service
     if not request.app.state.temporary_galleries_enabled or service is None:
-        raise HTTPException(status_code=404, detail="Temporary galleries are only available in demo mode.")
+        raise HTTPException(
+            status_code=404, detail="Temporary galleries are only available in demo mode."
+        )
     return service
 
 
@@ -208,6 +225,7 @@ def image_record_response(stored) -> ImageRecordResponse:
         height=stored.height,
         size_bytes=stored.size_bytes,
         created_at=stored.created_at,
+        tags=[ImageTagResponse(**vars(tag)) for tag in stored.tags],
     )
 
 
@@ -234,6 +252,7 @@ def search_hit_response(stored, score: float | None = None) -> SearchHitResponse
         height=stored.height,
         size_bytes=stored.size_bytes,
         created_at=stored.created_at,
+        tags=[ImageTagResponse(**vars(tag)) for tag in stored.tags],
     )
 
 
@@ -253,7 +272,15 @@ def matches_search_filters(stored, payload: TextSearchRequest) -> bool:
         orientation = "landscape" if ratio > 1.08 else "portrait" if ratio < 0.92 else "square"
         if orientation not in payload.orientations:
             return False
+    if payload.tags and not set(payload.tags).intersection(tag.slug for tag in stored.tags):
+        return False
     return True
+
+
+@app.post("/v1/tags/rebuild", response_model=TagRebuildResponse)
+def rebuild_tags(request: Request) -> TagRebuildResponse:
+    require_library_writes(request)
+    return TagRebuildResponse(tagged_images=request.app.state.library.rebuild_tags())
 
 
 def sort_filtered_results(results, sort: str):
@@ -279,7 +306,10 @@ def indexed_fallback(hit) -> StoredImage:
 
 @app.get("/v1/images", response_model=list[ImageRecordResponse])
 def list_images(request: Request) -> list[ImageRecordResponse]:
-    return [image_record_response(stored) for stored in request.app.state.library.repository.list_stored()]
+    return [
+        image_record_response(stored)
+        for stored in request.app.state.library.repository.list_stored()
+    ]
 
 
 @app.get("/v1/duplicates", response_model=list[DuplicateGroupResponse])
@@ -361,7 +391,9 @@ async def stage_job_files(
                     if file_bytes > max_file_bytes:
                         raise InvalidImageError("Uploaded image is too large.")
                     if total_bytes > max_total_bytes:
-                        raise InvalidImageError("The selected folder is too large for one import job.")
+                        raise InvalidImageError(
+                            "The selected folder is too large for one import job."
+                        )
                     output.write(chunk)
             staged.append(
                 StagedFile(
@@ -503,6 +535,7 @@ async def index_image(
         height=result.stored.height,
         size_bytes=result.stored.size_bytes,
         created_at=result.stored.created_at,
+        tags=[ImageTagResponse(**vars(tag)) for tag in result.stored.tags],
         duplicate=result.duplicate,
         sha256=result.stored.sha256,
     )
@@ -541,6 +574,7 @@ async def index_image_batch(
             height=result.stored.height,
             size_bytes=result.stored.size_bytes,
             created_at=result.stored.created_at,
+            tags=[ImageTagResponse(**vars(tag)) for tag in result.stored.tags],
             duplicate=result.duplicate,
             sha256=result.stored.sha256,
         )
@@ -561,7 +595,10 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
             for stored in repository.list_stored()
             if matches_search_filters(stored, payload)
         ]
-        return [search_hit_response(stored) for _, stored in sort_filtered_results(results, payload.sort)[:payload.top_k]]
+        return [
+            search_hit_response(stored)
+            for _, stored in sort_filtered_results(results, payload.sort)[: payload.top_k]
+        ]
 
     reranker = request.app.state.reranker
     recall_query = (
@@ -578,6 +615,7 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
             [
                 payload.content_types,
                 payload.orientations,
+                payload.tags,
                 payload.min_width,
                 payload.max_size_bytes,
                 payload.imported_after,
@@ -605,12 +643,8 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
             max_results=payload.top_k,
         )
         relevant_ids = {hit.image.image_id for hit in relevant_hits}
-        filtered = [
-            (hit, stored)
-            for hit, stored in filtered
-            if hit.image.image_id in relevant_ids
-        ]
-    filtered = sort_filtered_results(filtered, payload.sort)[:payload.top_k]
+        filtered = [(hit, stored) for hit, stored in filtered if hit.image.image_id in relevant_ids]
+    filtered = sort_filtered_results(filtered, payload.sort)[: payload.top_k]
     return [search_hit_response(stored, hit.score) for hit, stored in filtered]
 
 
@@ -669,7 +703,9 @@ async def search_temporary_gallery_by_image(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     if gallery.status not in {"completed", "partial"}:
         raise HTTPException(status_code=409, detail="Temporary gallery is still being indexed.")
 
@@ -749,7 +785,9 @@ def get_temporary_gallery(session_id: str, request: Request) -> TemporaryGallery
     try:
         return temporary_gallery_response(service.get(session_id))
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
 
 
 @app.get(
@@ -764,7 +802,9 @@ def list_temporary_gallery_images(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     return [image_record_response(stored) for stored in gallery.library.repository.list_stored()]
 
 
@@ -780,7 +820,9 @@ def list_temporary_gallery_duplicate_groups(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     groups = gallery.library.duplicate_groups(
         max_hash_distance=settings.duplicate_hash_distance,
         max_color_distance=settings.duplicate_color_distance,
@@ -798,7 +840,9 @@ def temporary_gallery_image_content(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     stored = gallery.library.repository.find_by_id(image_id)
     if stored is None:
         raise HTTPException(status_code=404, detail="Image not found in this temporary gallery.")
@@ -819,7 +863,9 @@ def temporary_gallery_image_thumbnail(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     stored = gallery.library.repository.find_by_id(image_id)
     if stored is None:
         raise HTTPException(status_code=404, detail="Image not found in this temporary gallery.")
@@ -843,7 +889,9 @@ def search_temporary_gallery_by_text(
     try:
         gallery = service.gallery(session_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail="Temporary gallery not found or expired.") from error
+        raise HTTPException(
+            status_code=404, detail="Temporary gallery not found or expired."
+        ) from error
     if gallery.status not in {"completed", "partial"}:
         raise HTTPException(status_code=409, detail="Temporary gallery is still being indexed.")
     repository = gallery.library.repository
@@ -854,7 +902,10 @@ def search_temporary_gallery_by_text(
             for stored in repository.list_stored()
             if matches_search_filters(stored, payload)
         ]
-        return [search_hit_response(stored) for _, stored in sort_filtered_results(results, payload.sort)[:payload.top_k]]
+        return [
+            search_hit_response(stored)
+            for _, stored in sort_filtered_results(results, payload.sort)[: payload.top_k]
+        ]
 
     query_vector = service.encoder.encode_texts([normalized_query])[0]
     candidates = gallery.index.search(query_vector, min(len(gallery.index), 100))
@@ -871,7 +922,7 @@ def search_temporary_gallery_by_text(
     )
     relevant_ids = {hit.image.image_id for hit in relevant_hits}
     filtered = [(hit, stored) for hit, stored in filtered if hit.image.image_id in relevant_ids]
-    filtered = sort_filtered_results(filtered, payload.sort)[:payload.top_k]
+    filtered = sort_filtered_results(filtered, payload.sort)[: payload.top_k]
     return [search_hit_response(stored, hit.score) for hit, stored in filtered]
 
 

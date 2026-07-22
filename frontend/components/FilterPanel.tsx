@@ -3,6 +3,7 @@ import type {
   ImageOrientation,
   SearchFilters,
   SearchSort,
+  ImageTag,
 } from "@/lib/types";
 import { activeFilterCount, EMPTY_FILTERS } from "@/lib/search-filters";
 import { Check, Filter, RotateCcw, SlidersHorizontal, X } from "lucide-react";
@@ -13,6 +14,7 @@ type FilterPanelProps = {
   onChange: (filters: SearchFilters) => void;
   onApply: () => void;
   onClose: () => void;
+  availableTags: ImageTag[];
 };
 
 const FORMATS = [
@@ -45,7 +47,14 @@ function toggle<T>(items: T[], item: T): T[] {
   return items.includes(item) ? items.filter((value) => value !== item) : [...items, item];
 }
 
-export function FilterPanel({ open, filters, onChange, onApply, onClose }: FilterPanelProps) {
+export function FilterPanel({
+  open,
+  filters,
+  onChange,
+  onApply,
+  onClose,
+  availableTags,
+}: FilterPanelProps) {
   if (!open) return null;
 
   return (
@@ -107,6 +116,31 @@ export function FilterPanel({ open, filters, onChange, onApply, onClose }: Filte
               })}
             </div>
           </fieldset>
+
+          {availableTags.length > 0 && (
+            <fieldset className="tag-fieldset">
+              <legend>AI 自动标签</legend>
+              <div className="option-group tag-options">
+                {availableTags.map((tag) => {
+                  const selected = filters.tags.includes(tag.slug);
+                  return (
+                    <button
+                      className={selected ? "selected" : ""}
+                      key={tag.slug}
+                      onClick={() => onChange({
+                        ...filters,
+                        tags: toggle(filters.tags, tag.slug),
+                      })}
+                      title={`SigLIP2 自动标签：${tag.label}`}
+                      type="button"
+                    >
+                      {selected && <Check size={12} />} {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
 
           <fieldset>
             <legend>导入时间</legend>

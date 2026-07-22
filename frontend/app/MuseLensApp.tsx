@@ -104,6 +104,9 @@ export function MuseLensApp() {
   const filterCount = activeFilterCount(filters);
   const searchActive = Boolean(activeQuery || activeImageQuery || filterCount);
   const retrievalEvidence = activeQuery ? filenameEvidence(activeQuery, items) : null;
+  const availableTags = Array.from(
+    new Map(items.flatMap((item) => item.tags).map((tag) => [tag.slug, tag])).values(),
+  ).sort((left, right) => left.label.localeCompare(right.label, "zh-CN"));
 
   function createPreviewUrl(file: File): string {
     const url = URL.createObjectURL(file);
@@ -669,6 +672,7 @@ export function MuseLensApp() {
             }}
           />
           <FilterPanel
+            availableTags={availableTags}
             open={filtersOpen}
             filters={filters}
             onChange={setFilters}
@@ -835,6 +839,18 @@ export function MuseLensApp() {
                   }}
                 >
                   {{ landscape: "横图", portrait: "竖图", square: "方图" }[orientation]} <X size={12} />
+                </button>
+              ))}
+              {filters.tags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    const next = { ...filters, tags: filters.tags.filter((item) => item !== tag) };
+                    setFilters(next);
+                    runSearch(activeQuery, next);
+                  }}
+                >
+                  {availableTags.find((item) => item.slug === tag)?.label ?? tag} <X size={12} />
                 </button>
               ))}
               {filters.datePreset !== "all" && (
@@ -1097,6 +1113,11 @@ export function MuseLensApp() {
               <div>
                 <span>{selected.session_id ? "临时图片" : demoMode ? "演示图片" : "本地图片"}</span>
                 <strong>{selected.filename}</strong>
+                {selected.tags.length > 0 && (
+                  <div className="lightbox-tags" aria-label="AI 自动标签">
+                    {selected.tags.map((tag) => <i key={tag.slug}>{tag.label}</i>)}
+                  </div>
+                )}
               </div>
               {selected.score != null && (() => {
                 const index = items.findIndex((item) => item.image_id === selected.image_id);

@@ -116,6 +116,8 @@ button { color: inherit; }
 .filter-heading > button:hover { background: rgba(255,255,255,.06); color: var(--text); }
 .filter-grid { padding: 18px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 22px 26px; }
 .filter-grid fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.filter-grid .tag-fieldset { grid-column: 1 / -1; }
+.tag-options { max-height: 88px; overflow-y: auto; }
 .filter-grid legend { margin-bottom: 10px; color: #a9aeab; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
 .option-group, .segmented-options { display: flex; gap: 7px; flex-wrap: wrap; }
 .option-group button, .segmented-options button { min-height: 33px; padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; background: #161818; color: #898f8b; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 10px; cursor: pointer; }
@@ -207,6 +209,9 @@ button { color: inherit; }
 .relevance-pill i { width: 20px; height: 3px; display: block; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.13); }
 .relevance-pill i span { display: block; height: 100%; border-radius: inherit; background: #aeb4b0; }
 .relevance-pill b { font-size: 8px; color: #8e9490; }
+.photo-tags { position: absolute; top: 9px; right: 9px; display: flex; gap: 4px; }
+.photo-tags i { min-height: 23px; padding: 0 7px; display: inline-flex; align-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; background: rgba(10,12,11,.76); color: #d8ddda; backdrop-filter: blur(10px); font-size: 8px; font-style: normal; }
+.relevance-pill + .photo-tags { top: 42px; }
 .relevance-pill.best { color: #efffae; border-color: rgba(216,243,106,.26); background: rgba(19,23,13,.82); }
 .relevance-pill.best i span, .relevance-pill.high i span { background: var(--accent); }
 .relevance-pill.high { color: #dfeea4; }
@@ -253,6 +258,8 @@ button { color: inherit; }
 .lightbox-relevance { flex: 0 0 auto; text-align: right; }
 .lightbox-relevance strong { max-width: none; color: var(--accent); font-size: 11px; }
 .lightbox-relevance span { margin: 4px 0 0; color: #777d79; font-size: 9px; white-space: nowrap; }
+.lightbox-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.lightbox-tags i { padding: 4px 7px; border: 1px solid rgba(216,243,106,.18); border-radius: 7px; color: #d9ed8c; background: rgba(216,243,106,.06); font-size: 9px; font-style: normal; }
 .find-similar-button { height: 34px; padding: 0 11px; border: 1px solid rgba(216,243,106,.2); border-radius: 9px; background: rgba(216,243,106,.07); color: #d9ed8c; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; }
 .find-similar-button:hover { background: rgba(216,243,106,.12); }
 .lightbox-close { position: absolute; top: 22px; right: 22px; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 12px; background: rgba(20,22,21,.68); backdrop-filter: blur(12px); cursor: pointer; }

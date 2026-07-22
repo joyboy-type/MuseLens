@@ -1,0 +1,641 @@
+{
+  "experiment": "zero-shot-controlled-auto-tags",
+  "generated_at": "2026-07-19T14:37:51.315981+00:00",
+  "model_id": "google/siglip2-base-patch16-224",
+  "tagger_model_id": "google/siglip2-base-patch16-224:tags-v1",
+  "protocol": {
+    "images": 24,
+    "vocabulary_size": 40,
+    "max_tags": 3,
+    "min_score": 0.05,
+    "relative_margin": 0.04,
+    "ground_truth": "COCO categories restricted to exact controlled-vocabulary objects"
+  },
+  "metrics": {
+    "tagged_images": 24,
+    "image_object_hit_rate": 0.6666666666666666,
+    "object_precision": 0.8461538461538461,
+    "object_recall": 0.38596491228070173,
+    "object_f1": 0.5301204819277108
+  },
+  "persisted": true,
+  "examples": [
+    {
+      "filename": "000000366884.jpg",
+      "predicted": [
+        {
+          "slug": "indoor",
+          "label": "室内",
+          "score": 0.120415
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.099191
+        },
+        {
+          "slug": "dog",
+          "label": "狗",
+          "score": 0.094615
+        }
+      ],
+      "expected_known_objects": [
+        "book",
+        "dog",
+        "person"
+      ],
+      "matched_objects": [
+        "dog"
+      ]
+    },
+    {
+      "filename": "000000542625.jpg",
+      "predicted": [
+        {
+          "slug": "bird",
+          "label": "鸟",
+          "score": 0.127291
+        },
+        {
+          "slug": "car",
+          "label": "汽车",
+          "score": 0.098065
+        }
+      ],
+      "expected_known_objects": [
+        "bird",
+        "car"
+      ],
+      "matched_objects": [
+        "bird",
+        "car"
+      ]
+    },
+    {
+      "filename": "000000213547.jpg",
+      "predicted": [
+        {
+          "slug": "cake",
+          "label": "蛋糕",
+          "score": 0.094618
+        },
+        {
+          "slug": "horse",
+          "label": "马",
+          "score": 0.092011
+        },
+        {
+          "slug": "person",
+          "label": "人物",
+          "score": 0.090423
+        }
+      ],
+      "expected_known_objects": [
+        "cake",
+        "clock",
+        "horse",
+        "person"
+      ],
+      "matched_objects": [
+        "cake",
+        "horse",
+        "person"
+      ]
+    },
+    {
+      "filename": "000000132796.jpg",
+      "predicted": [
+        {
+          "slug": "elephant",
+          "label": "大象",
+          "score": 0.112633
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.100541
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.078212
+        }
+      ],
+      "expected_known_objects": [
+        "elephant",
+        "person"
+      ],
+      "matched_objects": [
+        "elephant"
+      ]
+    },
+    {
+      "filename": "000000184324.jpg",
+      "predicted": [
+        {
+          "slug": "city",
+          "label": "城市",
+          "score": 0.136641
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.101331
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.09665
+        }
+      ],
+      "expected_known_objects": [
+        "bicycle",
+        "bus",
+        "car",
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000502347.jpg",
+      "predicted": [
+        {
+          "slug": "airplane",
+          "label": "飞机",
+          "score": 0.125146
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.096286
+        },
+        {
+          "slug": "boat",
+          "label": "船",
+          "score": 0.093157
+        }
+      ],
+      "expected_known_objects": [
+        "airplane",
+        "boat"
+      ],
+      "matched_objects": [
+        "airplane",
+        "boat"
+      ]
+    },
+    {
+      "filename": "000000389451.jpg",
+      "predicted": [
+        {
+          "slug": "beach",
+          "label": "海滩",
+          "score": 0.105502
+        },
+        {
+          "slug": "cow",
+          "label": "牛",
+          "score": 0.102979
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.100532
+        }
+      ],
+      "expected_known_objects": [
+        "boat",
+        "cow",
+        "person"
+      ],
+      "matched_objects": [
+        "cow"
+      ]
+    },
+    {
+      "filename": "000000085157.jpg",
+      "predicted": [
+        {
+          "slug": "food",
+          "label": "美食",
+          "score": 0.101065
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.092794
+        },
+        {
+          "slug": "indoor",
+          "label": "室内",
+          "score": 0.091963
+        }
+      ],
+      "expected_known_objects": [
+        "person",
+        "pizza"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000350148.jpg",
+      "predicted": [
+        {
+          "slug": "food",
+          "label": "美食",
+          "score": 0.134354
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.114036
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.1091
+        }
+      ],
+      "expected_known_objects": [
+        "cake",
+        "car",
+        "clock",
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000192670.jpg",
+      "predicted": [
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.075756
+        },
+        {
+          "slug": "sports",
+          "label": "运动",
+          "score": 0.070134
+        },
+        {
+          "slug": "sports-ball",
+          "label": "球",
+          "score": 0.063455
+        }
+      ],
+      "expected_known_objects": [
+        "car",
+        "person",
+        "sports ball"
+      ],
+      "matched_objects": [
+        "sports ball"
+      ]
+    },
+    {
+      "filename": "000000309655.jpg",
+      "predicted": [
+        {
+          "slug": "person",
+          "label": "人物",
+          "score": 0.095227
+        },
+        {
+          "slug": "snowboard",
+          "label": "滑雪板",
+          "score": 0.091762
+        },
+        {
+          "slug": "mountain",
+          "label": "山景",
+          "score": 0.087533
+        }
+      ],
+      "expected_known_objects": [
+        "person",
+        "snowboard"
+      ],
+      "matched_objects": [
+        "person",
+        "snowboard"
+      ]
+    },
+    {
+      "filename": "000000232088.jpg",
+      "predicted": [
+        {
+          "slug": "indoor",
+          "label": "室内",
+          "score": 0.11111
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.08138
+        }
+      ],
+      "expected_known_objects": [
+        "laptop"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000393569.jpg",
+      "predicted": [
+        {
+          "slug": "indoor",
+          "label": "室内",
+          "score": 0.118253
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.087817
+        },
+        {
+          "slug": "bus",
+          "label": "公交车",
+          "score": 0.084669
+        }
+      ],
+      "expected_known_objects": [
+        "laptop",
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000303713.jpg",
+      "predicted": [
+        {
+          "slug": "sports",
+          "label": "运动",
+          "score": 0.09865
+        },
+        {
+          "slug": "sports-ball",
+          "label": "球",
+          "score": 0.086784
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.081846
+        }
+      ],
+      "expected_known_objects": [
+        "laptop",
+        "person",
+        "sports ball"
+      ],
+      "matched_objects": [
+        "sports ball"
+      ]
+    },
+    {
+      "filename": "000000229358.jpg",
+      "predicted": [
+        {
+          "slug": "person",
+          "label": "人物",
+          "score": 0.097973
+        },
+        {
+          "slug": "cell-phone",
+          "label": "手机",
+          "score": 0.091183
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.090182
+        }
+      ],
+      "expected_known_objects": [
+        "cell phone",
+        "person"
+      ],
+      "matched_objects": [
+        "cell phone",
+        "person"
+      ]
+    },
+    {
+      "filename": "000000134882.jpg",
+      "predicted": [
+        {
+          "slug": "cat",
+          "label": "猫",
+          "score": 0.130766
+        },
+        {
+          "slug": "indoor",
+          "label": "室内",
+          "score": 0.122144
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.10155
+        }
+      ],
+      "expected_known_objects": [
+        "book",
+        "cat",
+        "laptop"
+      ],
+      "matched_objects": [
+        "cat"
+      ]
+    },
+    {
+      "filename": "000000199771.jpg",
+      "predicted": [
+        {
+          "slug": "food",
+          "label": "美食",
+          "score": 0.087653
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.081359
+        },
+        {
+          "slug": "pizza",
+          "label": "披萨",
+          "score": 0.067069
+        }
+      ],
+      "expected_known_objects": [
+        "book",
+        "clock",
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000147740.jpg",
+      "predicted": [
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.101825
+        },
+        {
+          "slug": "person",
+          "label": "人物",
+          "score": 0.079847
+        },
+        {
+          "slug": "city",
+          "label": "城市",
+          "score": 0.079655
+        }
+      ],
+      "expected_known_objects": [
+        "car",
+        "motorcycle",
+        "person"
+      ],
+      "matched_objects": [
+        "person"
+      ]
+    },
+    {
+      "filename": "000000397133.jpg",
+      "predicted": [
+        {
+          "slug": "person",
+          "label": "人物",
+          "score": 0.081838
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.080767
+        },
+        {
+          "slug": "food",
+          "label": "美食",
+          "score": 0.077548
+        }
+      ],
+      "expected_known_objects": [
+        "person"
+      ],
+      "matched_objects": [
+        "person"
+      ]
+    },
+    {
+      "filename": "000000328238.jpg",
+      "predicted": [
+        {
+          "slug": "sports",
+          "label": "运动",
+          "score": 0.085817
+        },
+        {
+          "slug": "sports-ball",
+          "label": "球",
+          "score": 0.082838
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.077743
+        }
+      ],
+      "expected_known_objects": [
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000005001.jpg",
+      "predicted": [
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.094259
+        },
+        {
+          "slug": "bicycle",
+          "label": "自行车",
+          "score": 0.087791
+        },
+        {
+          "slug": "travel",
+          "label": "旅行",
+          "score": 0.085653
+        }
+      ],
+      "expected_known_objects": [
+        "bicycle",
+        "person"
+      ],
+      "matched_objects": [
+        "bicycle"
+      ]
+    },
+    {
+      "filename": "000000014439.jpg",
+      "predicted": [
+        {
+          "slug": "sports",
+          "label": "运动",
+          "score": 0.087889
+        },
+        {
+          "slug": "close-up",
+          "label": "特写",
+          "score": 0.076278
+        },
+        {
+          "slug": "airplane",
+          "label": "飞机",
+          "score": 0.070505
+        }
+      ],
+      "expected_known_objects": [
+        "person"
+      ],
+      "matched_objects": []
+    },
+    {
+      "filename": "000000094871.jpg",
+      "predicted": [
+        {
+          "slug": "sheep",
+          "label": "羊",
+          "score": 0.137391
+        }
+      ],
+      "expected_known_objects": [
+        "person",
+        "sheep"
+      ],
+      "matched_objects": [
+        "sheep"
+      ]
+    },
+    {
+      "filename": "000000248810.jpg",
+      "predicted": [
+        {
+          "slug": "giraffe",
+          "label": "长颈鹿",
+          "score": 0.149092
+        }
+      ],
+      "expected_known_objects": [
+        "giraffe",
+        "person"
+      ],
+      "matched_objects": [
+        "giraffe"
+      ]
+    }
+  ]
+}

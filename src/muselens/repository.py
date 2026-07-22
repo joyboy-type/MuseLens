@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
 import sqlite3
+from collections.abc import Iterator
 
 import numpy as np
 
 from .index import IndexedImage
+from .tags import ImageTag
 
 
 def connect_database(database_path: Path) -> sqlite3.Connection:
@@ -27,6 +29,7 @@ class StoredImage:
     created_at: str = ""
     perceptual_hash: str = ""
     average_color: str = ""
+    tags: tuple[ImageTag, ...] = ()
 
 
 class ImageRepository:
@@ -61,13 +64,34 @@ class ImageRepository:
                 )
                 """
             )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS image_tags (
+                    image_id TEXT NOT NULL,
+                    tag TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    score REAL NOT NULL,
+                    model_id TEXT NOT NULL,
+                    PRIMARY KEY (image_id, tag),
+                    FOREIGN KEY (image_id) REFERENCES images(image_id) ON DELETE CASCADE
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS image_tags_tag_idx
+                ON image_tags(tag, image_id)
+                """
+            )
             columns = {
                 row["name"] for row in connection.execute("PRAGMA table_info(images)").fetchall()
             }
             if "width" not in columns:
                 connection.execute("ALTER TABLE images ADD COLUMN width INTEGER NOT NULL DEFAULT 0")
             if "height" not in columns:
-                connection.execute("ALTER TABLE images ADD COLUMN height INTEGER NOT NULL DEFAULT 0")
+                connection.execute(
+                    "ALTER TABLE images ADD COLUMN height INTEGER NOT NULL DEFAULT 0"
+                )
             if "perceptual_hash" not in columns:
                 connection.execute(
                     "ALTER TABLE images ADD COLUMN perceptual_hash TEXT NOT NULL DEFAULT ''"
@@ -77,7 +101,12 @@ class ImageRepository:
                     "ALTER TABLE images ADD COLUMN average_color TEXT NOT NULL DEFAULT ''"
                 )
 
-    def insert(self, stored: StoredImage, vector: np.ndarray) -> None:
+    def insert(
+        self,
+        stored: StoredImage,
+        vector: np.ndarray,
+        tag_model_id: str = "",
+    ) -> None:
         embedding = np.asarray(vector, dtype=np.float32).reshape(-1)
         with self.connect() as connection:
             connection.execute(
@@ -105,6 +134,16 @@ class ImageRepository:
                     stored.average_color,
                 ),
             )
+            self._replace_tags(connection, stored.image.image_id, stored.tags, tag_model_id)
+
+    def replace_tags(
+        self,
+        image_id: str,
+        tags: tuple[ImageTag, ...],
+        model_id: str,
+    ) -> None:
+        with self.connect() as connection:
+            self._replace_tags(connection, image_id, tags, model_id)
 
     def update_dimensions(self, image_id: str, width: int, height: int) -> None:
         with self.connect() as connection:
@@ -137,7 +176,8 @@ class ImageRepository:
     def list_stored(self) -> list[StoredImage]:
         with self.connect() as connection:
             rows = connection.execute("SELECT * FROM images ORDER BY created_at DESC").fetchall()
-        return [self._stored_image(row) for row in rows]
+            tags = self._tags_by_image(connection, [row["image_id"] for row in rows])
+        return [self._stored_image(row, tags.get(row["image_id"], ())) for row in rows]
 
     def find_by_sha256(self, digest: str) -> StoredImage | None:
         with self.connect() as connection:
@@ -145,7 +185,8 @@ class ImageRepository:
                 "SELECT * FROM images WHERE sha256 = ?",
                 (digest,),
             ).fetchone()
-        return self._stored_image(row) if row else None
+            tags = self._tags_by_image(connection, [row["image_id"]]) if row else {}
+        return self._stored_image(row, tags.get(row["image_id"], ())) if row else None
 
     def find_by_id(self, image_id: str) -> StoredImage | None:
         with self.connect() as connection:
@@ -153,24 +194,38 @@ class ImageRepository:
                 "SELECT * FROM images WHERE image_id = ?",
                 (image_id,),
             ).fetchone()
-        return self._stored_image(row) if row else None
+            tags = self._tags_by_image(connection, [image_id]) if row else {}
+        return self._stored_image(row, tags.get(image_id, ())) if row else None
 
     def load_index(self, model_id: str | None = None) -> list[tuple[StoredImage, np.ndarray]]:
+        return list(self.iter_index(model_id=model_id))
+
+    def iter_index(
+        self,
+        model_id: str | None = None,
+        batch_size: int = 512,
+    ) -> Iterator[tuple[StoredImage, np.ndarray]]:
+        """Stream persisted vectors so startup memory does not scale with library size."""
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive.")
         with self.connect() as connection:
             if model_id is None:
-                rows = connection.execute("SELECT * FROM images ORDER BY created_at").fetchall()
+                cursor = connection.execute("SELECT * FROM images ORDER BY created_at")
             else:
-                rows = connection.execute(
+                cursor = connection.execute(
                     "SELECT * FROM images WHERE model_id = ? ORDER BY created_at",
                     (model_id,),
-                ).fetchall()
-        return [
-            (
-                self._stored_image(row),
-                np.frombuffer(row["embedding"], dtype=np.float32, count=row["embedding_dim"]).copy(),
-            )
-            for row in rows
-        ]
+                )
+            while rows := cursor.fetchmany(batch_size):
+                for row in rows:
+                    yield (
+                        self._stored_image(row),
+                        np.frombuffer(
+                            row["embedding"],
+                            dtype=np.float32,
+                            count=row["embedding_dim"],
+                        ).copy(),
+                    )
 
     def replace_embeddings(
         self,
@@ -193,7 +248,49 @@ class ImageRepository:
                     raise KeyError(f"Image {image_id} does not exist.")
 
     @staticmethod
-    def _stored_image(row: sqlite3.Row) -> StoredImage:
+    def _replace_tags(
+        connection: sqlite3.Connection,
+        image_id: str,
+        tags: tuple[ImageTag, ...],
+        model_id: str,
+    ) -> None:
+        connection.execute("DELETE FROM image_tags WHERE image_id = ?", (image_id,))
+        connection.executemany(
+            """
+            INSERT INTO image_tags (image_id, tag, label, score, model_id)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [(image_id, tag.slug, tag.label, tag.score, model_id) for tag in tags],
+        )
+
+    @staticmethod
+    def _tags_by_image(
+        connection: sqlite3.Connection,
+        image_ids: list[str],
+    ) -> dict[str, tuple[ImageTag, ...]]:
+        if not image_ids:
+            return {}
+        placeholders = ",".join("?" for _ in image_ids)
+        rows = connection.execute(
+            f"""
+            SELECT image_id, tag, label, score FROM image_tags
+            WHERE image_id IN ({placeholders})
+            ORDER BY image_id, score DESC, tag
+            """,
+            image_ids,
+        ).fetchall()
+        grouped: dict[str, list[ImageTag]] = {}
+        for row in rows:
+            grouped.setdefault(row["image_id"], []).append(
+                ImageTag(row["tag"], row["label"], row["score"])
+            )
+        return {image_id: tuple(tags) for image_id, tags in grouped.items()}
+
+    @staticmethod
+    def _stored_image(
+        row: sqlite3.Row,
+        tags: tuple[ImageTag, ...] = (),
+    ) -> StoredImage:
         return StoredImage(
             image=IndexedImage(
                 image_id=row["image_id"],
@@ -209,4 +306,5 @@ class ImageRepository:
             created_at=row["created_at"],
             perceptual_hash=row["perceptual_hash"],
             average_color=row["average_color"],
+            tags=tags,
         )

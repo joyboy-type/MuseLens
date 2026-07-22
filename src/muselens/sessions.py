@@ -11,6 +11,7 @@ from .encoder import ClipEncoder
 from .index import VectorIndex
 from .library import ImageLibrary, prepare_image
 from .repository import ImageRepository
+from .tags import ZeroShotTagger
 
 
 def utc_now() -> datetime:
@@ -85,6 +86,7 @@ class TemporaryGalleryService:
         thumbnail_max_size: int = 640,
         thumbnail_quality: int = 82,
         max_sessions: int = 8,
+        tagger: ZeroShotTagger | None = None,
     ) -> None:
         self.root = root
         self.encoder = encoder
@@ -94,6 +96,7 @@ class TemporaryGalleryService:
         self.thumbnail_max_size = thumbnail_max_size
         self.thumbnail_quality = thumbnail_quality
         self.max_sessions = max_sessions
+        self.tagger = tagger
         self._sessions: dict[str, TemporaryGallery] = {}
         self._lock = RLock()
         self._encoder_lock = Lock()
@@ -134,6 +137,7 @@ class TemporaryGalleryService:
             thumbnail_dir=directory / "thumbnails",
             thumbnail_max_size=self.thumbnail_max_size,
             thumbnail_quality=self.thumbnail_quality,
+            tagger=self.tagger,
         )
         now = utc_now()
         gallery = TemporaryGallery(

@@ -1,3 +1,9 @@
+export type ImageTag = {
+  slug: string;
+  label: string;
+  score: number;
+};
+
 export type ImageRecord = {
   image_id: string;
   filename: string;
@@ -6,6 +12,7 @@ export type ImageRecord = {
   height: number;
   size_bytes: number;
   created_at: string;
+  tags: ImageTag[];
 };
 
 export type SearchHit = {
@@ -17,6 +24,7 @@ export type SearchHit = {
   height: number;
   size_bytes: number;
   created_at: string;
+  tags: ImageTag[];
 };
 
 export type LibraryItem = ImageRecord & {
@@ -31,6 +39,7 @@ export type DatePreset = "all" | "week" | "month" | "year";
 export type SearchFilters = {
   contentTypes: string[];
   orientations: ImageOrientation[];
+  tags: string[];
   minWidth: number | null;
   maxSizeMB: number | null;
   datePreset: DatePreset;
@@ -41,7 +50,7 @@ export type Health = {
   status: string;
   indexed_images: number;
   model_loaded: boolean;
-  index_backend: "numpy" | "faiss";
+  index_backend: "numpy" | "mmap" | "faiss";
   mode: "local" | "demo";
   library_writable: boolean;
   temporary_galleries_enabled: boolean;

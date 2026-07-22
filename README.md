@@ -47,7 +47,7 @@ flowchart LR
     LIB --> ENCODER["SigLIP2 双塔编码器"]
     FIXED --> ENCODER
     TEMP --> ENCODER
-    ENCODER --> INDEX["NumPy 精确向量索引\n可选 FAISS"]
+    ENCODER --> INDEX["mmap 低内存精确索引\n可选 NumPy / FAISS"]
     INDEX --> RERANK["可选 Qwen3-VL 精排与拒答"]
     RERANK --> API
 ```
@@ -56,7 +56,8 @@ flowchart LR
 
 - **完整数据闭环**：文件导入、SHA-256 去重、批量编码、SQLite 持久化、重启恢复、组合筛选和缩略图缓存。
 - **可量化的模型决策**：比较 CLIP、SigLIP2 和轻量 Adapter；以独立测试集决定是否上线，而不是只展示训练 loss。
-- **可解释的性能取舍**：5,000 图规模选择 NumPy 精确检索；FAISS 虽更快，但没有掩盖其在 M4/PyTorch 同进程中的 OpenMP 冲突。
+- **可解释的性能取舍**：默认使用磁盘映射精确检索；10 万个 768 维向量实测搜索后 RSS 从约 680 MB 降至 75 MB，同时保留 NumPy / FAISS 对照后端。
+- **真实自动整理**：复用图片向量进行零样本标签，不增加第二个模型；标签持久化到 SQLite，并参与组合筛选和智能浏览。
 - **安全的公开演示**：服务端强制只读固定图库；访客图库按会话隔离，限制文件数量、像素和容量，并自动过期。
 - **可验证的交付**：React/Vite 与 FastAPI 单容器部署；GitHub Actions 发布到 ModelScope 后运行双语和真实上传质量门，未变更运行包时跳过昂贵重建。
 
@@ -67,7 +68,7 @@ flowchart LR
 | 前端 | React、TypeScript、Vite、响应式 CSS |
 | API / 业务 | FastAPI、Pydantic、后台任务、同源静态托管 |
 | 多模态检索 | PyTorch、Transformers、SigLIP2、可选 Qwen3-VL Reranker |
-| 数据与索引 | SQLite WAL、NumPy、可选 FAISS、Pillow/WebP |
+| 数据与索引 | SQLite WAL、NumPy mmap、可选 NumPy / FAISS、Pillow/WebP |
 | 工程化 | Pytest、Ruff、ESLint、Docker、GitHub Actions、ModelScope Studio |
 
 ## 当前进度
@@ -75,7 +76,7 @@ flowchart LR
 - [x] 可安装的 Python 工程骨架
 - [x] Apple Silicon MPS / CUDA / CPU 自动选择
 - [x] CLIP / SigLIP2 通用延迟加载适配器
-- [x] 内存向量索引与余弦检索
+- [x] mmap 低内存向量索引与精确余弦检索
 - [x] 图片导入、文本搜索、以图搜图 API 骨架
 - [x] 不下载模型即可运行的基础测试
 - [x] Flickr8k 100图/500查询的首个零样本检索基线
@@ -83,13 +84,13 @@ flowchart LR
 - [x] SQLite 图片元数据与向量持久化
 - [x] SHA-256 去重与批量导入
 - [x] 服务重启后自动恢复向量索引
-- [x] NumPy 连续矩阵精确索引与可选 FAISS 后端
+- [x] mmap / NumPy / FAISS 统一精确索引后端
 - [ ] 5 万图以上的 ANN/Qdrant 对比
 - [x] 中英文检索基线、模型对比与安全向量迁移
 - [x] 冻结主干的双塔残差 Adapter 与对称 InfoNCE 训练骨架
 - [x] 5000/500/100 官方 split Adapter 训练、消融与最终测试
 - [x] SHA-256 精确去重 + 感知哈希近似重复分组与安全清理
-- [ ] 自动标签
+- [x] 受控词表零样本自动标签、持久化、重建与组合筛选
 - [x] Recall@K、MRR 与编码延迟评测
 - [x] React + TypeScript 响应式图片画廊前端
 - [x] 语义 + 格式/方向/时间/尺寸的后端组合检索与响应式筛选面板
@@ -249,6 +250,11 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 保持不变。FAISS 更快但在 M4 的 pip PyTorch 同进程中存在 OpenMP 冲突，因此没有盲目设为
 默认。详见 `docs/INDEX_BENCHMARK.md`。
 
+随后增加磁盘映射精确索引作为默认后端。10 万个 768 维向量的独立进程测试中，首次搜索后
+RSS 从 NumPy 的约 680 MB 降到 mmap 的约 75 MB；连续向量存入约 293 MB 的临时缓存文件，
+服务退出时自动删除，SQLite 仍是唯一数据源。可使用 `python scripts/benchmark_index_memory.py --backend mmap`
+复现实验。
+
 以图搜图已完成 500 张图库原图、2,500 张扰动查询的真实 MPS 评测：Recall@1 为
 99.36%，Recall@5 为 99.96%。图片搜索相对分差据此从 0.035 独立校准为 0.05；完整
 协议、分扰动结果和适用边界见 `docs/IMAGE_RETRIEVAL_RESULTS.md`。
@@ -258,11 +264,17 @@ COCO 2017 全部 5000 张验证图片已完成真实后台导入和 5000 条 HTT
 跨原图误组为 0；68% 中心裁剪未命中并作为当前严格模式边界。详见
 `docs/DUPLICATE_DETECTION_RESULTS.md`。
 
+自动标签复用已经生成的 SigLIP2 图片向量，不重复读取或编码原图。24 张公开演示图全部生成
+1～3 个受控标签；与 COCO 可精确对齐的对象标签精确率为 84.6%，16/24 图片至少命中一个
+真实对象。系统选择精确率优先，并明确保留多对象召回率较低的边界。详见
+`docs/AUTO_TAGS_RESULTS.md`。
+
 ## 接口
 
 - `GET /health`：服务、模型、索引、运行模式和图库写入能力
 - `GET /v1/images`：已索引图片
 - `GET /v1/duplicates`：按感知指纹读取近似重复图片组与预计可释放空间
+- `POST /v1/tags/rebuild`：使用已持久化图片向量重新生成自动标签（仅本地模式）
 - `DELETE /v1/images/{image_id}`：仅在本地模式删除 MuseLens 导入副本
 - `GET /v1/images/{image_id}/content`：读取原图
 - `GET /v1/images/{image_id}/thumbnail`：读取或按需生成缓存缩略图

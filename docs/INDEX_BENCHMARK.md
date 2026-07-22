@@ -1,15 +1,32 @@
-# 5000 图精确向量索引选型
+# 精确向量索引选型与低内存演进
 
 ## 结论
 
-MuseLens 默认索引从“Python 字典逐向量点积”升级为“连续 NumPy 矩阵乘法”。在 Apple M4
+MuseLens 第一阶段从“Python 字典逐向量点积”升级为“连续 NumPy 矩阵乘法”。在 Apple M4
 的 5000 个 SigLIP2 向量上，纯索引平均延迟降低约 10.87 倍；真实 HTTP 平均延迟从
 51.40 ms 降至 18.31 ms，同时 Top-10 排名与 Recall 指标完全不变。
 
 FAISS `IndexFlatIP` 的纯索引速度比 NumPy 矩阵再快约 1.5 倍，但 pip 安装的 FAISS 与
 PyTorch macOS ARM64 wheel 各自携带一份 OpenMP 运行时，同进程搜索会被底层直接终止。
-因此本项目没有通过 `KMP_DUPLICATE_LIB_OK` 绕过安全检查：M4 应用默认使用 NumPy；FAISS
-保留为隔离 benchmark 和其他兼容平台的可选后端。
+因此本项目没有通过 `KMP_DUPLICATE_LIB_OK` 绕过安全检查：FAISS 保留为隔离 benchmark
+和其他兼容平台的可选后端。
+
+第二阶段默认后端升级为磁盘映射精确索引。它保持相同的精确余弦结果，但不再把完整向量字典
+和连续矩阵同时常驻进程内存。
+
+## 10 万图内存对比
+
+在独立进程中依次插入 100,000 个 768 维 float32 向量并执行首次 Top-10 查询。RSS 通过
+macOS `ps` 读取，两个后端使用相同协议和随机种子。
+
+| 后端 | 构建后 RSS | 首次搜索后 RSS | 首次搜索 | 可删除缓存文件 |
+|---|---:|---:|---:|---:|
+| NumPy 连续矩阵 | 377.0 MB | 679.8 MB | 63.9 ms | 0 MB |
+| mmap 分块精确索引 | 74.4 MB | 74.7 MB | 36.0 ms | 293.0 MB |
+
+mmap 将首次搜索后的进程 RSS 降低约 89%。293 MB 文件是从 SQLite 流式恢复的派生缓存，
+服务正常停止时自动删除；内存映射页面也可由操作系统在内存紧张时回收。本实验可通过
+`scripts/benchmark_index_memory.py` 复现。
 
 ## 为什么比较精确索引
 
@@ -59,7 +76,7 @@ HTTP 指标包含 SigLIP2 文本编码、索引搜索、结果过滤和 JSON 往
 搜索统一 `np.stack` 成连续 float32 矩阵，之后所有查询使用一次矩阵向量乘法。相同分数使用
 稳定排序，确保与旧实现的插入顺序一致。
 
-`MUSELENS_INDEX_BACKEND` 支持 `numpy` 和 `faiss`。FAISS 是可选依赖：
+`MUSELENS_INDEX_BACKEND` 支持默认的 `mmap`，以及 `numpy` 和 `faiss`。FAISS 是可选依赖：
 
 ```bash
 python -m pip install -e '.[faiss]'
@@ -76,9 +93,9 @@ python scripts/benchmark_vector_indexes.py
 
 - `artifacts/evaluations/vector-index-5k-v1.json`
 - `artifacts/evaluations/coco-val2017-live-api-numpy-matrix-v1.json`
+- `artifacts/evaluations/vector-index-memory-100k-v1.json`
 
 ## 下一步
 
-在 5000 图规模，NumPy 已将索引 P95 压到 0.5 ms 以下，暂无引入近似索引或独立向量服务的
-收益证据。后续先做元数据组合过滤和重复图片检测；图库扩展到至少 5 万张后，再用相同协议
-评估 HNSW、IVF 或 Qdrant。
+当前 mmap 后端已经解决消费级设备上的常驻内存问题，并保持精确排名。图库扩展到至少 50 万张
+后，再用相同协议评估量化、HNSW、IVF 或 Qdrant，避免过早引入近似召回损失和额外服务。

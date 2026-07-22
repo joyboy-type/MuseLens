@@ -8,6 +8,7 @@ from muselens.index import VectorIndex
 from muselens.library import ImageLibrary, prepare_image
 from muselens.library import InvalidImageError
 from muselens.repository import ImageRepository
+from muselens.tags import ImageTag
 
 
 class FakeEncoder:
@@ -22,6 +23,13 @@ class NewFakeEncoder:
 
     def encode_images(self, images):
         return np.tile(np.array([[0.0, 1.0, 0.0]], dtype=np.float32), (len(images), 1))
+
+
+class StaticTagger:
+    model_id = "fake-encoder:tags-v1"
+
+    def predict(self, vector):
+        return (ImageTag("dog", "狗", 0.8),)
 
 
 def jpeg_bytes(color: str) -> bytes:
@@ -65,9 +73,7 @@ def test_library_deduplicates_and_restores_index(tmp_path) -> None:
         assert max(rendered.size) <= 640
 
     restored_index = VectorIndex()
-    restored_library = ImageLibrary(
-        tmp_path / "images", repository, restored_index, FakeEncoder()
-    )
+    restored_library = ImageLibrary(tmp_path / "images", repository, restored_index, FakeEncoder())
     assert restored_library.restore_index() == 1
     assert len(restored_index) == 1
 
@@ -90,6 +96,25 @@ def test_library_lazily_rebuilds_a_missing_thumbnail(tmp_path) -> None:
 
     assert rebuilt == thumbnail
     assert rebuilt.is_file()
+
+
+def test_library_generates_and_persists_tags_during_import(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    library = ImageLibrary(
+        tmp_path / "images",
+        repository,
+        VectorIndex(),
+        FakeEncoder(),
+        tagger=StaticTagger(),
+    )
+
+    stored = library.import_candidates(
+        [prepare_image("dog.jpg", "image/jpeg", jpeg_bytes("brown"), 1024 * 1024)]
+    )[0].stored
+
+    assert stored.tags == (ImageTag("dog", "狗", 0.8),)
+    assert repository.find_by_id(stored.image.image_id).tags == stored.tags
 
 
 def test_library_groups_transformed_duplicates_and_deletes_only_its_copy(tmp_path) -> None:

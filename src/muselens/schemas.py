@@ -11,13 +11,19 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     reranker_enabled: bool
     reranker_loaded: bool
-    index_backend: Literal["numpy", "faiss"]
+    index_backend: Literal["numpy", "mmap", "faiss"]
     mode: Literal["local", "demo"]
     library_writable: bool
     temporary_galleries_enabled: bool
     temporary_gallery_max_files: int
     temporary_gallery_ttl_seconds: int
     temporary_gallery_max_sessions: int
+
+
+class ImageTagResponse(BaseModel):
+    slug: str
+    label: str
+    score: float = Field(ge=-1, le=1)
 
 
 class ImageRecordResponse(BaseModel):
@@ -28,6 +34,7 @@ class ImageRecordResponse(BaseModel):
     height: int = 0
     size_bytes: int = 0
     created_at: str = ""
+    tags: list[ImageTagResponse] = []
 
 
 class ImportResponse(ImageRecordResponse):
@@ -51,6 +58,7 @@ class TextSearchRequest(BaseModel):
     top_k: int = Field(default=12, ge=1, le=100)
     content_types: list[Literal["image/jpeg", "image/png", "image/webp"]] = []
     orientations: list[Literal["landscape", "portrait", "square"]] = []
+    tags: list[str] = Field(default=[], max_length=24)
     min_width: int | None = Field(default=None, ge=1, le=100_000)
     max_size_bytes: int | None = Field(default=None, ge=1)
     imported_after: str | None = None
@@ -66,6 +74,11 @@ class SearchHitResponse(BaseModel):
     height: int = 0
     size_bytes: int = 0
     created_at: str = ""
+    tags: list[ImageTagResponse] = []
+
+
+class TagRebuildResponse(BaseModel):
+    tagged_images: int
 
 
 class ImportJobResponse(BaseModel):

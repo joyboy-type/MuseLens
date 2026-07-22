@@ -2,6 +2,7 @@ import numpy as np
 
 from muselens.index import IndexedImage
 from muselens.repository import ImageRepository, StoredImage
+from muselens.tags import ImageTag
 
 
 def test_repository_persists_and_restores_embedding(tmp_path) -> None:
@@ -27,6 +28,9 @@ def test_repository_persists_and_restores_embedding(tmp_path) -> None:
     assert repository.find_by_id("id-1") == stored
     assert repository.find_by_id("missing") is None
     assert repository.load_index(model_id="other-model") == []
+    streamed = list(repository.iter_index(batch_size=1))
+    assert [item[0].image.image_id for item in streamed] == ["id-1"]
+    np.testing.assert_allclose(streamed[0][1], [0.1, 0.2, 0.3])
 
     with repository.connect() as connection:
         assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
@@ -98,3 +102,26 @@ def test_repository_atomically_replaces_embeddings(tmp_path) -> None:
     assert len(restored) == 1
     assert restored[0][0].model_id == "new-model"
     np.testing.assert_allclose(restored[0][1], [0.3, 0.4, 0.5])
+
+
+def test_repository_persists_replaces_and_cascades_image_tags(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    stored = StoredImage(
+        image=IndexedImage("id-1", "dog.jpg", "image/jpeg"),
+        stored_filename="id-1.jpg",
+        sha256="dog-digest",
+        size_bytes=42,
+        model_id="vision-model",
+        tags=(ImageTag("dog", "狗", 0.81),),
+    )
+    repository.insert(stored, np.asarray([1.0, 0.0], dtype=np.float32), "tagger-v1")
+
+    assert repository.find_by_id("id-1").tags == (ImageTag("dog", "狗", 0.81),)
+
+    repository.replace_tags("id-1", (ImageTag("pet", "宠物", 0.76),), "tagger-v2")
+    assert repository.list_stored()[0].tags == (ImageTag("pet", "宠物", 0.76),)
+
+    assert repository.delete("id-1") is True
+    with repository.connect() as connection:
+        assert connection.execute("SELECT COUNT(*) FROM image_tags").fetchone()[0] == 0
