@@ -12,6 +12,8 @@
 
 **[在线体验](https://sinbaby-muselens.ms.show)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
 
+![MuseLens 智能相册与语义图库界面](docs/images/muselens-home.png)
+
 导入图片的副本默认保存在 `~/Pictures/MuseLensLibrary/` 专用目录，不移动、覆盖或删除用户原始照片。
 
 ## 30 秒验证
@@ -58,6 +60,7 @@ flowchart LR
 - **可量化的模型决策**：比较 CLIP、SigLIP2 和轻量 Adapter；以独立测试集决定是否上线，而不是只展示训练 loss。
 - **可解释的性能取舍**：默认使用磁盘映射精确检索；10 万个 768 维向量实测搜索后 RSS 从约 680 MB 降至 75 MB，同时保留 NumPy / FAISS 对照后端。
 - **可纠正的自动整理**：复用图片向量进行零样本标签，不增加第二个模型；用户可在本地修正或恢复自动标签，人工结果在批量重建时受到保护。
+- **无需复制的相册系统**：动态智能相册随标签更新；自定义相册只保存图片引用，支持改名和多相册收藏，删除相册不删除原图。
 - **安全的公开演示**：服务端强制只读固定图库；访客图库按会话隔离，限制文件数量、像素和容量，并自动过期。
 - **可验证的交付**：React/Vite 与 FastAPI 单容器部署；GitHub Actions 发布到 ModelScope 后运行双语和真实上传质量门，未变更运行包时跳过昂贵重建。
 
