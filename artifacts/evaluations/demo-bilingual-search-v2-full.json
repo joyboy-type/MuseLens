@@ -1,0 +1,971 @@
+{
+  "suite": "MuseLens public demo bilingual search contract",
+  "suite_version": "2.0",
+  "evaluated_at": "2026-07-22T07:25:29.914131+00:00",
+  "base_url": "https://sinbaby-muselens.ms.show",
+  "query_template": "{query}",
+  "summary": {
+    "positive_queries": 84,
+    "hit_at_1": 0.7261904761904762,
+    "hit_at_5": 0.9523809523809523,
+    "empty_positive_rate": 0.0,
+    "negative_queries": 10,
+    "negative_rejection_rate": 0.0,
+    "language_metrics": {
+      "en": {
+        "queries": 42,
+        "hit_at_1": 0.8333333333333334,
+        "hit_at_5": 0.9761904761904762
+      },
+      "zh": {
+        "queries": 42,
+        "hit_at_1": 0.6190476190476191,
+        "hit_at_5": 0.9285714285714286
+      }
+    }
+  },
+  "positive_outcomes": [
+    {
+      "query": "dog",
+      "language": "en",
+      "expected_category": "dog",
+      "returned": 4,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000366884.jpg",
+      "top_score": 0.074949711561203
+    },
+    {
+      "query": "狗",
+      "language": "zh",
+      "expected_category": "dog",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000094871.jpg",
+      "top_score": 0.049514614045619965
+    },
+    {
+      "query": "a dog lying on a bed",
+      "language": "en",
+      "expected_category": "dog",
+      "returned": 2,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.08978408575057983
+    },
+    {
+      "query": "一只躺在床上的狗",
+      "language": "zh",
+      "expected_category": "dog",
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.09073619544506073
+    },
+    {
+      "query": "cat",
+      "language": "en",
+      "expected_category": "cat",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.10390134900808334
+    },
+    {
+      "query": "猫",
+      "language": "zh",
+      "expected_category": "cat",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.07619798928499222
+    },
+    {
+      "query": "bird",
+      "language": "en",
+      "expected_category": "bird",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.11579309403896332
+    },
+    {
+      "query": "鸟",
+      "language": "zh",
+      "expected_category": "bird",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.08613785356283188
+    },
+    {
+      "query": "elephant",
+      "language": "en",
+      "expected_category": "elephant",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000132796.jpg",
+      "top_score": 0.11456651985645294
+    },
+    {
+      "query": "大象",
+      "language": "zh",
+      "expected_category": "elephant",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000132796.jpg",
+      "top_score": 0.08451485633850098
+    },
+    {
+      "query": "car",
+      "language": "en",
+      "expected_category": "car",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.07772979885339737
+    },
+    {
+      "query": "汽车",
+      "language": "zh",
+      "expected_category": "car",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.06098292022943497
+    },
+    {
+      "query": "bus",
+      "language": "en",
+      "expected_category": "bus",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.06992641091346741
+    },
+    {
+      "query": "公交车",
+      "language": "zh",
+      "expected_category": "bus",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000393569.jpg",
+      "top_score": 0.05158790946006775
+    },
+    {
+      "query": "airplane",
+      "language": "en",
+      "expected_category": "airplane",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.10956372320652008
+    },
+    {
+      "query": "飞机",
+      "language": "zh",
+      "expected_category": "airplane",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.08350777626037598
+    },
+    {
+      "query": "boat",
+      "language": "en",
+      "expected_category": "boat",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000389451.jpg",
+      "top_score": 0.08385883271694183
+    },
+    {
+      "query": "船",
+      "language": "zh",
+      "expected_category": "boat",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.07309063524007797
+    },
+    {
+      "query": "horse",
+      "language": "en",
+      "expected_category": "horse",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.0885554626584053
+    },
+    {
+      "query": "马",
+      "language": "zh",
+      "expected_category": "horse",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.04675987735390663
+    },
+    {
+      "query": "pizza",
+      "language": "en",
+      "expected_category": "pizza",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000085157.jpg",
+      "top_score": 0.07623632997274399
+    },
+    {
+      "query": "披萨",
+      "language": "zh",
+      "expected_category": "pizza",
+      "returned": 4,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000350148.jpg",
+      "top_score": 0.05095645412802696
+    },
+    {
+      "query": "cake",
+      "language": "en",
+      "expected_category": "cake",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.0956549420952797
+    },
+    {
+      "query": "蛋糕",
+      "language": "zh",
+      "expected_category": "cake",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000350148.jpg",
+      "top_score": 0.046963535249233246
+    },
+    {
+      "query": "sports ball",
+      "language": "en",
+      "expected_category": "sports ball",
+      "returned": 4,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000328238.jpg",
+      "top_score": 0.0812663733959198
+    },
+    {
+      "query": "球",
+      "language": "zh",
+      "expected_category": "sports ball",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000328238.jpg",
+      "top_score": 0.06084202975034714
+    },
+    {
+      "query": "snowboard",
+      "language": "en",
+      "expected_category": "snowboard",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000309655.jpg",
+      "top_score": 0.09922615438699722
+    },
+    {
+      "query": "滑雪板",
+      "language": "zh",
+      "expected_category": "snowboard",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000309655.jpg",
+      "top_score": 0.08753900229930878
+    },
+    {
+      "query": "laptop",
+      "language": "en",
+      "expected_category": "laptop",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.05917459353804588
+    },
+    {
+      "query": "笔记本电脑",
+      "language": "zh",
+      "expected_category": "laptop",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.04482141509652138
+    },
+    {
+      "query": "cell phone",
+      "language": "en",
+      "expected_category": "cell phone",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000229358.jpg",
+      "top_score": 0.07937651127576828
+    },
+    {
+      "query": "手机",
+      "language": "zh",
+      "expected_category": "cell phone",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000229358.jpg",
+      "top_score": 0.04488787800073624
+    },
+    {
+      "query": "book",
+      "language": "en",
+      "expected_category": "book",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.07412263751029968
+    },
+    {
+      "query": "书",
+      "language": "zh",
+      "expected_category": "book",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.061085090041160583
+    },
+    {
+      "query": "clock",
+      "language": "en",
+      "expected_category": "clock",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.05797646939754486
+    },
+    {
+      "query": "时钟",
+      "language": "zh",
+      "expected_category": "clock",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.03410562872886658
+    },
+    {
+      "query": "bicycle",
+      "language": "en",
+      "expected_category": "bicycle",
+      "returned": 4,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000005001.jpg",
+      "top_score": 0.07453595101833344
+    },
+    {
+      "query": "自行车",
+      "language": "zh",
+      "expected_category": "bicycle",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000005001.jpg",
+      "top_score": 0.05522388964891434
+    },
+    {
+      "query": "motorcycle",
+      "language": "en",
+      "expected_category": "motorcycle",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.056064482778310776
+    },
+    {
+      "query": "摩托车",
+      "language": "zh",
+      "expected_category": "motorcycle",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.04009215161204338
+    },
+    {
+      "query": "giraffe",
+      "language": "en",
+      "expected_category": "giraffe",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.13677124679088593
+    },
+    {
+      "query": "长颈鹿",
+      "language": "zh",
+      "expected_category": "giraffe",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.1314779371023178
+    },
+    {
+      "query": "sheep",
+      "language": "en",
+      "expected_category": "sheep",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000094871.jpg",
+      "top_score": 0.1301426887512207
+    },
+    {
+      "query": "羊",
+      "language": "zh",
+      "expected_category": "sheep",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000094871.jpg",
+      "top_score": 0.11712697148323059
+    },
+    {
+      "query": "a kitten resting on a bed",
+      "language": "en",
+      "expected_category": "cat",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.10838758945465088
+    },
+    {
+      "query": "一只躺在床上的小猫",
+      "language": "zh",
+      "expected_category": "cat",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.11549080908298492
+    },
+    {
+      "query": "a bird near parked cars",
+      "language": "en",
+      "expected_category": "bird",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.1780397593975067
+    },
+    {
+      "query": "停车场附近的一只鸟",
+      "language": "zh",
+      "expected_category": "bird",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.16630607843399048
+    },
+    {
+      "query": "an elephant beside a bench",
+      "language": "en",
+      "expected_category": "elephant",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000132796.jpg",
+      "top_score": 0.08727917075157166
+    },
+    {
+      "query": "长椅旁边的大象",
+      "language": "zh",
+      "expected_category": "elephant",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000232088.jpg",
+      "top_score": 0.08719001710414886
+    },
+    {
+      "query": "vehicles driving on a city street",
+      "language": "en",
+      "expected_category": "car",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.09222834557294846
+    },
+    {
+      "query": "城市街道上的汽车",
+      "language": "zh",
+      "expected_category": "car",
+      "returned": 4,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.09181685745716095
+    },
+    {
+      "query": "a city bus in traffic",
+      "language": "en",
+      "expected_category": "bus",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000184324.jpg",
+      "top_score": 0.05762101337313652
+    },
+    {
+      "query": "行驶在路上的公交车",
+      "language": "zh",
+      "expected_category": "bus",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.07074101269245148
+    },
+    {
+      "query": "an airplane beside boats",
+      "language": "en",
+      "expected_category": "airplane",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.12231959402561188
+    },
+    {
+      "query": "船只旁边的飞机",
+      "language": "zh",
+      "expected_category": "airplane",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.09786074608564377
+    },
+    {
+      "query": "boats floating on the water",
+      "language": "en",
+      "expected_category": "boat",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000389451.jpg",
+      "top_score": 0.0770445168018341
+    },
+    {
+      "query": "漂在水面上的船",
+      "language": "zh",
+      "expected_category": "boat",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000502347.jpg",
+      "top_score": 0.07618565112352371
+    },
+    {
+      "query": "a horse in an indoor scene",
+      "language": "en",
+      "expected_category": "horse",
+      "returned": 2,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.08069337159395218
+    },
+    {
+      "query": "室内画面中的马",
+      "language": "zh",
+      "expected_category": "horse",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000393569.jpg",
+      "top_score": 0.0831158310174942
+    },
+    {
+      "query": "a meal with pizza on the table",
+      "language": "en",
+      "expected_category": "pizza",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000085157.jpg",
+      "top_score": 0.07397153228521347
+    },
+    {
+      "query": "餐桌上的披萨",
+      "language": "zh",
+      "expected_category": "pizza",
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000350148.jpg",
+      "top_score": 0.0730852335691452
+    },
+    {
+      "query": "a decorated celebration cake",
+      "language": "en",
+      "expected_category": "cake",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.05871693044900894
+    },
+    {
+      "query": "装饰精美的庆祝蛋糕",
+      "language": "zh",
+      "expected_category": "cake",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.06999021023511887
+    },
+    {
+      "query": "a person playing with a ball",
+      "language": "en",
+      "expected_category": "sports ball",
+      "returned": 2,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000328238.jpg",
+      "top_score": 0.11157888174057007
+    },
+    {
+      "query": "正在打球的人",
+      "language": "zh",
+      "expected_category": "sports ball",
+      "returned": 4,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000328238.jpg",
+      "top_score": 0.09681513905525208
+    },
+    {
+      "query": "a person riding a snowboard",
+      "language": "en",
+      "expected_category": "snowboard",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000309655.jpg",
+      "top_score": 0.0952838882803917
+    },
+    {
+      "query": "踩着滑雪板的人",
+      "language": "zh",
+      "expected_category": "snowboard",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000309655.jpg",
+      "top_score": 0.08963845670223236
+    },
+    {
+      "query": "a laptop computer on a desk",
+      "language": "en",
+      "expected_category": "laptop",
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000366884.jpg",
+      "top_score": 0.05653472989797592
+    },
+    {
+      "query": "放在桌上的笔记本电脑",
+      "language": "zh",
+      "expected_category": "laptop",
+      "returned": 4,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.08170773088932037
+    },
+    {
+      "query": "a person holding a mobile phone",
+      "language": "en",
+      "expected_category": "cell phone",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000229358.jpg",
+      "top_score": 0.0702076107263565
+    },
+    {
+      "query": "手里拿着手机的人",
+      "language": "zh",
+      "expected_category": "cell phone",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.0686940997838974
+    },
+    {
+      "query": "books lying on a bed",
+      "language": "en",
+      "expected_category": "book",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.11332107335329056
+    },
+    {
+      "query": "放在床上的书",
+      "language": "zh",
+      "expected_category": "book",
+      "returned": 3,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000134882.jpg",
+      "top_score": 0.09707535058259964
+    },
+    {
+      "query": "a clock visible in the room",
+      "language": "en",
+      "expected_category": "clock",
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000366884.jpg",
+      "top_score": 0.10247298330068588
+    },
+    {
+      "query": "房间里能看到的时钟",
+      "language": "zh",
+      "expected_category": "clock",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000366884.jpg",
+      "top_score": 0.06946608424186707
+    },
+    {
+      "query": "a person carrying a bicycle",
+      "language": "en",
+      "expected_category": "bicycle",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000005001.jpg",
+      "top_score": 0.06618015468120575
+    },
+    {
+      "query": "推着自行车的人",
+      "language": "zh",
+      "expected_category": "bicycle",
+      "returned": 5,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000005001.jpg",
+      "top_score": 0.09104591608047485
+    },
+    {
+      "query": "a parked motorcycle",
+      "language": "en",
+      "expected_category": "motorcycle",
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.06117091700434685
+    },
+    {
+      "query": "停在路边的摩托车",
+      "language": "zh",
+      "expected_category": "motorcycle",
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": true,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.07040317356586456
+    },
+    {
+      "query": "a tall giraffe with a person nearby",
+      "language": "en",
+      "expected_category": "giraffe",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.11620467901229858
+    },
+    {
+      "query": "人旁边的高大长颈鹿",
+      "language": "zh",
+      "expected_category": "giraffe",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.11539202928543091
+    },
+    {
+      "query": "a person standing beside sheep",
+      "language": "en",
+      "expected_category": "sheep",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000094871.jpg",
+      "top_score": 0.13594895601272583
+    },
+    {
+      "query": "站在羊旁边的人",
+      "language": "zh",
+      "expected_category": "sheep",
+      "returned": 1,
+      "hit_at_1": true,
+      "hit_at_5": true,
+      "top_filename": "000000094871.jpg",
+      "top_score": 0.12128281593322754
+    }
+  ],
+  "negative_outcomes": [
+    {
+      "query": "train",
+      "language": "en",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000542625.jpg",
+      "top_score": 0.06432396173477173
+    },
+    {
+      "query": "火车",
+      "language": "zh",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000393569.jpg",
+      "top_score": 0.04573535919189453
+    },
+    {
+      "query": "zebra",
+      "language": "en",
+      "expected_category": null,
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.07641905546188354
+    },
+    {
+      "query": "斑马",
+      "language": "zh",
+      "expected_category": null,
+      "returned": 1,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000248810.jpg",
+      "top_score": 0.0759330689907074
+    },
+    {
+      "query": "surfboard",
+      "language": "en",
+      "expected_category": null,
+      "returned": 3,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000389451.jpg",
+      "top_score": 0.07071645557880402
+    },
+    {
+      "query": "冲浪板",
+      "language": "zh",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000389451.jpg",
+      "top_score": 0.05301094055175781
+    },
+    {
+      "query": "donut",
+      "language": "en",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000213547.jpg",
+      "top_score": 0.07710221409797668
+    },
+    {
+      "query": "甜甜圈",
+      "language": "zh",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000393569.jpg",
+      "top_score": 0.07291802763938904
+    },
+    {
+      "query": "flower",
+      "language": "en",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000085157.jpg",
+      "top_score": 0.05639512091875076
+    },
+    {
+      "query": "花朵",
+      "language": "zh",
+      "expected_category": null,
+      "returned": 5,
+      "hit_at_1": false,
+      "hit_at_5": false,
+      "top_filename": "000000393569.jpg",
+      "top_score": 0.015369064174592495
+    }
+  ]
+}

@@ -6,7 +6,8 @@ MuseLens 的国内公开演示优先使用 ModelScope Studio Docker 模式。项
 `ms_deploy.json` 已声明 Docker SDK、7860 端口和平台 CPU 资源；Studio 构建时直接复用
 项目现有 `Dockerfile`，不维护第二套应用源码。配置文件同时注入
 `MUSELENS_MODE=demo` 和 `MUSELENS_SEARCH_MIN_SCORE=-1`，因此不能依赖平台是否提供某个
-特定环境变量来猜测运行模式，也不会误把公开服务启动成可写的本地模式。
+特定环境变量来猜测运行模式，也不会误把公开服务启动成可写的本地模式。`-1` 表示轻量
+SigLIP2 只做相对排序；84 条正例与 10 条负例实测分数区间重叠，不能用单一绝对值可靠拒答。
 
 公开演示保持轻量配置：
 
