@@ -19,6 +19,7 @@ class ImageTag:
     slug: str
     label: str
     score: float
+    source: str = "auto"
 
 
 DEFAULT_TAGS = (

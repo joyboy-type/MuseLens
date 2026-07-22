@@ -72,11 +72,20 @@ class ImageRepository:
                     label TEXT NOT NULL,
                     score REAL NOT NULL,
                     model_id TEXT NOT NULL,
+                    source TEXT NOT NULL DEFAULT 'auto',
                     PRIMARY KEY (image_id, tag),
                     FOREIGN KEY (image_id) REFERENCES images(image_id) ON DELETE CASCADE
                 )
                 """
             )
+            tag_columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(image_tags)").fetchall()
+            }
+            if "source" not in tag_columns:
+                connection.execute(
+                    "ALTER TABLE image_tags ADD COLUMN source TEXT NOT NULL DEFAULT 'auto'"
+                )
             connection.execute(
                 """
                 CREATE INDEX IF NOT EXISTS image_tags_tag_idx
@@ -144,6 +153,38 @@ class ImageRepository:
     ) -> None:
         with self.connect() as connection:
             self._replace_tags(connection, image_id, tags, model_id)
+
+    def has_manual_tags(self, image_id: str) -> bool:
+        with self.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1 FROM image_tags
+                WHERE image_id = ? AND source = 'manual'
+                LIMIT 1
+                """,
+                (image_id,),
+            ).fetchone()
+        return row is not None
+
+    def load_vector(self, image_id: str) -> tuple[np.ndarray, str] | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT embedding, embedding_dim, model_id FROM images
+                WHERE image_id = ?
+                """,
+                (image_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return (
+            np.frombuffer(
+                row["embedding"],
+                dtype=np.float32,
+                count=row["embedding_dim"],
+            ).copy(),
+            row["model_id"],
+        )
 
     def update_dimensions(self, image_id: str, width: int, height: int) -> None:
         with self.connect() as connection:
@@ -257,10 +298,10 @@ class ImageRepository:
         connection.execute("DELETE FROM image_tags WHERE image_id = ?", (image_id,))
         connection.executemany(
             """
-            INSERT INTO image_tags (image_id, tag, label, score, model_id)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO image_tags (image_id, tag, label, score, model_id, source)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            [(image_id, tag.slug, tag.label, tag.score, model_id) for tag in tags],
+            [(image_id, tag.slug, tag.label, tag.score, model_id, tag.source) for tag in tags],
         )
 
     @staticmethod
@@ -273,7 +314,7 @@ class ImageRepository:
         placeholders = ",".join("?" for _ in image_ids)
         rows = connection.execute(
             f"""
-            SELECT image_id, tag, label, score FROM image_tags
+            SELECT image_id, tag, label, score, source FROM image_tags
             WHERE image_id IN ({placeholders})
             ORDER BY image_id, score DESC, tag
             """,
@@ -282,7 +323,7 @@ class ImageRepository:
         grouped: dict[str, list[ImageTag]] = {}
         for row in rows:
             grouped.setdefault(row["image_id"], []).append(
-                ImageTag(row["tag"], row["label"], row["score"])
+                ImageTag(row["tag"], row["label"], row["score"], row["source"])
             )
         return {image_id: tuple(tags) for image_id, tags in grouped.items()}
 

@@ -28,6 +28,11 @@ def test_repository_persists_and_restores_embedding(tmp_path) -> None:
     assert repository.find_by_id("id-1") == stored
     assert repository.find_by_id("missing") is None
     assert repository.load_index(model_id="other-model") == []
+    loaded_vector = repository.load_vector("id-1")
+    assert loaded_vector is not None
+    np.testing.assert_allclose(loaded_vector[0], [0.1, 0.2, 0.3])
+    assert loaded_vector[1] == "test-model"
+    assert repository.load_vector("missing") is None
     streamed = list(repository.iter_index(batch_size=1))
     assert [item[0].image.image_id for item in streamed] == ["id-1"]
     np.testing.assert_allclose(streamed[0][1], [0.1, 0.2, 0.3])

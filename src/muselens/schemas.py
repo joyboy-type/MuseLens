@@ -24,6 +24,17 @@ class ImageTagResponse(BaseModel):
     slug: str
     label: str
     score: float = Field(ge=-1, le=1)
+    source: Literal["auto", "manual"] = "auto"
+
+
+class TagCatalogItemResponse(BaseModel):
+    slug: str
+    label: str
+    group: str
+
+
+class UpdateImageTagsRequest(BaseModel):
+    tags: list[str] = Field(default=[], max_length=40)
 
 
 class ImageRecordResponse(BaseModel):

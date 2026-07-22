@@ -260,6 +260,19 @@ button { color: inherit; }
 .lightbox-relevance span { margin: 4px 0 0; color: #777d79; font-size: 9px; white-space: nowrap; }
 .lightbox-tags { display: flex; gap: 5px; flex-wrap: wrap; }
 .lightbox-tags i { padding: 4px 7px; border: 1px solid rgba(216,243,106,.18); border-radius: 7px; color: #d9ed8c; background: rgba(216,243,106,.06); font-size: 9px; font-style: normal; }
+.lightbox-tags i.manual { border-color: rgba(123,184,255,.24); color: #acd3ff; background: rgba(80,145,220,.08); }
+.tag-edit-button { height: 34px; padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: #aeb4b0; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; }
+.tag-editor { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: #141616; }
+.tag-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tag-editor-heading strong { display: block; font-size: 11px; }
+.tag-editor-heading span { display: block; margin-top: 3px; color: #757b77; font-size: 9px; }
+.tag-editor-heading > div:last-child { display: flex; gap: 7px; }
+.tag-editor-heading button { height: 31px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: #9da39f; display: inline-flex; align-items: center; gap: 5px; font-size: 9px; cursor: pointer; }
+.tag-editor-heading .save-tags { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.tag-editor-heading button:disabled { opacity: .45; cursor: wait; }
+.tag-editor-options { max-height: 118px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; overflow-y: auto; }
+.tag-editor-options button { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; background: #191b1a; color: #8d938f; font-size: 9px; cursor: pointer; }
+.tag-editor-options button.selected { border-color: rgba(216,243,106,.28); background: rgba(216,243,106,.09); color: #dfef9c; }
 .find-similar-button { height: 34px; padding: 0 11px; border: 1px solid rgba(216,243,106,.2); border-radius: 9px; background: rgba(216,243,106,.07); color: #d9ed8c; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; }
 .find-similar-button:hover { background: rgba(216,243,106,.12); }
 .lightbox-close { position: absolute; top: 22px; right: 22px; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 12px; background: rgba(20,22,21,.68); backdrop-filter: blur(12px); cursor: pointer; }
@@ -375,6 +388,12 @@ button { color: inherit; }
   .insight-metrics div { flex: 1; }
   .lightbox-meta { align-items: flex-start; flex-direction: column; gap: 9px; }
   .lightbox-relevance { text-align: left; }
+  .lightbox-content { max-height: calc(100dvh - 24px); overflow-y: auto; }
+  .lightbox-content > img { max-height: 48vh; }
+  .tag-editor-heading { align-items: flex-start; flex-direction: column; }
+  .tag-editor-heading > div:last-child { width: 100%; }
+  .tag-editor-heading button { flex: 1; justify-content: center; }
+  .tag-editor-options { max-height: 150px; overscroll-behavior: contain; }
   .active-image-query { align-items: flex-start; flex-wrap: wrap; }
   .active-image-query > div { width: calc(100% - 83px); }
   .active-image-query > button { margin-left: 83px; }

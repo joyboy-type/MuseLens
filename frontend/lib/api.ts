@@ -7,6 +7,7 @@ import type {
   LibraryItem,
   SearchHit,
   SearchFilters,
+  TagCatalogItem,
   TemporaryGallery,
 } from "./types";
 
@@ -53,6 +54,22 @@ export function listDuplicateGroups(sessionId?: string): Promise<DuplicateGroup[
 
 export function deleteImage(imageId: string): Promise<void> {
   return request<void>(`/v1/images/${imageId}`, { method: "DELETE" });
+}
+
+export function listTagCatalog(): Promise<TagCatalogItem[]> {
+  return request<TagCatalogItem[]>("/v1/tags/catalog");
+}
+
+export function updateImageTags(imageId: string, tags: string[]): Promise<ImageRecord> {
+  return request<ImageRecord>(`/v1/images/${imageId}/tags`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tags }),
+  });
+}
+
+export function restoreImageAutoTags(imageId: string): Promise<ImageRecord> {
+  return request<ImageRecord>(`/v1/images/${imageId}/tags/auto`, { method: "POST" });
 }
 
 function searchPayload(query: string, filters: SearchFilters) {

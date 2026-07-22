@@ -12,7 +12,7 @@ from .encoder import ClipEncoder
 from .duplicates import VisualFingerprint, duplicate_components, hash_distance, visual_fingerprint
 from .index import IndexedImage, SearchIndex
 from .repository import ImageRepository, StoredImage
-from .tags import ZeroShotTagger
+from .tags import ImageTag, ZeroShotTagger
 
 
 SUPPORTED_CONTENT_TYPES = {
@@ -240,6 +240,8 @@ class ImageLibrary:
         self.repository.replace_embeddings(embeddings, self.encoder.model_id)
         if self.tagger:
             for image_id, vector in embeddings:
+                if self.repository.has_manual_tags(image_id):
+                    continue
                 self.repository.replace_tags(
                     image_id,
                     self.tagger.predict(vector),
@@ -255,6 +257,8 @@ class ImageLibrary:
             raise RuntimeError("Automatic tagging is not configured.")
         tagged = 0
         for stored, vector in self.repository.iter_index(model_id=self.encoder.model_id):
+            if self.repository.has_manual_tags(stored.image.image_id):
+                continue
             self.repository.replace_tags(
                 stored.image.image_id,
                 self.tagger.predict(vector),
@@ -262,6 +266,45 @@ class ImageLibrary:
             )
             tagged += 1
         return tagged
+
+    def set_manual_tags(self, image_id: str, slugs: list[str]) -> StoredImage:
+        if self.tagger is None:
+            raise RuntimeError("Automatic tagging is not configured.")
+        stored = self.repository.find_by_id(image_id)
+        if stored is None:
+            raise KeyError(image_id)
+        definitions = {definition.slug: definition for definition in self.tagger.definitions}
+        unknown = [slug for slug in slugs if slug not in definitions]
+        if unknown:
+            raise ValueError(f"Unknown tags: {', '.join(unknown)}")
+        unique_slugs = list(dict.fromkeys(slugs))
+        tags = tuple(
+            ImageTag(slug, definitions[slug].label, 1.0, "manual") for slug in unique_slugs
+        )
+        self.repository.replace_tags(image_id, tags, "manual")
+        updated = self.repository.find_by_id(image_id)
+        if updated is None:
+            raise KeyError(image_id)
+        return updated
+
+    def restore_auto_tags(self, image_id: str) -> StoredImage:
+        if self.tagger is None:
+            raise RuntimeError("Automatic tagging is not configured.")
+        loaded = self.repository.load_vector(image_id)
+        if loaded is None:
+            raise KeyError(image_id)
+        vector, model_id = loaded
+        if model_id != self.encoder.model_id:
+            raise RuntimeError("The image embedding must be rebuilt before restoring tags.")
+        self.repository.replace_tags(
+            image_id,
+            self.tagger.predict(vector),
+            self.tagger.model_id,
+        )
+        updated = self.repository.find_by_id(image_id)
+        if updated is None:
+            raise KeyError(image_id)
+        return updated
 
     def import_candidates(self, candidates: list[UploadCandidate]) -> list[ImportResult]:
         results: list[ImportResult | None] = [None] * len(candidates)

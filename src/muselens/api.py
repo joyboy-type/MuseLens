@@ -32,10 +32,12 @@ from .schemas import (
     ImportResponse,
     SearchHitResponse,
     TagRebuildResponse,
+    TagCatalogItemResponse,
     TemporaryGalleryResponse,
     TextSearchRequest,
+    UpdateImageTagsRequest,
 )
-from .tags import ZeroShotTagger
+from .tags import DEFAULT_TAGS, ZeroShotTagger
 from .sessions import (
     StagedSessionFile,
     TemporaryGalleryCapacityError,
@@ -281,6 +283,46 @@ def matches_search_filters(stored, payload: TextSearchRequest) -> bool:
 def rebuild_tags(request: Request) -> TagRebuildResponse:
     require_library_writes(request)
     return TagRebuildResponse(tagged_images=request.app.state.library.rebuild_tags())
+
+
+@app.get("/v1/tags/catalog", response_model=list[TagCatalogItemResponse])
+def tag_catalog() -> list[TagCatalogItemResponse]:
+    return [
+        TagCatalogItemResponse(
+            slug=definition.slug,
+            label=definition.label,
+            group=definition.group,
+        )
+        for definition in DEFAULT_TAGS
+    ]
+
+
+@app.put("/v1/images/{image_id}/tags", response_model=ImageRecordResponse)
+def update_image_tags(
+    image_id: str,
+    payload: UpdateImageTagsRequest,
+    request: Request,
+) -> ImageRecordResponse:
+    require_library_writes(request)
+    try:
+        stored = request.app.state.library.set_manual_tags(image_id, payload.tags)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail="Image not found.") from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return image_record_response(stored)
+
+
+@app.post("/v1/images/{image_id}/tags/auto", response_model=ImageRecordResponse)
+def restore_image_auto_tags(image_id: str, request: Request) -> ImageRecordResponse:
+    require_library_writes(request)
+    try:
+        stored = request.app.state.library.restore_auto_tags(image_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail="Image not found.") from error
+    except RuntimeError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    return image_record_response(stored)
 
 
 def sort_filtered_results(results, sort: str):

@@ -2,6 +2,13 @@ export type ImageTag = {
   slug: string;
   label: string;
   score: number;
+  source: "auto" | "manual";
+};
+
+export type TagCatalogItem = {
+  slug: string;
+  label: string;
+  group: string;
 };
 
 export type ImageRecord = {

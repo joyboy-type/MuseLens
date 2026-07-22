@@ -19,13 +19,16 @@ import {
   getTemporaryGallery,
   imageUrl,
   listImages,
+  listTagCatalog,
   listDuplicateGroups,
   listTemporaryGalleryImages,
   retryImportJob,
+  restoreImageAutoTags,
   searchImages,
   searchImagesByImage,
   searchTemporaryGallery,
   searchTemporaryGalleryByImage,
+  updateImageTags,
 } from "@/lib/api";
 import type {
   Health,
@@ -34,6 +37,7 @@ import type {
   ImportJob,
   LibraryItem,
   SearchFilters,
+  TagCatalogItem,
   TemporaryGallery,
 } from "@/lib/types";
 import {
@@ -49,9 +53,11 @@ import {
   LoaderCircle,
   LockKeyhole,
   RotateCcw,
+  Save,
   Search,
   ScanSearch,
   Sparkles,
+  Tags,
   Trash2,
   Upload,
   X,
@@ -80,6 +86,10 @@ export function MuseLensApp() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selected, setSelected] = useState<LibraryItem | null>(null);
+  const [tagCatalog, setTagCatalog] = useState<TagCatalogItem[]>([]);
+  const [editingTags, setEditingTags] = useState(false);
+  const [tagDraft, setTagDraft] = useState<string[]>([]);
+  const [tagSaving, setTagSaving] = useState(false);
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
@@ -123,6 +133,10 @@ export function MuseLensApp() {
   useEffect(() => () => {
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrlsRef.current.clear();
+  }, []);
+
+  useEffect(() => {
+    listTagCatalog().then(setTagCatalog).catch(() => undefined);
   }, []);
 
   const refreshLibrary = useCallback(async () => {
@@ -464,6 +478,70 @@ export function MuseLensApp() {
       setImageDialogOpen(true);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "无法准备查询图片");
+    }
+  }
+
+  function openImage(item: LibraryItem) {
+    setSelected(item);
+    setTagDraft(item.tags.map((tag) => tag.slug));
+    setEditingTags(false);
+  }
+
+  function closeImage() {
+    if (tagSaving) return;
+    setSelected(null);
+    setEditingTags(false);
+  }
+
+  function toggleTagDraft(slug: string) {
+    setTagDraft((current) =>
+      current.includes(slug)
+        ? current.filter((item) => item !== slug)
+        : [...current, slug],
+    );
+  }
+
+  function mergeUpdatedImage(updated: LibraryItem) {
+    setItems((current) =>
+      current.map((item) =>
+        item.image_id === updated.image_id ? { ...item, ...updated } : item,
+      ),
+    );
+    setSelected((current) =>
+      current?.image_id === updated.image_id ? { ...current, ...updated } : current,
+    );
+  }
+
+  async function saveManualTags() {
+    if (!selected) return;
+    setTagSaving(true);
+    setError("");
+    try {
+      const updated = await updateImageTags(selected.image_id, tagDraft);
+      mergeUpdatedImage(updated);
+      setEditingTags(false);
+      setNotice("标签已保存为人工修正");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "标签保存失败");
+    } finally {
+      setTagSaving(false);
+    }
+  }
+
+  async function restoreSelectedAutoTags() {
+    if (!selected) return;
+    setTagSaving(true);
+    setError("");
+    try {
+      const updated = await restoreImageAutoTags(selected.image_id);
+      mergeUpdatedImage(updated);
+      setTagDraft(updated.tags.map((tag) => tag.slug));
+      setEditingTags(false);
+      setNotice("已恢复 SigLIP2 自动标签");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "自动标签恢复失败");
+    } finally {
+      setTagSaving(false);
     }
   }
 
@@ -1056,7 +1134,7 @@ export function MuseLensApp() {
               <span>正在理解你的描述…</span>
             </div>
           ) : items.length ? (
-            <PhotoGrid items={items} onOpen={setSelected} />
+            <PhotoGrid items={items} onOpen={openImage} />
           ) : (
             <section className="empty-state">
               <div className="empty-icon">{searchActive ? <Search size={25} /> : <Upload size={25} />}</div>
@@ -1103,8 +1181,8 @@ export function MuseLensApp() {
       </section>
 
       {selected && (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={selected.filename} onClick={() => setSelected(null)}>
-          <button className="lightbox-close" onClick={() => setSelected(null)} aria-label="关闭预览">
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={selected.filename} onClick={closeImage}>
+          <button className="lightbox-close" onClick={closeImage} aria-label="关闭预览">
             <X size={20} />
           </button>
           <div className="lightbox-content" onClick={(event) => event.stopPropagation()}>
@@ -1115,7 +1193,11 @@ export function MuseLensApp() {
                 <strong>{selected.filename}</strong>
                 {selected.tags.length > 0 && (
                   <div className="lightbox-tags" aria-label="AI 自动标签">
-                    {selected.tags.map((tag) => <i key={tag.slug}>{tag.label}</i>)}
+                    {selected.tags.map((tag) => (
+                      <i className={tag.source} key={tag.slug}>
+                        {tag.label}{tag.source === "manual" ? " · 人工" : ""}
+                      </i>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1135,7 +1217,47 @@ export function MuseLensApp() {
               >
                 <ScanSearch size={14} /> 查找相似图片
               </button>
+              {libraryWritable && !selected.session_id && (
+                <button
+                  className="tag-edit-button"
+                  onClick={() => {
+                    setTagDraft(selected.tags.map((tag) => tag.slug));
+                    setEditingTags((current) => !current);
+                  }}
+                >
+                  <Tags size={14} /> {editingTags ? "收起标签" : "修正标签"}
+                </button>
+              )}
             </div>
+            {editingTags && libraryWritable && !selected.session_id && (
+              <section className="tag-editor" aria-label="修正图片标签">
+                <div className="tag-editor-heading">
+                  <div>
+                    <strong>人工修正标签</strong>
+                    <span>选择更符合画面的标签，保存后不会被普通搜索覆盖。</span>
+                  </div>
+                  <div>
+                    <button disabled={tagSaving} onClick={restoreSelectedAutoTags}>
+                      <Sparkles size={13} /> 恢复自动
+                    </button>
+                    <button className="save-tags" disabled={tagSaving} onClick={saveManualTags}>
+                      <Save size={13} /> {tagSaving ? "保存中" : "保存"}
+                    </button>
+                  </div>
+                </div>
+                <div className="tag-editor-options">
+                  {tagCatalog.map((tag) => (
+                    <button
+                      className={tagDraft.includes(tag.slug) ? "selected" : ""}
+                      key={tag.slug}
+                      onClick={() => toggleTagDraft(tag.slug)}
+                    >
+                      {tag.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
       )}

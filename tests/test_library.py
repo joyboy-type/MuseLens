@@ -174,6 +174,37 @@ def test_library_rebuilds_embeddings_when_model_changes(tmp_path) -> None:
     assert len(new_index) == 1
 
 
+def test_library_rebuilds_preserve_manual_tags(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    image_dir = tmp_path / "images"
+    library = ImageLibrary(
+        image_dir,
+        repository,
+        VectorIndex(),
+        FakeEncoder(),
+        tagger=StaticTagger(),
+    )
+    stored = library.import_candidates(
+        [prepare_image("pet.jpg", "image/jpeg", jpeg_bytes("brown"), 1024 * 1024)]
+    )[0].stored
+    manual = (ImageTag("cat", "猫", 1.0, "manual"),)
+    repository.replace_tags(stored.image.image_id, manual, "manual")
+
+    assert library.rebuild_tags() == 0
+    assert repository.find_by_id(stored.image.image_id).tags == manual
+
+    migrated = ImageLibrary(
+        image_dir,
+        repository,
+        VectorIndex(),
+        NewFakeEncoder(),
+        tagger=StaticTagger(),
+    )
+    assert migrated.rebuild_embeddings() == 1
+    assert repository.find_by_id(stored.image.image_id).tags == manual
+
+
 def test_prepare_image_rejects_excessive_decoded_pixels() -> None:
     with pytest.raises(InvalidImageError, match="too many pixels"):
         prepare_image(

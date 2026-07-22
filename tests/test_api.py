@@ -9,6 +9,7 @@ from muselens.index import IndexedImage, VectorIndex
 from muselens.library import ImageLibrary, prepare_image
 from muselens.repository import ImageRepository
 from muselens.sessions import TemporaryGalleryService
+from muselens.tags import DEFAULT_TAGS, ImageTag
 
 
 class TemporaryEncoder:
@@ -22,6 +23,14 @@ class TemporaryEncoder:
         # Deliberately tiny cosine score: a temporary gallery must still return
         # its best ranked match instead of applying a large-corpus absolute floor.
         return np.asarray([[0.01, np.sqrt(0.9999)] for _text in texts], dtype=np.float32)
+
+
+class CorrectableTagger:
+    model_id = "temporary-api-encoder:tags-v1"
+    definitions = DEFAULT_TAGS
+
+    def predict(self, vector: np.ndarray) -> tuple[ImageTag, ...]:
+        return (ImageTag("dog", "狗", 0.8, "auto"),)
 
 
 def patterned_jpeg(*, size: tuple[int, int] = (180, 120), quality: int = 90) -> bytes:
@@ -135,6 +144,57 @@ def test_demo_mode_rejects_deleting_an_image() -> None:
     with TestClient(app) as client:
         app.state.library_writable = False
         response = client.delete("/v1/images/unknown")
+
+    assert response.status_code == 403
+
+
+def test_tag_catalog_and_local_manual_tag_correction(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    index = VectorIndex()
+    library = ImageLibrary(
+        tmp_path / "library",
+        repository,
+        index,
+        TemporaryEncoder(),
+        tagger=CorrectableTagger(),
+    )
+    stored = library.import_candidates(
+        [
+            prepare_image(
+                "pet.jpg",
+                "image/jpeg",
+                patterned_jpeg(),
+                1024 * 1024,
+            )
+        ]
+    )[0].stored
+
+    with TestClient(app) as client:
+        app.state.library = library
+        app.state.index = index
+        app.state.library_writable = True
+
+        catalog = client.get("/v1/tags/catalog")
+        corrected = client.put(
+            f"/v1/images/{stored.image.image_id}/tags",
+            json={"tags": ["cat", "indoor", "cat"]},
+        )
+        restored = client.post(f"/v1/images/{stored.image.image_id}/tags/auto")
+
+    assert catalog.status_code == 200
+    assert {item["slug"] for item in catalog.json()} >= {"dog", "cat", "indoor"}
+    assert [(tag["slug"], tag["source"]) for tag in corrected.json()["tags"]] == [
+        ("cat", "manual"),
+        ("indoor", "manual"),
+    ]
+    assert [(tag["slug"], tag["source"]) for tag in restored.json()["tags"]] == [("dog", "auto")]
+
+
+def test_demo_mode_rejects_manual_tag_correction() -> None:
+    with TestClient(app) as client:
+        app.state.library_writable = False
+        response = client.put("/v1/images/unknown/tags", json={"tags": ["dog"]})
 
     assert response.status_code == 403
 
