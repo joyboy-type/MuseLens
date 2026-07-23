@@ -25,6 +25,11 @@ def test_modelscope_deployment_is_a_guarded_docker_demo() -> None:
     assert "MUSELENS_MODE=demo" in dockerfile
     assert "HF_HUB_OFFLINE=1" in dockerfile
     assert "TRANSFORMERS_OFFLINE=1" in dockerfile
+    # Create and hand off the persistent model directory before downloading
+    # weights. Chowning it afterwards duplicates the 1.4 GB model in a new layer.
+    model_download = dockerfile.index("AutoProcessor.from_pretrained")
+    assert dockerfile.index("chown -R muselens:muselens /data") < model_download
+    assert dockerfile.index("USER muselens") < model_download
 
 
 def test_publish_space_cli_executes_main_and_requires_authentication(tmp_path) -> None:

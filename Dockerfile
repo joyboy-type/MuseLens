@@ -32,6 +32,13 @@ RUN python -m pip install --no-cache-dir \
       "torch==${TORCH_VERSION}"
 COPY src/ ./src/
 RUN python -m pip install --no-cache-dir .
+
+RUN groupadd --system muselens \
+    && useradd --system --gid muselens --create-home muselens \
+    && mkdir -p /data/images /data/state /data/thumbnails /data/model-cache \
+    && chown -R muselens:muselens /data
+
+USER muselens
 RUN python -c "import os; from transformers import AutoModel, AutoProcessor; model_id = os.environ['MUSELENS_CLIP_MODEL']; AutoProcessor.from_pretrained(model_id); AutoModel.from_pretrained(model_id)"
 
 # ModelScope containers cannot reliably reach huggingface.co at runtime. The
@@ -43,12 +50,6 @@ ENV MUSELENS_MODE=demo \
 COPY --from=frontend-build /build/frontend/dist /app/frontend-dist
 COPY demo_assets/ /app/demo_assets/
 
-RUN groupadd --system muselens \
-    && useradd --system --gid muselens --create-home muselens \
-    && mkdir -p /data/images /data/state /data/thumbnails /data/model-cache \
-    && chown -R muselens:muselens /data
-
-USER muselens
 EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
