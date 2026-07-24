@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import __version__
 from .config import settings
 from .encoder import ClipEncoder
 from .index import create_vector_index, filter_relevant_hits
@@ -170,7 +171,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MuseLens API",
-    version="0.1.0",
+    version=__version__,
     description="Local-first multimodal image search service.",
     lifespan=lifespan,
 )
@@ -188,6 +189,7 @@ def health(request: Request) -> HealthResponse:
     reranker = request.app.state.reranker
     return HealthResponse(
         status="ok",
+        version=__version__,
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
         reranker_enabled=reranker is not None,

@@ -7,6 +7,7 @@ class HealthResponse(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
     status: str
+    version: str
     indexed_images: int
     model_loaded: bool
     reranker_enabled: bool
