@@ -16,11 +16,11 @@ results come from real SigLIP2 embeddings and a local vector index, not hard-cod
 keyword mappings or a third-party stock-photo API.
 
 **[Live demo](https://sinbaby-muselens.ms.show)** ·
+**[Project guide](career/muselens-guide/README.md)** ·
 **[Portfolio overview](docs/PORTFOLIO.md)** ·
 **[Architecture](docs/ARCHITECTURE.md)** ·
 **[Evaluation](docs/BASELINE_RESULTS.md)** ·
-**[Changelog](CHANGELOG.md)** ·
-**[Interview guide (Chinese)](docs/INTERVIEW_GUIDE.md)**
+**[Changelog](CHANGELOG.md)**
 
 [![MuseLens live search, temporary gallery, and evaluation demo](docs/images/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
 
