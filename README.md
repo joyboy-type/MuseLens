@@ -10,7 +10,7 @@
 
 本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。浏览器只调用 MuseLens 自己的 FastAPI 服务，检索结果来自真实的 SigLIP2 向量编码和本地索引，并非关键词映射或第三方图库搜索。
 
-**[在线体验](https://sinbaby-muselens.ms.show)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[更新日志](CHANGELOG.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
+**[在线体验](https://sinbaby-muselens.ms.show)** · **[完整项目指南](career/muselens-guide/README.md)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[更新日志](CHANGELOG.md)**
 
 [![MuseLens 真实检索、临时图库与量化结果演示](docs/images/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
 
