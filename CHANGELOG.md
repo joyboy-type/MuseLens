@@ -17,6 +17,9 @@ changes; detailed experiment artifacts remain under `artifacts/evaluations/`.
 
 - Rename the mobile filter action from `重置` to the unambiguous `重置筛选`, matching
   the desktop interaction language and the final UI acceptance criterion.
+- Expose the application version in `/health` and make deployment readiness wait for
+  that exact version, preventing an old healthy container from being mistaken for the
+  newly deployed release.
 
 ### Validation
 

@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from muselens.api import app, seed_demo_library
+from muselens import __version__
 from muselens.index import IndexedImage, VectorIndex
 from muselens.library import ImageLibrary, prepare_image
 from muselens.repository import ImageRepository
@@ -51,6 +52,7 @@ def test_health_reports_service_status() -> None:
         response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["version"] == __version__
     assert response.json()["indexed_images"] == 0
     assert isinstance(response.json()["model_loaded"], bool)
     assert response.json()["reranker_enabled"] is False
