@@ -1,4 +1,4 @@
-# MuseLens v0.1.0 模型与评估卡
+# MuseLens v0.1.1 模型与评估卡
 
 ## 模型用途
 
@@ -85,4 +85,3 @@ MuseLens 没有从头训练 SigLIP2。项目训练了冻结主干的双塔残差
 - `artifacts/evaluations/modelscope-live-temporary-gallery-v2.json`
 - `artifacts/evaluations/demo-qwen-reranker-v1.json`
 - `artifacts/evaluations/adapter-training-decision-v1.json`
-

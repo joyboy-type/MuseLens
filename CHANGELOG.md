@@ -11,6 +11,25 @@ changes; detailed experiment artifacts remain under `artifacts/evaluations/`.
   exact-index memory test.
 - Record a narrated 60-second product walkthrough.
 
+## [0.1.1] - 2026-07-25
+
+### Fixed
+
+- Rename the mobile filter action from `重置` to the unambiguous `重置筛选`, matching
+  the desktop interaction language and the final UI acceptance criterion.
+
+### Validation
+
+- Complete public UI walkthrough covering fixed-library search, result preview,
+  temporary-gallery upload/search/cleanup, and the narrow-window filter panel.
+- 84-query Chinese/English deployment contract: Hit@1 **72.62%**, Hit@5 **95.24%**,
+  with no empty positive-query responses.
+- Real three-file temporary-gallery gate: six Chinese/English queries passed, session
+  isolation returned 404, private no-store caching was present, and cleanup completed.
+- The macOS Computer Use file picker could only select one file reliably; this is
+  recorded as an automation-tool limitation rather than a product upload defect because
+  the independent three-file deployment gate passed.
+
 ## [0.1.0] - 2026-07-24
 
 ### Added
@@ -50,6 +69,6 @@ changes; detailed experiment artifacts remain under `artifacts/evaluations/`.
 - Exact search has been validated at 5,000 live-library images and 100,000 synthetic
   vectors, not at production million-image scale.
 
-[Unreleased]: https://github.com/joyboy-type/MuseLens/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/joyboy-type/MuseLens/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.1
 [0.1.0]: https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.0
-
