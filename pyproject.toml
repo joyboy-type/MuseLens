@@ -6,7 +6,26 @@ build-backend = "setuptools.build_meta"
 name = "muselens"
 version = "0.1.0"
 description = "A local-first multimodal image search and organization system."
+readme = "README_EN.md"
+license = {file = "LICENSE"}
+authors = [{name = "joyboy-type"}]
 requires-python = ">=3.10"
+keywords = [
+  "multimodal-search",
+  "image-retrieval",
+  "siglip2",
+  "fastapi",
+  "react",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics",
+]
 dependencies = [
   "fastapi>=0.115,<1",
   "numpy>=2,<3",
@@ -24,6 +43,13 @@ precision = [
   "qwen-vl-utils>=0.0.14,<1",
   "torchvision>=0.20,<1",
 ]
+
+[project.urls]
+Homepage = "https://sinbaby-muselens.ms.show"
+Repository = "https://github.com/joyboy-type/MuseLens"
+Documentation = "https://github.com/joyboy-type/MuseLens#readme"
+Changelog = "https://github.com/joyboy-type/MuseLens/blob/main/CHANGELOG.md"
+Issues = "https://github.com/joyboy-type/MuseLens/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

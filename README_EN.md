@@ -19,6 +19,7 @@ keyword mappings or a third-party stock-photo API.
 **[Portfolio overview](docs/PORTFOLIO.md)** ·
 **[Architecture](docs/ARCHITECTURE.md)** ·
 **[Evaluation](docs/BASELINE_RESULTS.md)** ·
+**[Changelog](CHANGELOG.md)** ·
 **[Interview guide (Chinese)](docs/INTERVIEW_GUIDE.md)**
 
 [![MuseLens live search, temporary gallery, and evaluation demo](docs/images/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
