@@ -1,5 +1,9 @@
 # MuseLens 系统架构
 
+![MuseLens 系统架构图](images/muselens-architecture.svg)
+
+一页式项目说明、量化结果和简历描述见[项目作品集](PORTFOLIO.md)。
+
 ## 数据流
 
 ```text

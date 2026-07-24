@@ -10,7 +10,7 @@
 
 本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。浏览器只调用 MuseLens 自己的 FastAPI 服务，检索结果来自真实的 SigLIP2 向量编码和本地索引，并非关键词映射或第三方图库搜索。
 
-**[在线体验](https://sinbaby-muselens.ms.show)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
+**[在线体验](https://sinbaby-muselens.ms.show)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
 
 ![MuseLens 智能相册与语义图库界面](docs/images/muselens-home.png)
 
@@ -22,7 +22,10 @@
 2. 切换到临时图库，上传自己的几张图片，等待索引完成后输入与图片内容相关的任意关键词。
 3. 搜索只发生在当前访客会话中；点击“立即清除”后，图片与索引都会删除，最长也只保留 30 分钟。
 
-公开服务的 CI 不只检查页面能否打开：它会验证 8 条跨类别中英文查询，并创建真实临时图库完成上传、索引、检索、会话隔离和删除测试。最新一次线上证据见 [`modelscope-live-temporary-gallery-v1.json`](artifacts/evaluations/modelscope-live-temporary-gallery-v1.json)。
+公开服务的 CI 不只检查页面能否打开：它会验证 8 条跨类别中英文查询，并创建真实临时图库完成上传、索引、检索、会话隔离和删除测试。2026-07-24 的最新线上证据见
+[`modelscope-live-bilingual-v2.json`](artifacts/evaluations/modelscope-live-bilingual-v2.json)
+与
+[`modelscope-live-temporary-gallery-v2.json`](artifacts/evaluations/modelscope-live-temporary-gallery-v2.json)。
 
 ## 核心结果
 
@@ -38,6 +41,8 @@
 轻量 Adapter 确实完成了训练和消融，但没有超过冻结的 SigLIP2 基线，因此没有为了展示“训练成功”而上线。这个负结果、原始权重和决策过程同样保留在仓库中，详见[训练结果](docs/TRAINING_RESULTS.md)。
 
 ## 架构概览
+
+![MuseLens 系统架构](docs/images/muselens-architecture.svg)
 
 ```mermaid
 flowchart LR

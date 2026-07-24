@@ -16,6 +16,7 @@ results come from real SigLIP2 embeddings and a local vector index, not hard-cod
 keyword mappings or a third-party stock-photo API.
 
 **[Live demo](https://sinbaby-muselens.ms.show)** ·
+**[Portfolio overview](docs/PORTFOLIO.md)** ·
 **[Architecture](docs/ARCHITECTURE.md)** ·
 **[Evaluation](docs/BASELINE_RESULTS.md)** ·
 **[Interview guide (Chinese)](docs/INTERVIEW_GUIDE.md)**
@@ -31,7 +32,12 @@ keyword mappings or a third-party stock-photo API.
 Deployment CI verifies more than page availability. It runs an eight-query bilingual
 contract and creates a real temporary gallery to test upload, indexing, retrieval,
 session isolation, and deletion. See the latest machine-readable
-[live evidence](artifacts/evaluations/modelscope-live-temporary-gallery-v1.json).
+[bilingual evidence](artifacts/evaluations/modelscope-live-bilingual-v2.json) and
+[temporary-gallery evidence](artifacts/evaluations/modelscope-live-temporary-gallery-v2.json).
+
+## Architecture at a glance
+
+![MuseLens system architecture](docs/images/muselens-architecture.svg)
 
 ## Why this project is more than a UI demo
 

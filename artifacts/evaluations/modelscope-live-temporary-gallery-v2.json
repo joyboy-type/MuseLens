@@ -1,0 +1,40 @@
+{
+  "evaluated_at": "2026-07-24T11:25:43.313207+00:00",
+  "base_url": "https://sinbaby-muselens.ms.show",
+  "uploaded_files": 3,
+  "queries": [
+    {
+      "query": "dog",
+      "expected": "deployment-dog.jpg",
+      "top": "deployment-dog.jpg"
+    },
+    {
+      "query": "狗",
+      "expected": "deployment-dog.jpg",
+      "top": "deployment-dog.jpg"
+    },
+    {
+      "query": "car",
+      "expected": "deployment-car.jpg",
+      "top": "deployment-car.jpg"
+    },
+    {
+      "query": "汽车",
+      "expected": "deployment-car.jpg",
+      "top": "deployment-car.jpg"
+    },
+    {
+      "query": "pizza",
+      "expected": "deployment-pizza.jpg",
+      "top": "deployment-pizza.jpg"
+    },
+    {
+      "query": "披萨",
+      "expected": "deployment-pizza.jpg",
+      "top": "deployment-pizza.jpg"
+    }
+  ],
+  "session_isolation": true,
+  "private_cache_control": true,
+  "cleanup_confirmed": true
+}

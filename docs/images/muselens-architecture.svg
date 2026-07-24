@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="780" viewBox="0 0 1440 780" role="img" aria-labelledby="title desc">
+  <title id="title">MuseLens system architecture</title>
+  <desc id="desc">React frontend, FastAPI service, local and public gallery modes, SigLIP2 encoder, mmap vector index, SQLite storage, and optional Qwen3-VL reranker.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#15112a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#9ca3af"/>
+    </marker>
+    <style>
+      .title{font:700 34px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f8fafc}
+      .subtitle{font:400 17px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#a5b4fc}
+      .label{font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f8fafc}
+      .body{font:400 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#cbd5e1}
+      .small{font:500 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#94a3b8}
+      .box{fill:#171c30;stroke:#3b4265;stroke-width:1.5}
+      .accentBox{fill:#211a3b;stroke:#8b5cf6;stroke-width:1.8}
+      .dataBox{fill:#12242a;stroke:#2dd4bf;stroke-width:1.5}
+      .line{stroke:#9ca3af;stroke-width:2;fill:none;marker-end:url(#arrow)}
+      .dash{stroke:#64748b;stroke-width:1.7;fill:none;stroke-dasharray:7 7;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <rect width="1440" height="780" rx="28" fill="url(#bg)"/>
+  <circle cx="1300" cy="70" r="190" fill="#7c3aed" opacity=".09"/>
+  <circle cx="100" cy="730" r="210" fill="#ec4899" opacity=".06"/>
+
+  <text x="70" y="70" class="title">MuseLens · 多模态图片检索系统</text>
+  <text x="70" y="102" class="subtitle">同一套代码覆盖本地持久化图库、公开只读演示与会话隔离的临时图库</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="175" width="245" height="150" rx="18" class="box"/>
+    <rect x="95" y="195" width="58" height="8" rx="4" fill="url(#accent)"/>
+    <text x="95" y="240" class="label">React + TypeScript</text>
+    <text x="95" y="270" class="body">响应式图库 · 搜索 · 筛选</text>
+    <text x="95" y="296" class="body">上传 · 预览 · 智能相册</text>
+
+    <rect x="410" y="175" width="260" height="150" rx="18" class="accentBox"/>
+    <text x="440" y="225" class="label">FastAPI 服务</text>
+    <text x="440" y="258" class="body">输入校验 · 任务调度</text>
+    <text x="440" y="284" class="body">权限边界 · 同源静态托管</text>
+
+    <rect x="765" y="145" width="275" height="100" rx="18" class="box"/>
+    <text x="790" y="187" class="label">Local 个人图库</text>
+    <text x="790" y="216" class="body">持久化导入 · 可编辑标签与相册</text>
+
+    <rect x="765" y="275" width="275" height="100" rx="18" class="box"/>
+    <text x="790" y="317" class="label">Demo 固定图库</text>
+    <text x="790" y="346" class="body">24 张署名图片 · 服务端强制只读</text>
+
+    <rect x="765" y="405" width="275" height="115" rx="18" class="box"/>
+    <text x="790" y="447" class="label">临时访客图库</text>
+    <text x="790" y="476" class="body">会话隔离 · 配额 · 30 分钟 TTL</text>
+    <text x="790" y="500" class="small">上传 → 索引 → 搜索 → 主动删除</text>
+
+    <rect x="1125" y="175" width="245" height="150" rx="18" class="accentBox"/>
+    <text x="1155" y="222" class="label">SigLIP2 双塔编码</text>
+    <text x="1155" y="253" class="body">中文 / 英文 / 图片</text>
+    <text x="1155" y="279" class="body">统一 768 维语义空间</text>
+
+    <rect x="1125" y="405" width="245" height="115" rx="18" class="box"/>
+    <text x="1155" y="447" class="label">可选 Qwen3-VL</text>
+    <text x="1155" y="478" class="body">候选精排 · 图库外拒答</text>
+  </g>
+
+  <path d="M315 250H410" class="line"/>
+  <path d="M670 220C715 220 720 195 765 195" class="line"/>
+  <path d="M670 250H720C742 250 742 325 765 325" class="line"/>
+  <path d="M670 280H710C740 280 735 462 765 462" class="line"/>
+  <path d="M1040 195H1125" class="line"/>
+  <path d="M1040 325C1080 325 1080 250 1125 250" class="line"/>
+  <path d="M1040 462C1080 462 1080 300 1125 300" class="line"/>
+  <path d="M1248 325V405" class="dash"/>
+
+  <g filter="url(#shadow)">
+    <rect x="410" y="610" width="275" height="105" rx="18" class="dataBox"/>
+    <text x="440" y="653" class="label">SQLite · 唯一数据源</text>
+    <text x="440" y="683" class="body">元数据 · 向量 · 标签 · 相册 · 任务</text>
+
+    <rect x="765" y="610" width="275" height="105" rx="18" class="dataBox"/>
+    <text x="795" y="653" class="label">mmap 精确向量索引</text>
+    <text x="795" y="683" class="body">低内存缓存 · 可重建 · 稳定排序</text>
+
+    <rect x="1125" y="610" width="245" height="105" rx="18" class="dataBox"/>
+    <text x="1155" y="653" class="label">图片与 WebP 缩略图</text>
+    <text x="1155" y="683" class="body">专用目录 · 不修改原始照片</text>
+  </g>
+
+  <path d="M540 325V610" class="line"/>
+  <path d="M902 520V610" class="line"/>
+  <path d="M1248 520V610" class="line"/>
+  <path d="M685 662H765" class="dash"/>
+
+  <text x="70" y="744" class="small">GitHub Actions：后端 + 前端 CI · ModelScope 发布 · 双语质量门 · 临时图库端到端验收</text>
+</svg>
