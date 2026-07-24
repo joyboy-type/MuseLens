@@ -54,7 +54,7 @@ jobs:
         if: inputs.public_url != ''
         run: >-
           python scripts/wait_for_deployment.py "${{ inputs.public_url }}"
-          --timeout 1800 --interval 15
+          --timeout 3600 --interval 15
 
       - name: Run the bilingual deployment gate
         if: inputs.public_url != ''
