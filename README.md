@@ -12,7 +12,10 @@
 
 **[在线体验](https://sinbaby-muselens.ms.show)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[面试讲解稿](docs/INTERVIEW_GUIDE.md)**
 
-![MuseLens 智能相册与语义图库界面](docs/images/muselens-home.png)
+[![MuseLens 真实检索、临时图库与量化结果演示](docs/images/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
+
+演示 GIF 由 [`scripts/build_demo_gif.py`](scripts/build_demo_gif.py) 调用线上 API 获取真实查询结果后生成，
+点击画面可进入在线体验。
 
 导入图片的副本默认保存在 `~/Pictures/MuseLensLibrary/` 专用目录，不移动、覆盖或删除用户原始照片。
 
@@ -123,6 +126,7 @@ flowchart LR
 - [x] ModelScope 强制只读配置与跨类别中英文线上验收合同
 - [x] GitHub → ModelScope 最小发布包、令牌推送、OpenAPI 部署与自动验收工作流
 - [x] 公开 ModelScope Studio 地址与自动化线上验收
+- [x] README 自动播放的真实线上检索演示 GIF
 - [ ] 录制 60 秒产品演示视频
 
 ## 快速开始
