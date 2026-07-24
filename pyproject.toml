@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["httpx>=0.27,<1", "pytest>=8,<10", "ruff>=0.6,<1"]
+dev = ["httpx>=0.27,<1", "pytest>=8,<10", "ruff>=0.6,<0.16"]
 faiss = ["faiss-cpu>=1.14,<2"]
 precision = [
   "qwen-vl-utils>=0.0.14,<1",
