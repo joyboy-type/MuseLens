@@ -219,7 +219,7 @@ export function FilterPanel({
             onClick={() => onChange(EMPTY_FILTERS)}
             type="button"
           >
-            <RotateCcw size={14} /> 重置
+            <RotateCcw size={14} /> 重置筛选
           </button>
           <button className="apply-filters" onClick={onApply} type="button">
             <Filter size={14} /> 应用筛选

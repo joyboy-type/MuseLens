@@ -10,4 +10,11 @@ test("production build contains the MuseLens SPA", async () => {
   assert.match(html, /MuseLens/);
   assert.ok(assets.some((name) => name.endsWith(".js")));
   assert.ok(assets.some((name) => name.endsWith(".css")));
+
+  const scripts = await Promise.all(
+    assets
+      .filter((name) => name.endsWith(".js"))
+      .map((name) => readFile(new URL(`../dist/assets/${name}`, import.meta.url), "utf8")),
+  );
+  assert.match(scripts.join("\n"), /重置筛选/);
 });

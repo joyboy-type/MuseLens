@@ -17,6 +17,7 @@ keyword mappings or a third-party stock-photo API.
 
 **[Live demo](https://sinbaby-muselens.ms.show)** ·
 **[Project guide](career/muselens-guide/README.md)** ·
+**[Final acceptance](docs/FINAL_ACCEPTANCE.md)** ·
 **[Portfolio overview](docs/PORTFOLIO.md)** ·
 **[Architecture](docs/ARCHITECTURE.md)** ·
 **[Evaluation](docs/BASELINE_RESULTS.md)** ·
