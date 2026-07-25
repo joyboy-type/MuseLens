@@ -10,11 +10,11 @@
 
 本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。浏览器只调用 MuseLens 自己的 FastAPI 服务，检索结果来自真实的 SigLIP2 向量编码和本地索引，并非关键词映射或第三方图库搜索。
 
-**[在线体验](https://sinbaby-muselens.ms.show)** · **[完整项目指南](career/muselens-guide/README.md)** · **[最终验收](docs/FINAL_ACCEPTANCE.md)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[更新日志](CHANGELOG.md)**
+**[在线体验](https://sinbaby-muselens.ms.show)** · **[中文技术复盘](docs/PROJECT_STORY_CN.md)** · **[完整项目指南](career/muselens-guide/README.md)** · **[最终验收](docs/FINAL_ACCEPTANCE.md)** · **[项目作品集](docs/PORTFOLIO.md)** · **[系统架构](docs/ARCHITECTURE.md)** · **[实验结果](docs/BASELINE_RESULTS.md)** · **[更新日志](CHANGELOG.md)**
 
-[![MuseLens 真实检索、临时图库与量化结果演示](docs/images/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
+[![MuseLens 真实中英文检索与量化结果演示](docs/assets/launch/muselens-demo.gif)](https://sinbaby-muselens.ms.show)
 
-演示 GIF 由 [`scripts/build_demo_gif.py`](scripts/build_demo_gif.py) 调用线上 API 获取真实查询结果后生成，
+演示 GIF 由 [`scripts/build_launch_demo_gif.py`](scripts/build_launch_demo_gif.py) 调用线上 API 获取真实查询结果后生成，
 点击画面可进入在线体验。
 
 导入图片的副本默认保存在 `~/Pictures/MuseLensLibrary/` 专用目录，不移动、覆盖或删除用户原始照片。
