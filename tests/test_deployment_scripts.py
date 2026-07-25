@@ -64,7 +64,10 @@ def test_modelscope_package_contains_only_runtime_release_files(tmp_path) -> Non
 
     assert (output / "Dockerfile").is_file()
     assert (output / "ms_deploy.json").is_file()
-    assert (output / "README.md").read_text().startswith("# MuseLens 多模态图片检索")
+    readme = (output / "README.md").read_text()
+    assert readme.startswith("---\ntags:")
+    assert "# MuseLens 多模态图片检索" in readme
+    assert "multimodal" in readme
     assert (output / "demo_assets" / "manifest.json").is_file()
     assert not (output / "tests").exists()
     assert not (output / "data").exists()
