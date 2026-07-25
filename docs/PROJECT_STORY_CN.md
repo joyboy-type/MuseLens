@@ -4,6 +4,8 @@
 > 在线体验：<https://sinbaby-muselens.ms.show>  
 > GitHub：<https://github.com/joyboy-type/MuseLens>
 
+![MuseLens：Search photos by meaning](https://raw.githubusercontent.com/joyboy-type/MuseLens/main/docs/assets/launch/muselens-social-preview.png)
+
 很多“AI 图片搜索”项目看起来很完整：输入 `dog`，页面返回几张狗的图片。但如果图库是提前
 准备好的，查询词也是固定的，我们仍然无法确认它究竟完成了真实的图文检索，还是只做了一层
 演示外壳。
@@ -77,6 +79,8 @@ flowchart LR
 - 重启后从持久化数据恢复索引，不重新编码全部图片；
 - 公开模式由服务端拒绝固定图库写操作，不能靠隐藏前端按钮“假只读”。
 
+![MuseLens 响应式首页](https://raw.githubusercontent.com/joyboy-type/MuseLens/main/docs/images/muselens-home.png)
+
 自动标签也没有再加载第二个视觉模型。它复用 SigLIP2 图片向量，与受控的中英文标签文本向量
 比较；本地用户可以纠正标签，人工结果会被标记为 `manual`，后续批量重建不会覆盖。自定义
 相册只保存图片 ID 引用，删除相册不会删除原图。
@@ -98,7 +102,7 @@ flowchart LR
 这组数据用于项目内部选型，不是通用学术结论。候选集只有 100 张，中文查询也由项目人工整理，
 所以我没有把 96.7% 写成“中文图片检索准确率”。
 
-完整协议见[中英文检索模型对比](MULTILINGUAL_RESULTS.md)。
+完整协议见[中英文检索模型对比](https://github.com/joyboy-type/MuseLens/blob/main/docs/MULTILINGUAL_RESULTS.md)。
 
 ## 四、我确实训练了模型，但最终决定不用
 
@@ -125,7 +129,7 @@ flowchart LR
 这次失败反而明确了下一次实验需要什么：加入与图片对应的多语言描述，并把中文指标放进模型
 选择目标，而不是只在英文训练结束后做一次检查。
 
-完整结果见[Adapter 训练报告](TRAINING_RESULTS.md)。
+完整结果见[Adapter 训练报告](https://github.com/joyboy-type/MuseLens/blob/main/docs/TRAINING_RESULTS.md)。
 
 ## 五、为什么 5,000 张图时没有直接上向量数据库
 
@@ -160,11 +164,13 @@ mmap 将该协议下首次搜索后的进程 RSS 降低约 89%，并保持精确
 等图库达到至少 50 万张，再按同一协议比较 HNSW、IVF、量化或独立向量服务，才是由数据驱动
 的扩展，而不是为了技术栈列表提前增加运维复杂度。
 
-完整数据见[索引选型报告](INDEX_BENCHMARK.md)。
+完整数据见[索引选型报告](https://github.com/joyboy-type/MuseLens/blob/main/docs/INDEX_BENCHMARK.md)。
 
 ## 六、如何证明公开演示不是“只有外壳”
 
 我为公开演示设计了两组线上合同。
+
+![MuseLens 真实中英文查询演示](https://raw.githubusercontent.com/joyboy-type/MuseLens/main/docs/assets/launch/muselens-demo.gif)
 
 第一组针对固定图库，覆盖 84 条自然中英文查询：
 
@@ -192,7 +198,7 @@ mmap 将该协议下首次搜索后的进程 RSS 降低约 89%，并保持精确
 这些结果证明的是对应数据和协议下的工程能力。固定图库只有 24 张，因此 95.24% 的 Hit@5
 不能代替 Flickr8k 或 COCO 等独立评测，更不能代表任意真实照片集合。
 
-最终验收和机器可读证据见[最终展示验收](FINAL_ACCEPTANCE.md)。
+最终验收和机器可读证据见[最终展示验收](https://github.com/joyboy-type/MuseLens/blob/main/docs/FINAL_ACCEPTANCE.md)。
 
 ## 七、相似度不是概率，系统也应该允许回答“我不知道”
 
@@ -258,8 +264,7 @@ MuseLens v0.1.1 已经完成：
 
 - GitHub：<https://github.com/joyboy-type/MuseLens>
 - 在线体验：<https://sinbaby-muselens.ms.show>
-- 一页式作品集：[docs/PORTFOLIO.md](PORTFOLIO.md)
-- 系统架构：[docs/ARCHITECTURE.md](ARCHITECTURE.md)
-- 最终验收：[docs/FINAL_ACCEPTANCE.md](FINAL_ACCEPTANCE.md)
-- 面试讲解：[docs/INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md)
-
+- [一页式作品集](https://github.com/joyboy-type/MuseLens/blob/main/docs/PORTFOLIO.md)
+- [系统架构](https://github.com/joyboy-type/MuseLens/blob/main/docs/ARCHITECTURE.md)
+- [最终验收](https://github.com/joyboy-type/MuseLens/blob/main/docs/FINAL_ACCEPTANCE.md)
+- [面试讲解](https://github.com/joyboy-type/MuseLens/blob/main/docs/INTERVIEW_GUIDE.md)
