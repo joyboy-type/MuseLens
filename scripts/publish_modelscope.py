@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from time import sleep
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -143,7 +144,13 @@ def publish_git(source: Path, remote_url: str, branch: str, token: str | None) -
         return True
 
 
-def trigger_deployment(repo_id: str, token: str) -> Any:
+def trigger_deployment(
+    repo_id: str,
+    token: str,
+    *,
+    attempts: int = 3,
+    retry_delay: float = 2,
+) -> Any:
     owner, name = repo_id.split("/", 1)
     request = Request(
         f"{OPENAPI_BASE}/studios/{quote(owner)}/{quote(name)}/deploy",
@@ -155,14 +162,30 @@ def trigger_deployment(repo_id: str, token: str) -> Any:
         },
         method="POST",
     )
-    try:
-        with urlopen(request, timeout=60) as response:  # noqa: S310 - fixed official URL
-            payload = response.read()
-    except HTTPError as error:
-        detail = error.read().decode(errors="replace")
-        raise RuntimeError(f"ModelScope deployment returned HTTP {error.code}: {detail}") from error
-    except (URLError, TimeoutError) as error:
-        raise RuntimeError(f"Could not reach ModelScope deployment API: {error}") from error
+    payload = b""
+    for attempt in range(1, attempts + 1):
+        try:
+            with urlopen(request, timeout=60) as response:  # noqa: S310 - fixed official URL
+                payload = response.read()
+            break
+        except HTTPError as error:
+            detail = error.read().decode(errors="replace")
+            retryable = error.code in {408, 409, 425, 429} or error.code >= 500
+            if not retryable or attempt == attempts:
+                raise RuntimeError(
+                    f"ModelScope deployment returned HTTP {error.code}: {detail}"
+                ) from error
+        except (URLError, TimeoutError) as error:
+            if attempt == attempts:
+                raise RuntimeError(
+                    f"Could not reach ModelScope deployment API after {attempts} attempts: "
+                    f"{error}"
+                ) from error
+        print(
+            f"modelscope_deploy_attempt={attempt} status=retrying",
+            flush=True,
+        )
+        sleep(retry_delay * (2 ** (attempt - 1)))
     if not payload:
         return None
     try:
@@ -200,6 +223,9 @@ def main() -> None:
 
     try:
         changed = publish_git(source, remote_url, args.branch, token)
+        # An explicit deployment request is independent from whether this run
+        # happened to push a new Git commit. This makes a failed API call safe
+        # to retry after the source push has already succeeded.
         should_deploy = args.deploy or (args.deploy_if_changed and changed)
         deployment = trigger_deployment(args.repo_id, token) if should_deploy else None
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
