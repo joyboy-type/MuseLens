@@ -21,6 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MUSELENS_STATE_DIR=/data/state \
     MUSELENS_THUMBNAIL_DIR=/data/thumbnails \
     MUSELENS_DEMO_SEED_DIR=/app/demo_assets \
+    MUSELENS_RELEASE_METADATA=/app/.muselens-release.json \
     MUSELENS_SEARCH_MIN_SCORE=-1 \
     HF_HOME=/data/model-cache
 

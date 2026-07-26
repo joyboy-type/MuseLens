@@ -31,6 +31,7 @@ def test_modelscope_deployment_is_a_guarded_docker_demo() -> None:
     assert "MUSELENS_MODE=demo" in dockerfile
     assert "HF_HUB_OFFLINE=1" in dockerfile
     assert "TRANSFORMERS_OFFLINE=1" in dockerfile
+    assert "MUSELENS_RELEASE_METADATA=/app/.muselens-release.json" in dockerfile
     # Create and hand off the persistent model directory before downloading
     # weights. Chowning it afterwards duplicates the 1.4 GB model in a new layer.
     model_download = dockerfile.index("AutoProcessor.from_pretrained")
@@ -386,3 +387,8 @@ def test_wait_gate_fails_immediately_on_terminal_modelscope_state(
 
     with pytest.raises(SystemExit, match="terminal state 'Failed'"):
         wait_for_deployment.main()
+
+
+@pytest.mark.parametrize("status", ["Failed", "BuildFailed", "RuntimeError", "Stopped"])
+def test_modelscope_composite_failure_states_are_terminal(status) -> None:
+    assert wait_for_deployment.is_failed_status(status)

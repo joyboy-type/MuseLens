@@ -16,7 +16,7 @@ from muselens.deployment import validate_deployment_health
 
 
 OPENAPI_BASE = "https://modelscope.cn/openapi/v1"
-FAILED_STATES = {"failed", "error", "stopped", "canceled", "cancelled"}
+FAILED_STATE_MARKERS = {"failed", "error", "stopped", "canceled", "cancelled"}
 RUNNING_STATES = {"running"}
 
 
@@ -57,6 +57,11 @@ def studio_status(payload: dict) -> str:
         return "unknown"
     value = state.get("Status", state.get("status", "unknown"))
     return str(value).strip() or "unknown"
+
+
+def is_failed_status(status: str) -> bool:
+    normalized = status.casefold()
+    return any(marker in normalized for marker in FAILED_STATE_MARKERS)
 
 
 def fetch_failure_logs(studio_id: str, token: str, request_timeout: float) -> None:
@@ -123,7 +128,7 @@ def main() -> None:
             except (URLError, TimeoutError, ValueError, json.JSONDecodeError) as error:
                 current_status = f"unavailable: {error}"
             normalized_status = current_status.casefold()
-            if normalized_status in FAILED_STATES:
+            if is_failed_status(current_status):
                 fetch_failure_logs(args.studio_id, token, args.request_timeout)
                 raise SystemExit(
                     f"ModelScope deployment entered terminal state {current_status!r}."

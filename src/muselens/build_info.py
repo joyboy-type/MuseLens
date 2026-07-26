@@ -9,7 +9,7 @@ from . import __version__
 
 
 DEFAULT_BUILD_COMMIT = "local"
-RELEASE_METADATA_PATH = Path(__file__).resolve().parents[2] / ".muselens-release.json"
+RELEASE_METADATA_PATH = Path.cwd() / ".muselens-release.json"
 
 
 def load_build_info() -> dict[str, str]:
