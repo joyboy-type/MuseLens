@@ -11,6 +11,27 @@ changes; detailed experiment artifacts remain under `artifacts/evaluations/`.
   exact-index memory test.
 - Record a narrated 60-second product walkthrough.
 
+## [0.1.2] - 2026-07-26
+
+### Fixed
+
+- Preserve valid metadata-filtered text-search results beyond the first 100 semantic
+  candidates by expanding recall on demand until enough matches are found or the index
+  is exhausted.
+- Make SHA-256 deduplication safe under concurrent imports: the database winner is
+  returned to both callers and the losing caller removes its redundant image and
+  thumbnail files instead of surfacing a SQLite uniqueness error.
+- Parse `imported_after` as a timezone-aware datetime, reject invalid or naive values
+  with HTTP 422, and compare and sort timestamps consistently in UTC.
+
+### Validation
+
+- Complete backend regression: **90 passed, 1 skipped**.
+- Targeted search-filter, concurrent-import, and datetime-contract suite:
+  **27 passed**; the concurrent duplicate test also passed **10/10** repeated runs.
+- Ruff and `git diff --check` passed; frontend TypeScript build, Vitest,
+  production-build checks, and ESLint passed.
+
 ## [0.1.1] - 2026-07-25
 
 ### Fixed
@@ -72,6 +93,7 @@ changes; detailed experiment artifacts remain under `artifacts/evaluations/`.
 - Exact search has been validated at 5,000 live-library images and 100,000 synthetic
   vectors, not at production million-image scale.
 
-[Unreleased]: https://github.com/joyboy-type/MuseLens/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/joyboy-type/MuseLens/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.2
 [0.1.1]: https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.1
 [0.1.0]: https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.0

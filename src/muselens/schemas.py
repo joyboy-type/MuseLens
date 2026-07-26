@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 
 class HealthResponse(BaseModel):
@@ -89,7 +89,7 @@ class TextSearchRequest(BaseModel):
     tags: list[str] = Field(default=[], max_length=24)
     min_width: int | None = Field(default=None, ge=1, le=100_000)
     max_size_bytes: int | None = Field(default=None, ge=1)
-    imported_after: str | None = None
+    imported_after: AwareDatetime | None = None
     sort: Literal["relevance", "newest", "oldest", "size_desc"] = "relevance"
 
 

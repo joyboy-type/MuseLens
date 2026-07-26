@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from pathlib import Path
 import shutil
@@ -270,7 +271,9 @@ def matches_search_filters(stored, payload: TextSearchRequest) -> bool:
         return False
     if payload.max_size_bytes and stored.size_bytes > payload.max_size_bytes:
         return False
-    if payload.imported_after and stored.created_at < payload.imported_after:
+    if payload.imported_after and utc_datetime(stored.created_at) < payload.imported_after.astimezone(
+        timezone.utc
+    ):
         return False
     if payload.orientations:
         if stored.width <= 0 or stored.height <= 0:
@@ -282,6 +285,13 @@ def matches_search_filters(stored, payload: TextSearchRequest) -> bool:
     if payload.tags and not set(payload.tags).intersection(tag.slug for tag in stored.tags):
         return False
     return True
+
+
+def utc_datetime(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 @app.post("/v1/tags/rebuild", response_model=TagRebuildResponse)
@@ -394,9 +404,9 @@ def restore_image_auto_tags(image_id: str, request: Request) -> ImageRecordRespo
 
 def sort_filtered_results(results, sort: str):
     if sort == "newest":
-        return sorted(results, key=lambda item: item[1].created_at, reverse=True)
+        return sorted(results, key=lambda item: utc_datetime(item[1].created_at), reverse=True)
     if sort == "oldest":
-        return sorted(results, key=lambda item: item[1].created_at)
+        return sorted(results, key=lambda item: utc_datetime(item[1].created_at))
     if sort == "size_desc":
         return sorted(results, key=lambda item: item[1].size_bytes, reverse=True)
     return results
@@ -716,23 +726,38 @@ def search_by_text(payload: TextSearchRequest, request: Request) -> list[SearchH
         else normalized_query
     )
     query_vector = request.app.state.encoder.encode_texts([recall_query])[0]
-    candidates = index.search(query_vector, min(len(index), 100))
-    filtered = []
-    for hit in candidates:
-        stored = repository.find_by_id(hit.image.image_id)
-        if stored is None and not any(
-            [
-                payload.content_types,
-                payload.orientations,
-                payload.tags,
-                payload.min_width,
-                payload.max_size_bytes,
-                payload.imported_after,
-            ]
+    filters_active = any(
+        [
+            payload.content_types,
+            payload.orientations,
+            payload.tags,
+            payload.min_width,
+            payload.max_size_bytes,
+            payload.imported_after,
+        ]
+    )
+    target_candidates = settings.reranker_recall_k if reranker else payload.top_k
+    candidate_limit = min(len(index), max(100, target_candidates))
+    stored_cache: dict[str, StoredImage | None] = {}
+    while True:
+        candidates = index.search(query_vector, candidate_limit)
+        filtered = []
+        for hit in candidates:
+            image_id = hit.image.image_id
+            if image_id not in stored_cache:
+                stored_cache[image_id] = repository.find_by_id(image_id)
+            stored = stored_cache[image_id]
+            if stored is None and not filters_active:
+                stored = indexed_fallback(hit)
+            if stored and matches_search_filters(stored, payload):
+                filtered.append((hit, stored))
+        if (
+            not filters_active
+            or len(filtered) >= target_candidates
+            or candidate_limit == len(index)
         ):
-            stored = indexed_fallback(hit)
-        if stored and matches_search_filters(stored, payload):
-            filtered.append((hit, stored))
+            break
+        candidate_limit = min(len(index), candidate_limit * 2)
     if reranker:
         filtered = rerank_candidates(
             normalized_query,

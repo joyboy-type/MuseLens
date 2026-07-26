@@ -7,6 +7,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/badge/release-v0.1.2-145074)](https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.2)
 
 本地优先的多模态图片搜索与智能整理系统。用户导入自己的图片后，可以用中文或英文自然语言搜索，也可以上传一张图片查找视觉相似内容。浏览器只调用 MuseLens 自己的 FastAPI 服务，检索结果来自真实的 SigLIP2 向量编码和本地索引，并非关键词映射或第三方图库搜索。
 
@@ -65,6 +66,8 @@ flowchart LR
 ### 工程亮点
 
 - **完整数据闭环**：文件导入、SHA-256 去重、批量编码、SQLite 持久化、重启恢复、组合筛选和缩略图缓存。
+- **大图库检索正确性**：组合筛选会按需扩大语义召回，不会因固定 Top 100 截断而漏掉后续有效结果；时间筛选使用带时区 API 契约并统一按 UTC 比较。
+- **并发导入可靠性**：SHA-256 唯一约束作为最终一致性边界，并发重复导入返回同一记录且清理竞争失败方生成的冗余文件。
 - **可量化的模型决策**：比较 CLIP、SigLIP2 和轻量 Adapter；以独立测试集决定是否上线，而不是只展示训练 loss。
 - **可解释的性能取舍**：默认使用磁盘映射精确检索；10 万个 768 维向量实测搜索后 RSS 从约 680 MB 降至 75 MB，同时保留 NumPy / FAISS 对照后端。
 - **可纠正的自动整理**：复用图片向量进行零样本标签，不增加第二个模型；用户可在本地修正或恢复自动标签，人工结果在批量重建时受到保护。

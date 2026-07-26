@@ -1,5 +1,11 @@
-from muselens.api import matches_search_filters, sort_filtered_results
-from muselens.index import IndexedImage
+from types import SimpleNamespace
+
+import numpy as np
+from pydantic import ValidationError
+import pytest
+
+from muselens.api import matches_search_filters, search_by_text, sort_filtered_results
+from muselens.index import IndexedImage, SearchHit
 from muselens.repository import StoredImage
 from muselens.schemas import TextSearchRequest
 from muselens.tags import ImageTag
@@ -63,3 +69,77 @@ def test_tag_filter_matches_any_selected_semantic_tag() -> None:
 
     assert matches_search_filters(tagged, TextSearchRequest(tags=["dog", "cat"]))
     assert not matches_search_filters(tagged, TextSearchRequest(tags=["city"]))
+
+
+def test_imported_after_compares_instants_across_timezone_offsets() -> None:
+    stored = stored_image(
+        "offset",
+        "image/jpeg",
+        1000,
+        800,
+        1_000_000,
+        "2026-07-01T00:30:00+01:00",
+    )
+
+    assert not matches_search_filters(
+        stored,
+        TextSearchRequest(imported_after="2026-06-30T23:45:00+00:00"),
+    )
+
+
+def test_imported_after_rejects_invalid_and_naive_timestamps() -> None:
+    with pytest.raises(ValidationError):
+        TextSearchRequest(imported_after="not-a-date")
+    with pytest.raises(ValidationError):
+        TextSearchRequest(imported_after="2026-07-01T00:00:00")
+
+
+def test_filtered_text_search_expands_beyond_initial_top_100() -> None:
+    hits = []
+    records = {}
+    for position in range(101):
+        image = IndexedImage(str(position), f"{position}.jpg", "image/jpeg")
+        hits.append(SearchHit(image, 1.0 - position * 0.001))
+        tags = (ImageTag("target", "目标", 0.9),) if position == 100 else ()
+        records[image.image_id] = StoredImage(
+            image=image,
+            stored_filename=image.filename,
+            sha256=image.image_id,
+            size_bytes=1,
+            model_id="test",
+            width=10,
+            height=10,
+            created_at="2026-07-01T00:00:00+00:00",
+            tags=tags,
+        )
+
+    class RankedIndex:
+        def __len__(self):
+            return len(hits)
+
+        def search(self, query, top_k):
+            return hits[:top_k]
+
+    class Repository:
+        def find_by_id(self, image_id):
+            return records.get(image_id)
+
+    class Encoder:
+        def encode_texts(self, texts):
+            return np.asarray([[1.0]], dtype=np.float32)
+
+    state = SimpleNamespace(
+        index=RankedIndex(),
+        library=SimpleNamespace(repository=Repository()),
+        encoder=Encoder(),
+        reranker=None,
+        mode="local",
+    )
+    request = SimpleNamespace(app=SimpleNamespace(state=state))
+
+    results = search_by_text(
+        TextSearchRequest(query="anything", tags=["target"], top_k=12),
+        request,
+    )
+
+    assert [result.image_id for result in results] == ["100"]
