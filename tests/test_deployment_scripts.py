@@ -8,10 +8,10 @@ from urllib.error import HTTPError
 
 import pytest
 
-from scripts import publish_modelscope, wait_for_deployment
-
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts import publish_modelscope, wait_for_deployment  # noqa: E402
 
 
 def test_modelscope_deployment_is_a_guarded_docker_demo() -> None:
