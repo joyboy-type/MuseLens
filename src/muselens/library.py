@@ -324,10 +324,15 @@ class ImageLibrary:
         if pending:
             vectors = self._encode_in_batches([item[0].image for item in pending])
             for (candidate, positions), vector in zip(pending, vectors, strict=True):
-                stored = self._persist(candidate, vector)
-                self.index.add(stored.image, vector)
+                stored, concurrent_duplicate = self._persist(candidate, vector)
+                indexed = self.repository.load_vector(stored.image.image_id)
+                if indexed is not None and indexed[1] == self.encoder.model_id:
+                    self.index.add(stored.image, indexed[0])
                 for offset, position in enumerate(positions):
-                    results[position] = ImportResult(stored=stored, duplicate=offset > 0)
+                    results[position] = ImportResult(
+                        stored=stored,
+                        duplicate=concurrent_duplicate or offset > 0,
+                    )
 
         return [result for result in results if result is not None]
 
@@ -338,7 +343,11 @@ class ImageLibrary:
         ]
         return np.concatenate(batches)
 
-    def _persist(self, candidate: UploadCandidate, vector: np.ndarray) -> StoredImage:
+    def _persist(
+        self,
+        candidate: UploadCandidate,
+        vector: np.ndarray,
+    ) -> tuple[StoredImage, bool]:
         self.image_dir.mkdir(parents=True, exist_ok=True)
         image_id = uuid4().hex
         suffix = SUPPORTED_CONTENT_TYPES[candidate.content_type]
@@ -371,7 +380,7 @@ class ImageLibrary:
         )
         try:
             self._write_thumbnail(candidate.image, self.thumbnail_path(image_id))
-            self.repository.insert(
+            persisted, created = self.repository.insert_or_get_existing(
                 stored,
                 vector,
                 self.tagger.model_id if self.tagger else "",
@@ -380,7 +389,10 @@ class ImageLibrary:
             destination.unlink(missing_ok=True)
             self.thumbnail_path(image_id).unlink(missing_ok=True)
             raise
-        return stored
+        if not created:
+            destination.unlink(missing_ok=True)
+            self.thumbnail_path(image_id).unlink(missing_ok=True)
+        return persisted, not created
 
     def original_path(self, stored: StoredImage) -> Path:
         return self.image_dir / stored.stored_filename

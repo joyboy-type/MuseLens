@@ -1,6 +1,6 @@
 # 我做了一个真正能上传个人图片验证的多模态检索系统：MuseLens 从 Demo 到可交付项目
 
-> 项目版本：v0.1.1  
+> 项目版本：v0.1.2
 > 在线体验：<https://sinbaby-muselens.ms.show>  
 > GitHub：<https://github.com/joyboy-type/MuseLens>
 

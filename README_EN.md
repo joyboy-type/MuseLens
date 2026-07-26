@@ -7,6 +7,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/badge/release-v0.1.2-145074)](https://github.com/joyboy-type/MuseLens/releases/tag/v0.1.2)
 
 MuseLens is a local-first multimodal image search system. Import a personal image
 library, then retrieve images with Chinese or English natural-language queries or with
@@ -57,6 +58,10 @@ session isolation, and deletion. See the latest machine-readable
 - NumPy matrix search by default and an optional FAISS backend.
 - Background folder imports, SHA-256 deduplication, restart recovery, cached WebP
   thumbnails, filters, and responsive React/TypeScript UI.
+- Metadata-filtered text search expands semantic recall on demand instead of truncating
+  at a global Top 100; timezone-aware datetime filters are normalized to UTC.
+- Concurrent imports of identical content converge on one SHA-256 record and remove
+  the losing caller's redundant image and thumbnail files.
 - Perceptual-hash near-duplicate groups with color-aware false-positive protection and
   local-copy-only cleanup that never touches the original source file.
 - Reproducible evaluation artifacts for retrieval, rejection, scale, latency, adapter

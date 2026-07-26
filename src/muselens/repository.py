@@ -176,6 +176,22 @@ class ImageRepository:
             )
             self._replace_tags(connection, stored.image.image_id, stored.tags, tag_model_id)
 
+    def insert_or_get_existing(
+        self,
+        stored: StoredImage,
+        vector: np.ndarray,
+        tag_model_id: str = "",
+    ) -> tuple[StoredImage, bool]:
+        """Insert one image, or return the concurrent winner for the same digest."""
+        try:
+            self.insert(stored, vector, tag_model_id)
+        except sqlite3.IntegrityError:
+            existing = self.find_by_sha256(stored.sha256)
+            if existing is None:
+                raise
+            return existing, False
+        return stored, True
+
     def replace_tags(
         self,
         image_id: str,

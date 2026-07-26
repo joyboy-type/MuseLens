@@ -1,4 +1,6 @@
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
+from threading import Barrier
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -23,6 +25,17 @@ class NewFakeEncoder:
 
     def encode_images(self, images):
         return np.tile(np.array([[0.0, 1.0, 0.0]], dtype=np.float32), (len(images), 1))
+
+
+class BarrierEncoder:
+    model_id = "barrier-encoder"
+
+    def __init__(self, barrier: Barrier) -> None:
+        self.barrier = barrier
+
+    def encode_images(self, images):
+        self.barrier.wait(timeout=5)
+        return np.tile(np.array([[1.0, 0.0]], dtype=np.float32), (len(images), 1))
 
 
 class StaticTagger:
@@ -76,6 +89,42 @@ def test_library_deduplicates_and_restores_index(tmp_path) -> None:
     restored_library = ImageLibrary(tmp_path / "images", repository, restored_index, FakeEncoder())
     assert restored_library.restore_index() == 1
     assert len(restored_index) == 1
+
+
+def test_library_deduplicates_concurrent_imports_atomically(tmp_path) -> None:
+    repository = ImageRepository(tmp_path / "state" / "index.sqlite3")
+    repository.initialize()
+    barrier = Barrier(2)
+    indexes = [VectorIndex(), VectorIndex()]
+    libraries = [
+        ImageLibrary(
+            tmp_path / "images",
+            repository,
+            index,
+            BarrierEncoder(barrier),
+        )
+        for index in indexes
+    ]
+    content = jpeg_bytes("red")
+
+    def import_one(library: ImageLibrary, filename: str):
+        return library.import_candidates(
+            [prepare_image(filename, "image/jpeg", content, 1024 * 1024)]
+        )[0]
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [
+            pool.submit(import_one, library, f"{position}.jpg")
+            for position, library in enumerate(libraries)
+        ]
+        results = [future.result() for future in futures]
+
+    assert sorted(result.duplicate for result in results) == [False, True]
+    assert len({result.stored.image.image_id for result in results}) == 1
+    assert len(repository.list_stored()) == 1
+    assert len(list((tmp_path / "images").glob("*.jpg"))) == 1
+    assert len(list(libraries[0].thumbnail_dir.glob("*.webp"))) == 1
+    assert [len(index) for index in indexes] == [1, 1]
 
 
 def test_library_lazily_rebuilds_a_missing_thumbnail(tmp_path) -> None:

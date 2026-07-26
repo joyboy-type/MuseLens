@@ -71,6 +71,16 @@ def test_empty_library_can_be_searched_without_loading_clip() -> None:
     assert response.json() == []
 
 
+def test_text_search_rejects_invalid_imported_after() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/search/text",
+            json={"query": "", "imported_after": "not-a-date"},
+        )
+
+    assert response.status_code == 422
+
+
 def test_local_library_keeps_best_ranked_match_below_demo_floor() -> None:
     index = VectorIndex()
     index.add(
