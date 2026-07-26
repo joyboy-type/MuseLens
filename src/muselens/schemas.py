@@ -8,6 +8,7 @@ class HealthResponse(BaseModel):
 
     status: str
     version: str
+    commit: str
     indexed_images: int
     model_loaded: bool
     reranker_enabled: bool

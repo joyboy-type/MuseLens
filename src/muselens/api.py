@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
+from .build_info import BUILD_INFO
 from .config import settings
 from .encoder import ClipEncoder
 from .index import create_vector_index, filter_relevant_hits
@@ -190,7 +191,8 @@ def health(request: Request) -> HealthResponse:
     reranker = request.app.state.reranker
     return HealthResponse(
         status="ok",
-        version=__version__,
+        version=BUILD_INFO["version"],
+        commit=BUILD_INFO["commit"],
         indexed_images=len(request.app.state.index),
         model_loaded=request.app.state.encoder.loaded,
         reranker_enabled=reranker is not None,

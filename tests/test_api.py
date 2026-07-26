@@ -53,6 +53,7 @@ def test_health_reports_service_status() -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["version"] == __version__
+    assert response.json()["commit"] == "local"
     assert response.json()["indexed_images"] == 0
     assert isinstance(response.json()["model_loaded"], bool)
     assert response.json()["reranker_enabled"] is False

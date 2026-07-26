@@ -32,7 +32,9 @@ jobs:
           cache: pip
 
       - name: Package the Docker Studio without local data
-        run: python scripts/package_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
+        run: >-
+          python scripts/package_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
+          --commit "$GITHUB_SHA"
 
       - name: Validate the release package
         run: >-
@@ -44,7 +46,7 @@ jobs:
           MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
         run: >-
           python scripts/publish_modelscope.py "$RUNNER_TEMP/muselens-modelscope"
-          --repo-id "${{ inputs.studio_id }}" --deploy-if-changed
+          --repo-id "${{ inputs.studio_id }}" --deploy
 
       - name: Install MuseLens verification client
         if: inputs.public_url != ''
@@ -52,8 +54,12 @@ jobs:
 
       - name: Wait for the new deployment
         if: inputs.public_url != ''
+        env:
+          MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
         run: >-
           python scripts/wait_for_deployment.py "${{ inputs.public_url }}"
+          --studio-id "${{ inputs.studio_id }}"
+          --expected-commit "$GITHUB_SHA"
           --timeout 3600 --interval 15
 
       - name: Run the bilingual deployment gate

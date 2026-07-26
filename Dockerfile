@@ -26,12 +26,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml ./
+COPY requirements-runtime.txt ./
 RUN python -m pip install --no-cache-dir \
       --index-url https://download.pytorch.org/whl/cpu \
-      "torch==${TORCH_VERSION}"
-COPY src/ ./src/
-RUN python -m pip install --no-cache-dir .
+      "torch==${TORCH_VERSION}" \
+    && python -m pip install --no-cache-dir -r requirements-runtime.txt
 
 RUN groupadd --system muselens \
     && useradd --system --gid muselens --create-home muselens \
@@ -41,6 +40,11 @@ RUN groupadd --system muselens \
 USER muselens
 RUN python -c "import os; from transformers import AutoModel, AutoProcessor; model_id = os.environ['MUSELENS_CLIP_MODEL']; AutoProcessor.from_pretrained(model_id); AutoModel.from_pretrained(model_id)"
 
+USER root
+COPY pyproject.toml ./
+COPY src/ ./src/
+RUN python -m pip install --no-cache-dir --no-deps .
+
 # ModelScope containers cannot reliably reach huggingface.co at runtime. The
 # model is cached by the preceding layer, so inference must be network-free.
 ENV MUSELENS_MODE=demo \
@@ -49,6 +53,9 @@ ENV MUSELENS_MODE=demo \
 
 COPY --from=frontend-build /build/frontend/dist /app/frontend-dist
 COPY demo_assets/ /app/demo_assets/
+COPY .muselens-release.json /app/.muselens-release.json
+
+USER muselens
 
 EXPOSE 7860
 

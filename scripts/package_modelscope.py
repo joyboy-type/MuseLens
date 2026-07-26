@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import shutil
+import tomllib
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -11,6 +13,7 @@ COPY_ENTRIES = (
     ".dockerignore",
     "LICENSE",
     "pyproject.toml",
+    "requirements-runtime.txt",
     "src",
     "frontend",
     "demo_assets",
@@ -23,7 +26,7 @@ def ignored(_directory: str, names: list[str]) -> set[str]:
     return {name for name in names if name in ignored_names or name.endswith(".tsbuildinfo")}
 
 
-def package_modelscope(output: Path) -> None:
+def package_modelscope(output: Path, commit: str = "local") -> None:
     output = output.resolve()
     if output == PROJECT_ROOT or output == PROJECT_ROOT / "src":
         raise ValueError("Refusing to overwrite a source directory.")
@@ -39,13 +42,24 @@ def package_modelscope(output: Path) -> None:
             shutil.copy2(source, destination)
 
     shutil.copy2(PROJECT_ROOT / "deploy" / "modelscope" / "README.md", output / "README.md")
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as file:
+        version = tomllib.load(file)["project"]["version"]
+    (output / ".muselens-release.json").write_text(
+        json.dumps({"commit": commit, "version": version}, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a clean ModelScope Studio source tree.")
     parser.add_argument("output", type=Path)
+    parser.add_argument(
+        "--commit",
+        default="local",
+        help="Source Git commit embedded in the release health identity.",
+    )
     args = parser.parse_args()
-    package_modelscope(args.output)
+    package_modelscope(args.output, args.commit)
 
 
 if __name__ == "__main__":
